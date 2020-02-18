@@ -5,6 +5,8 @@ Software para gestão de membros de uma associação de pais e encarregados de e
 
 
 ## Equipa
+<b>Mentor: </b> Diogo Gomes \
+<b>Colaborador: </b> José Vieira \
 Alexandre Lopes (88969) \
 André Amarante (89198) \
 Edgar Morais (89323) \
