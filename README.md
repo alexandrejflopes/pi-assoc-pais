@@ -1,2 +1,9 @@
-# Parents Relationship Management
-Parents Relationship Management - Software for managing members of parents association and issues associated with their children
+# Gestão de Associação de Pais
+Software para gestão de membros de uma associação de pais e encarregados de educação, bem como de casos relacionados os seus educandos e com a própria escola.
+
+
+# Equipa
+Alexandre Lopes (88969)
+André Amarante (89198)
+Edgar Morais (89323)
+Francisco Fontinha (76490)
