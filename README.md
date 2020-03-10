@@ -11,3 +11,6 @@ Alexandre Lopes (88969) \
 André Amarante (89198) \
 Edgar Morais (89323) \
 Francisco Fontinha (76490)
+
+## Protótipo
+O primeiro protótipo funcional foi demonstrado na Milestone 2 de PI. Pode ser encontrado e testado em: https://associacao-de-pais-prototipo.firebaseapp.com/
