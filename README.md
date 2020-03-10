@@ -13,4 +13,5 @@ Edgar Morais (89323) \
 Francisco Fontinha (76490)
 
 ## Protótipo
-O primeiro protótipo funcional foi demonstrado na Milestone 2 de PI. Pode ser encontrado e testado em: https://associacao-de-pais-prototipo.firebaseapp.com/
+O primeiro protótipo funcional foi demonstrado na Milestone 2 de PI. O objetivo deste protótipo foi garantir a comunicação entre os módulos da arquitetura, embora o módulo de autenticação da Firebase ainda não esteja a ser utilizado.
+O protótipo pode ser encontrado e testado em: https://associacao-de-pais-prototipo.firebaseapp.com/
