@@ -14,8 +14,8 @@ Francisco Fontinha (76490)
 
 
 ## Git Workflow (branches)
-- *master*: inlcui o material finalizado e estável, desde documentação, recursos e código.
-- *prototypes*: contém o protótipo funcional criado para testar a comunicação de módulos e demonstrado na Milestone 2
-- *template_frontend*: contém o código inicial com o template escolhido para a interface web da plataforma
-- *frontend*: inclui o código do frontend da aplicação, com todas as funcionalidades estáveis
-- *feature/xx*: inclui o material relativo ao desenvolvimento da funcionalidade xx; o objetivo é separar as funcionalidades em desenvolvimento por branches, fazendo o seu merge posteriormente
+- **master**: inlcui o material finalizado e estável, desde documentação, recursos e código.
+- **prototypes**: contém o protótipo funcional criado para testar a comunicação de módulos e demonstrado na Milestone 2
+- **template_frontend**: contém o código inicial com o template escolhido para a interface web da plataforma
+- **frontend**: inclui o código do frontend da aplicação, com todas as funcionalidades estáveis
+- **feature/xx**: inclui o material relativo ao desenvolvimento da funcionalidade xx; o objetivo é separar as funcionalidades em desenvolvimento por branches, fazendo o seu merge posteriormente
