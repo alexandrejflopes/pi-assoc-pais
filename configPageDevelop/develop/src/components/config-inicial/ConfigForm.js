@@ -8,7 +8,6 @@ import {
   FormInput,
   FormGroup,
   FormCheckbox,
-  FormSelect,
   Button, FormTextarea
 } from "shards-react";
 
@@ -74,7 +73,7 @@ const ConfigForm = () => (
                   <label htmlFor="configAssocPhone">Telemóvel / Telefone (opcional)</label>
                   <FormInput
                     id="configAssocPhone"
-                    type="phone"
+                    type="tel"
                     placeholder="200345678"
                   />
                 </FormGroup>

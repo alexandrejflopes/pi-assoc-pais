@@ -3,6 +3,7 @@ import { Redirect } from "react-router-dom";
 
 // Layout Types
 import { DefaultLayout } from "./layouts";
+import { DefaultConfigLayout } from "./layouts";
 
 // Route Views
 import BlogOverview from "./views/BlogOverview";
@@ -15,13 +16,12 @@ import BlogPosts from "./views/BlogPosts";
 import AssocConfiguration from "./views/AssocConfiguration";
 
 
-
 export default [
   {
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to="/blog-overview" />
+    component: () => <Redirect to={"/blog-overview"}/>
   },
   {
     path: "/blog-overview",
@@ -60,7 +60,7 @@ export default [
   },
   {
     path: "/assoc-config",
-    layout: DefaultLayout,
+    layout: DefaultConfigLayout,
     component: AssocConfiguration
   }
 ];
