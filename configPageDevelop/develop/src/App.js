@@ -7,10 +7,17 @@ import withTracker from "./withTracker";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./shards-dashboard/styles/shards-dashboards.1.1.0.min.css";
 
+
+import {firestore, initDoc} from "./firebase-config";
+import {DefaultLayout} from "./layouts";
+import {Container} from "shards-react";
+
+
 import { firestore } from "./firebase-config";
 import { DefaultLayout } from "./layouts";
 import { Container } from "shards-react";
 const initDoc = firestore.doc("installations/installationDoc");
+
 
 const updateInitialRoute = () => {
   var flag = false;

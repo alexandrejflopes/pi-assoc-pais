@@ -17,6 +17,7 @@ if (!firebase.apps.length) {
 }
 
 const firestore = firebase.firestore();
+const initDoc = firestore.doc("installations/installationDoc");
 //firebase.analytics();
 const firebase_auth = firebase.auth();
 
@@ -26,6 +27,8 @@ const storage = firebase.storage();
 // Create a storage reference from our storage service
 const storageRef = storage.ref();
 
-export { firestore, firebase_auth, storageRef, firebase };
+
+export { firestore, firebase_auth, storageRef, firebase, initDoc }
+
 
 //var functionsURL = "https://us-central1-associacao-de-pais-prototipo.cloudfunctions.net/api/";

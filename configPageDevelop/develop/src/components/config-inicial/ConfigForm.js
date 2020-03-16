@@ -8,13 +8,15 @@ import {
   FormInput,
   FormGroup,
   FormCheckbox,
-  Button, FormTextarea
+  Button, FormTextarea, FormFeedback
 } from "shards-react";
 
 
 import AssocLogoUpload from "./AssocLogoUpload";
 import MembersFileUpload from "./MembersFileUpload";
 import NewParamsFileUpload from "./NewParamsFileUpload";
+import {install} from "../../firebase_scripts/installation";
+import StudentsFileUpload from "./StudentsFileUpload";
 
 
 const ConfigForm = () => (
@@ -28,30 +30,34 @@ const ConfigForm = () => (
                 id="configAssocName"
                 type="text"
                 placeholder="Associação de Pais e Encarregados de Educação da Escola..."
+                required
               />
+              <FormFeedback id="configAssocNameFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
             </FormGroup>
 
             {/* Descricao Textarea */}
             <FormGroup>
               <label htmlFor="configAssocDescricao">Descrição (opcional)</label>
               <FormTextarea id="configAssocDescricao" placeholder="Descrição breve da associação e/ou alguns objetivos." />
+              <FormFeedback id="configAssocDescricaoFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
             </FormGroup>
-
-
 
             <FormGroup>
               <label htmlFor="configAssocAddress">Morada (sede/escola)</label>
               <FormInput id="configAssocAddress" placeholder="Rua Dr. Ricardo Silva, 276 R/C Dto" />
+              <FormFeedback id="configAssocAddressFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
             </FormGroup>
 
             <Row form>
               <Col md="6" className="form-group">
                 <label htmlFor="configAssocLocalidade">Localidade</label>
                 <FormInput id="configAssocLocalidade" />
+                <FormFeedback id="configAssocLocalidadeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
               </Col>
               <Col md="6" className="form-group">
                 <label htmlFor="configAssocZip">Código Postal</label>
                 <FormInput id="configAssocZip" />
+                <FormFeedback id="configAssocZipFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
               </Col>
             </Row>
             <hr />
@@ -65,8 +71,10 @@ const ConfigForm = () => (
                     id="configAssocEmail"
                     type="email"
                     placeholder="associacao@exemplo.pt"
+                    required
                   />
                 </FormGroup>
+                <FormFeedback id="configAssocEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
               </Col>
               <Col md="6">
                 <FormGroup>
@@ -76,6 +84,7 @@ const ConfigForm = () => (
                     type="tel"
                     placeholder="200345678"
                   />
+                  <FormFeedback id="configAssocPhoneFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </FormGroup>
 
               </Col>
@@ -83,7 +92,8 @@ const ConfigForm = () => (
 
             <FormGroup>
               <label htmlFor="configAssocIBAN">IBAN</label>
-              <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72" />
+              <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72" required/>
+              <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
             </FormGroup>
           </Form>
         </Col>
@@ -96,14 +106,14 @@ const ConfigForm = () => (
           <Row form>
             <Col md="6">
               <FormGroup>
-                <label htmlFor="configAssocLogo">Logótipo (formatos: PNG, JPEG, SVG)</label>
-                <AssocLogoUpload id="configAssocLogo"/>
+                <label htmlFor="configAssocLogo">Logótipo (associação/escola) (formatos: PNG, JPEG, SVG)</label>
+                <AssocLogoUpload/>
               </FormGroup>
             </Col>
             <Col md="6">
               <FormGroup>
-                <label htmlFor="configAssocLogo">Membros da Associação (formato: CSV)</label>
-                <MembersFileUpload id="configAssocLogo"/>
+                <label htmlFor="configAssocMembers">Membros da Associação (formato: CSV - ver manual)</label>
+                <MembersFileUpload/>
               </FormGroup>
             </Col>
           </Row>
@@ -111,14 +121,14 @@ const ConfigForm = () => (
           <Row form>
             <Col md="6">
               <FormGroup>
-                <label htmlFor="configAssocLogo">Alunos e Encarregados de Educação (formato: CSV)</label>
-                <AssocLogoUpload id="configAssocLogo"/>
+                <label htmlFor="configAssocStudents">Alunos e Encarregados de Educação (formato: CSV - ver manual)</label>
+                <StudentsFileUpload />
               </FormGroup>
             </Col>
             <Col md="6">
               <FormGroup>
-                <label htmlFor="configAssocLogo">Parâmetros particulares do contexto da Associação (formato: JSON - ver manual)</label>
-                <NewParamsFileUpload id="configAssocLogo"/>
+                <label htmlFor="configAssocNewParams">Parâmetros particulares do contexto da Associação (formato: JSON - ver manual)</label>
+                <NewParamsFileUpload />
               </FormGroup>
             </Col>
           </Row>
@@ -133,12 +143,13 @@ const ConfigForm = () => (
           <Row form>
             <Col md="6" className="form-group">
               <FormGroup>
-                <FormCheckbox>
+                <FormCheckbox id="policyCheckbox">
                   {/* eslint-disable-next-line */}Li e aceito a{" "}
                   <a href="#">Política de Privacidade</a>.
                 </FormCheckbox>
+                <FormFeedback id="policyCheckboxFeedback" valid={false} style={{display:"none"}}>Para instalar o software, precisa de aceitar a Política de Privacidade</FormFeedback>
               </FormGroup>
-              <Button type="submit">Instalar</Button>
+              <Button onClick={install}>Instalar</Button>
             </Col>
           </Row>
         </Form>
