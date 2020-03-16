@@ -12,10 +12,6 @@ import {firestore, initDoc} from "./firebase-config";
 import {DefaultLayout} from "./layouts";
 import {Container} from "shards-react";
 
-import { DefaultLayout } from "./layouts";
-import { Container } from "shards-react";
-const initDoc = firestore.doc("installations/installationDoc");
-
 
 const updateInitialRoute = () => {
   var flag = false;
