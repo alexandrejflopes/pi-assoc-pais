@@ -12,8 +12,6 @@ import {firestore, initDoc} from "./firebase-config";
 import {DefaultLayout} from "./layouts";
 import {Container} from "shards-react";
 
-
-import { firestore } from "./firebase-config";
 import { DefaultLayout } from "./layouts";
 import { Container } from "shards-react";
 const initDoc = firestore.doc("installations/installationDoc");
