@@ -5,8 +5,10 @@ import ConfigForm from "../components/config-inicial/ConfigForm";
 
 
 const AssocConfiguration = () => (
-  <Container fluid className="main-content-container px-4 pb-4"
-             >
+
+  <Container fluid className="main-content-container px-4 pb-4">
+
+
 
     <Row style={{display:"flex" , justifyContent:"center", marginTop:"20px", marginRight:"0px"}}>
       {/* Form */}

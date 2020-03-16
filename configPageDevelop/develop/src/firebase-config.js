@@ -18,6 +18,7 @@ if (!firebase.apps.length) {
 
 
 const firestore = firebase.firestore();
+const initDoc = firestore.doc("installations/installationDoc");
 //firebase.analytics();
 const firebase_auth = firebase.auth();
 
@@ -29,7 +30,7 @@ const storage = firebase.storage();
 const storageRef = storage.ref();
 
 
-export {firestore, firebase_auth, storageRef}
+export {firestore, firebase_auth, storageRef, initDoc}
 
 
 

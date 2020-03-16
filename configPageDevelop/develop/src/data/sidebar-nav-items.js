@@ -40,6 +40,11 @@ export default function() {
       title: "Ver Config Form",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/assoc-config",
+    },
+    {
+      title: "Ver Form Registo",
+      htmlBefore: '<i class="material-icons">receipt</i>',
+      to: "/assoc-config",
     }
   ];
 }
