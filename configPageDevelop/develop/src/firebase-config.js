@@ -1,4 +1,4 @@
-import firebase from 'firebase';
+import firebase from "firebase";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBCnYLyRDSRl8jkpAWKZmYif0ew7G7ue6c",
@@ -16,11 +16,9 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-
 const firestore = firebase.firestore();
 //firebase.analytics();
 const firebase_auth = firebase.auth();
-
 
 // Get a reference to the storage service, which is used to create references in your storage bucket
 const storage = firebase.storage();
@@ -28,10 +26,6 @@ const storage = firebase.storage();
 // Create a storage reference from our storage service
 const storageRef = storage.ref();
 
-
-export {firestore, firebase_auth, storageRef}
-
-
-
+export { firestore, firebase_auth, storageRef, firebase };
 
 //var functionsURL = "https://us-central1-associacao-de-pais-prototipo.cloudfunctions.net/api/";

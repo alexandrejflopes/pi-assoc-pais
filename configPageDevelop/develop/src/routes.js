@@ -14,14 +14,14 @@ import ComponentsOverview from "./views/ComponentsOverview";
 import Tables from "./views/Tables";
 import BlogPosts from "./views/BlogPosts";
 import AssocConfiguration from "./views/AssocConfiguration";
-
+import LoginPage from "./views/Login";
 
 export default [
   {
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to={"/blog-overview"}/>
+    component: () => <Redirect to={"/blog-overview"} />
   },
   {
     path: "/blog-overview",
@@ -62,5 +62,10 @@ export default [
     path: "/assoc-config",
     layout: DefaultConfigLayout,
     component: AssocConfiguration
+  },
+  {
+    path: "/login",
+    layout: DefaultLayout,
+    component: LoginPage
   }
 ];
