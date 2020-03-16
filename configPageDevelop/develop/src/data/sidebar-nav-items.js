@@ -42,6 +42,11 @@ export default function() {
       to: "/assoc-config"
     },
     {
+      title: "Ver Form Registo",
+      htmlBefore: '<i class="material-icons">receipt</i>',
+      to: "/assoc-config",
+    },
+    {
       title: "Ver Login Page",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/login"
