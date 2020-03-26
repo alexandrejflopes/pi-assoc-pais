@@ -82,6 +82,7 @@ class Login extends CostumForm {
         }
         // The signed-in user info.
         var user = result.user;
+        console.dir("User login: " + JSON.stringify(result));
       })
       .catch(function(error) {
         // Handle Errors here.
@@ -109,7 +110,7 @@ class Login extends CostumForm {
             credentials.password == dataDoc.password
           ) {
             //Login com sucesso
-            window.location = "/";
+            //window.location = "user-profile-lite";
           } else {
             alert("Falha no login! Valores inseridos estão errados");
           }
@@ -186,6 +187,7 @@ class Login extends CostumForm {
                                 Registe-se
                               </Link>
                             </h5>
+                            <br></br>
                           </Col>
                         </Row>
                       </Form>
