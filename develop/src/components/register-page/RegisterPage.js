@@ -10,13 +10,16 @@ import {
   FormCheckbox,
   Button,
   FormTextarea,
-  FormFeedback
+  FormFeedback,
 } from "shards-react";
+import { toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Label, Input, FormText } from "reactstrap";
 import { Link } from "react-router-dom";
 import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
 import MembersFileUpload from "../config-inicial/MembersFileUpload";
 import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
-import { install } from "../../firebase_scripts/installation";
+import { saveRegistToDB } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 
@@ -25,20 +28,36 @@ class Register_Page extends Component {
     super(props);
     this.state = {
       blocking: false,
-      credentials: {
-        email: "",
-        password: ""
-      },
       errors: {},
+      parentName: "",
+      parentNameFeedback: null,
+      nif: "",
+      job: "",
+      nifFeedback: null,
+      localidade: "",
+      localidadeFeedback: null,
+      zipCode: "",
+      zipCodeFeedback: null,
+      email: "",
+      emailFeedback: null,
+      nomeAluno: [""], //Store multiple names
+      nomeAlunoFeedBack: [null], //Store feedback for multiple names -> not working for studes other than the first one
+      anoEscolaridade: [""],
+      anoEscolaridadeFeedBack: [null],
+      checkBoxStatus: false,
+
       extraParent: null,
       extraStudent: null,
       moreStudents: null,
-      studentNumber: 0
+      studentNumber: 1, //Counts number of students
+      extraVars: [{}],
+      extraPai: 0, //Counts number of extra parameters that belong to the parent part -> they are stored in extraVars[0] along with the extra values from the first student
     };
 
     this.renderExtra = this.renderExtra.bind(this);
     this.sendForm = this.sendForm.bind(this);
     this.addStudent = this.addStudent.bind(this);
+    this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
     this.renderExtra();
   }
 
@@ -53,107 +72,227 @@ class Register_Page extends Component {
     this._isMounted = false;
   }
 
+  handleChangeCheckBox() {
+    var { checkBoxStatus } = this.state;
+
+    if (checkBoxStatus) {
+      checkBoxStatus = false;
+    } else {
+      checkBoxStatus = true;
+    }
+
+    this.setState({ checkBoxStatus: checkBoxStatus });
+  }
+
+  /**
+    Function to verify and process all data  
+   */
   sendForm() {
-    console.log("Aqui fazer envio dados");
+    var {
+      parentName,
+      nif,
+      job,
+      localidade,
+      zipCode,
+      email,
+      nomeAluno,
+      nomeAlunoFeedBack,
+      anoEscolaridade,
+      anoEscolaridadeFeedBack,
+      extraStudent,
+      moreStudents,
+      studentNumber,
+      extraVars,
+      extraPai,
+      checkBoxStatus,
+    } = this.state;
+
+    //Remove all warnings at the beggining
+    var nomeAlunoFeedBackArray = nomeAlunoFeedBack;
+    for (var i = 0; i < nomeAlunoFeedBackArray.length; i++) {
+      nomeAlunoFeedBackArray[i] = false;
+    }
+    var anoEscolaridadeFeedBackArray = anoEscolaridadeFeedBack;
+    for (var q = 0; q < anoEscolaridadeFeedBackArray.length; q++) {
+      anoEscolaridadeFeedBackArray[q] = false;
+    }
+
+    this.setState({
+      parentNameFeedback: false,
+      nifFeedback: false,
+      localidadeFeedback: false,
+      zipCodeFeedback: false,
+      emailFeedback: false,
+      nomeAlunoFeedBack: nomeAlunoFeedBackArray,
+      anoEscolaridadeFeedBack: anoEscolaridadeFeedBackArray,
+    });
+
+    //Verify values were inserted and show feedback if not
+    var allRequiredDataFilled = true;
+    if (parentName == "") {
+      allRequiredDataFilled = false;
+      this.setState({ parentNameFeedback: true });
+    }
+    if (nif == "") {
+      allRequiredDataFilled = false;
+      this.setState({ nifFeedback: true });
+    }
+    if (localidade == "") {
+      allRequiredDataFilled = false;
+      this.setState({ localidadeFeedback: true });
+    }
+    if (zipCode == "") {
+      allRequiredDataFilled = false;
+      this.setState({ zipCodeFeedback: true });
+    }
+    if (email == "" || !email.match(/.+@.+/)) {
+      allRequiredDataFilled = false;
+      this.setState({ emailFeedback: true });
+    }
+    for (var x = 0; x < nomeAluno.length; x++) {
+      if (nomeAluno[x] == "") {
+        allRequiredDataFilled = false;
+        nomeAlunoFeedBackArray[x] = true; //not working, using alert method
+        if (x != 0) {
+          var n = x + 1;
+          alert("Por favor preencha o nome do " + n + "º aluno!");
+        }
+      }
+    }
+    for (var a = 0; a < anoEscolaridade.length; a++) {
+      if (anoEscolaridade[a] == "") {
+        allRequiredDataFilled = false;
+        anoEscolaridadeFeedBackArray[a] = true;
+        if (a != 0) {
+          var n = a + 1;
+          alert(
+            "Por favor preencha o ano de escolaridade do " + n + "º aluno!"
+          );
+        }
+      }
+    }
+    this.setState({
+      nomeAlunoFeedBack: nomeAlunoFeedBackArray,
+      anoEscolaridadeFeedBack: anoEscolaridadeFeedBackArray,
+    });
+
+    //Same verification process for extraVars
+    var breakVar = false;
+    for (var i = 0; i < extraVars.length; i++) {
+      var currentArray = extraVars[i];
+      var keys = Object.keys(currentArray);
+      if (breakVar) break;
+
+      keys.forEach((key) => {
+        if (currentArray[key] == "" && !breakVar) {
+          var message = "Por favor, preencha " + key.split("-")[0];
+          allRequiredDataFilled = false;
+          alert(message);
+          breakVar = true;
+        }
+      });
+    }
+
+    if (checkBoxStatus == false) {
+      alert("Por favor, indique que leu a política de privacidade!");
+      allRequiredDataFilled = false;
+    }
+
+    //All date was inserted, process it to database
+    if (allRequiredDataFilled) {
+      //console.log("Dados todos: " + JSON.stringify(this.state));
+
+      //Parent Json
+      var parentJson = {};
+      parentJson.Nome = parentName;
+      parentJson.NIF = nif;
+      if (job != "") {
+        parentJson.Emprego = job;
+      }
+      parentJson.Localidade = localidade;
+      parentJson.ZIP = zipCode;
+      parentJson.Email = email;
+
+      // Get extra parent values and store in Json -> they are in extraVars[0] along with student extra values and there are extraPai number of parent values
+      var extraArray = extraVars[0]; // Dictionary of values
+
+      for (var i = 0; i < extraPai; i++) {
+        var keys = Object.keys(extraArray);
+        var key = keys[i];
+        parentJson[key] = extraArray[key];
+      }
+      parentJson.Validated = "false";
+      parentJson["Número de Sócio"] = "";
+      parentJson["Quotas Pagas"] = "Não";
+
+      // Student's part
+      var studentArray = [];
+      for (var i = 0; i < extraVars.length; i++) {
+        var currentArray = extraVars[i];
+        var keys = Object.keys(currentArray);
+
+        var studentJson = {};
+
+        //Nome aluno
+        studentJson.Nome = nomeAluno[i];
+        //Ano de escolaridade
+        studentJson.Ano = anoEscolaridade[i];
+
+        var x = 0;
+        keys.forEach((key) => {
+          //Exclude parents extra values
+          if (i == 0 && x < extraPai) {
+            //Do nothing, skip these vars
+          } else {
+            studentJson[key.split("-")[0]] = currentArray[key];
+          }
+
+          x++;
+        });
+        studentArray.push(studentJson);
+      }
+      parentJson.Educandos = studentArray;
+
+      //Save values to database
+      saveRegistToDB(parentJson);
+    }
   }
 
+  /**
+    Function to add new student to form  
+   */
   addStudent() {
-    var { extraStudent, moreStudents, studentNumber } = this.state;
+    var {
+      studentNumber,
+      nomeAluno,
+      nomeAlunoFeedBack,
+      anoEscolaridade,
+      anoEscolaridadeFeedBack,
+      extraStudent,
+      moreStudents,
+    } = this.state;
 
-    var add = (
-      <Fragment>
-        <hr />
-        <FormGroup>
-          <label htmlFor="studentName">Nome Aluno</label>
-          <FormInput id="studentName" type="text" placeholder="Nome" required />
-          <FormFeedback
-            id="studentNameFeedback"
-            valid={false}
-            style={{ display: "none" }}
-          >
-            Por favor, preencha este campo
-          </FormFeedback>
-        </FormGroup>
-
-        {/* Descricao Textarea */}
-        <FormGroup>
-          <label htmlFor="studentYear">Ano Escolaridade</label>
-          <FormInput id="studentYear" type="text" placeholder="5º" required />
-          <FormFeedback
-            id="studentYearFeedback"
-            valid={false}
-            style={{ display: "none" }}
-          >
-            Por favor, preencha este campo
-          </FormFeedback>
-        </FormGroup>
-        {extraStudent}
-      </Fragment>
-    );
-
-    studentNumber++;
-    console.log("studentNumber: " + studentNumber);
-    var toAdd = new Array(studentNumber).fill(add);
-
-    this.setState({ moreStudents: toAdd, studentNumber: studentNumber });
-  }
-
-  renderExtra() {
-    var { extraParent, extraStudent, moreStudents } = this.state;
     var this_ = this;
 
-    console.log("Rendering extras...");
-    var dadosFinaisPai = null;
     var dadosFinaisAluno = null;
 
+    //Get student parameters from database
     const extrasDoc = firestore.doc("initialConfigs/newParameters");
     extrasDoc
       .get()
-      .then(doc => {
+      .then((doc) => {
         if (doc.exists === true) {
           const dataDoc = doc.data();
-          //console.log("dados extras: " + JSON.stringify(dataDoc));
-
-          const eeData = dataDoc["EE"];
-          if (eeData !== undefined) {
-            var keys = Object.keys(eeData);
-            //console.log("Keys extras pai: " + keys);
-
-            var dadosPai = [];
-            for (var i = 0; i < keys.length; i++) {
-              var val = keys[i];
-              var type = eeData[val];
-              console.log("Valor-> " + val + ", " + type);
-
-              if (type.includes("text")) {
-                type = "text";
-              } else if (type.includes("int")) {
-                type = "number";
-              }
-
-              var dado = (
-                <FormGroup>
-                  <label htmlFor={val}>{val}</label>
-                  <FormInput id={val} type={type} placeholder={val} />
-                </FormGroup>
-              );
-              dadosPai.push(dado);
-            }
-            //console.log("1");
-            dadosFinaisPai = dadosPai;
-          }
 
           const studentData = dataDoc["aluno"];
           if (studentData !== undefined) {
             var keys = Object.keys(studentData);
-            //console.log("Keys aluno: " + keys);
 
             var dadosAluno = [];
             for (var i = 0; i < keys.length; i++) {
-              var val = keys[i];
-              var type = studentData[val];
+              var valS = keys[i];
+              var type = studentData[valS];
               var step = null;
-              //console.log("Valor-> " + val + ", " + type);
 
               if (type.includes("text")) {
                 type = "text";
@@ -165,14 +304,41 @@ class Register_Page extends Component {
                 step = "0.1";
               }
 
+              var idS = valS + "-" + studentNumber; //Id now contains a unique number to identify it
+
+              //Create dictionary for this student's values and add it to extraVars
+              var newArrayExtras1 = this.state.extraVars; //Get array of dictionaries
+              var newVar;
+              if (i == 0) {
+                newVar = { [idS]: "" };
+              } else {
+                newVar = { ...this.state.extraVars[studentNumber], [idS]: "" };
+              }
+              newArrayExtras1[studentNumber] = newVar;
+              this.setState({ extraVars: newArrayExtras1 });
+
+              const n = studentNumber;
+
+              //Object to render
               var dado = (
                 <FormGroup>
-                  <label htmlFor={val}>{val}</label>
+                  <label htmlFor={idS}>{valS}</label>
                   <FormInput
-                    id={val}
+                    id={idS}
                     type={type}
                     step={step}
-                    placeholder={val}
+                    placeholder={valS}
+                    onChange={(e) => {
+                      var extrasArray = this.state.extraVars;
+                      var newExtraVars = {
+                        ...this.state.extraVars[n],
+                        [e.target.id]: e.target.value,
+                      };
+                      extrasArray[n] = newExtraVars;
+                      this.setState({
+                        extraVars: extrasArray,
+                      });
+                    }}
                   />
                 </FormGroup>
               );
@@ -180,22 +346,253 @@ class Register_Page extends Component {
             }
 
             dadosFinaisAluno = dadosAluno;
+
+            //Similar process to name and year of student
+            var novoArrayAlunos = nomeAluno.concat("");
+            var novoArrayNomeAlunoFeedBack = nomeAlunoFeedBack.concat(null); //not working, we are using alert method
+            var novoArrayAnoEscolaridade = anoEscolaridade.concat("");
+            var novoArrayAnoEscolaridadeFeedBack = anoEscolaridadeFeedBack.concat(
+              null
+            );
+
+            this_.setState({
+              nomeAluno: novoArrayAlunos,
+              nomeAlunoFeedBack: novoArrayNomeAlunoFeedBack,
+              anoEscolaridade: novoArrayAnoEscolaridade,
+              anoEscolaridadeFeedBack: novoArrayAnoEscolaridadeFeedBack,
+            });
+
+            var newName = "studentName-" + studentNumber;
+            var newNameFeedback = newName + "FeedBack";
+            var newYear = "studentYear-" + studentNumber;
+            var newYearFeedback = newYear + "FeedBack";
+            const x = studentNumber;
+
+            var add = (
+              <Fragment>
+                <hr />
+                <FormGroup>
+                  <label htmlFor="studentName">Nome Aluno</label>
+                  <FormInput
+                    invalid={this_.state.nomeAlunoFeedBack[x]}
+                    onChange={(e) => {
+                      var newAdd = novoArrayAlunos;
+                      var n = e.target.id.split("-")[1];
+                      newAdd[n] = e.target.value;
+                      this.setState({
+                        nomeAluno: newAdd,
+                      });
+                    }}
+                    id={newName}
+                    type="text"
+                    placeholder="Nome"
+                    required
+                  />
+                  <FormFeedback
+                    id={newNameFeedback}
+                    valid={false}
+                    style={{ display: "d-block" }}
+                  >
+                    Por favor, preencha este campo
+                  </FormFeedback>
+                </FormGroup>
+
+                {/* Descricao Textarea */}
+                <FormGroup>
+                  <label htmlFor="studentYear">Ano Escolaridade</label>
+                  <FormInput
+                    invalid={this_.state.anoEscolaridadeFeedBack[x]}
+                    onChange={(e) => {
+                      var newAdd = novoArrayAnoEscolaridade;
+                      var n = e.target.id.split("-")[1];
+                      newAdd[n] = e.target.value;
+                      this.setState({
+                        anoEscolaridade: newAdd,
+                      });
+                    }}
+                    id={newYear}
+                    type="text"
+                    placeholder="5º"
+                    required
+                  />
+                  <FormFeedback
+                    id={newYearFeedback}
+                    valid={false}
+                    style={{ display: "d-block" }}
+                  >
+                    Por favor, preencha este campo
+                  </FormFeedback>
+                </FormGroup>
+                {dadosFinaisAluno}
+              </Fragment>
+            );
+
+            studentNumber++; //Increase studentNumber
+
+            var arrayAnterior = moreStudents;
+            if (moreStudents == null) {
+              arrayAnterior = [add];
+            } else {
+              arrayAnterior = [moreStudents].concat(add);
+            }
+
+            this_.setState({
+              moreStudents: arrayAnterior,
+              studentNumber: studentNumber,
+            });
+          }
+        } else {
+          console.log("doc não existe");
+        }
+      })
+      .catch((err) => {
+        alert(err);
+      });
+  }
+
+  /**
+    Function to get extra parameters for parent and students from firestore and load them  
+   */
+  renderExtra() {
+    var { extraParent, extraStudent, moreStudents, extraVars } = this.state;
+    var this_ = this;
+
+    var dadosFinaisPai = null;
+    var dadosFinaisAluno = null;
+
+    const extrasDoc = firestore.doc("initialConfigs/newParameters");
+    extrasDoc
+      .get()
+      .then((doc) => {
+        if (doc.exists === true) {
+          const dataDoc = doc.data();
+          //console.log("dados extras: " + JSON.stringify(dataDoc));
+
+          const eeData = dataDoc["EE"]; // Get parent dictionary of extra parameters
+          if (eeData !== undefined) {
+            var keys = Object.keys(eeData);
+
+            var extraPai = 0; // Counts number of extra parameters that belong to the parent part of the registry
+
+            var dadosPai = []; // Will store all objects to render from the parent side
+            for (var i = 0; i < keys.length; i++) {
+              extraPai++;
+              var val = keys[i]; // Actual name of parameter
+              var type = eeData[val]; //Type of parameter (text, inteiro, etc)
+
+              //Change type to html equivalent
+              if (type.includes("text")) {
+                type = "text";
+              } else if (type.includes("int")) {
+                type = "number";
+              }
+
+              //These following lines add parameter to extraVars array of dictionaries (extraVars stores the actual user input)
+              var newArrayExtras = this.state.extraVars; // Array of dictionaries
+              var newVar = { ...this.state.extraVars[0], [val]: "" }; // Add parameter(val) to first dictionary
+              newArrayExtras[0] = newVar;
+              this.setState({ extraVars: newArrayExtras });
+
+              // Objects to render
+              var dado = (
+                <FormGroup>
+                  <label htmlFor={val}>{val}</label>
+                  <FormInput
+                    id={val}
+                    type={type}
+                    placeholder={val}
+                    onChange={(e) => {
+                      var extrasArray = this.state.extraVars;
+                      var newExtraVars = {
+                        ...this.state.extraVars[0],
+                        [e.target.id]: e.target.value,
+                      };
+                      extrasArray[0] = newExtraVars;
+                      this.setState({
+                        extraVars: extrasArray,
+                      });
+                    }}
+                  />
+                  <FormFeedback
+                    id={val + "Feedback"}
+                    valid={false}
+                    style={{ display: "d-block" }}
+                  >
+                    Por favor, preencha este campo
+                  </FormFeedback>
+                </FormGroup>
+              );
+              dadosPai.push(dado); //Add object to array
+            }
+            dadosFinaisPai = dadosPai;
           }
 
-          //console.log(dadosFinaisPai);
+          // The following code follows the same parent logic, just for the student
+          const studentData = dataDoc["aluno"];
+          if (studentData !== undefined) {
+            var keys = Object.keys(studentData);
+
+            var dadosAluno = [];
+            for (var i = 0; i < keys.length; i++) {
+              var valS = keys[i];
+              var type = studentData[valS];
+              var step = null;
+
+              if (type.includes("text")) {
+                type = "text";
+              } else if (type.includes("int")) {
+                type = "number";
+                step = "1";
+              } else if (type.includes("decimal")) {
+                type = "number";
+                step = "0.1";
+              }
+
+              var newArrayExtras1 = this.state.extraVars;
+              var newVar = { ...this.state.extraVars[0], [keys[i]]: "" };
+              newArrayExtras1[0] = newVar;
+              this.setState({ extraVars: newArrayExtras1 }); //newVar
+
+              var dado = (
+                <FormGroup>
+                  <label htmlFor={valS}>{valS}</label>
+                  <FormInput
+                    id={valS}
+                    type={type}
+                    step={step}
+                    placeholder={valS}
+                    onChange={(e) => {
+                      var extrasArray = this.state.extraVars;
+                      var newExtraVars = {
+                        ...this.state.extraVars[0],
+                        [e.target.id]: e.target.value,
+                      };
+                      extrasArray[0] = newExtraVars;
+                      this.setState({
+                        extraVars: extrasArray,
+                      });
+                    }}
+                  />
+                </FormGroup>
+              );
+              dadosAluno.push(dado);
+            }
+            dadosFinaisAluno = dadosAluno;
+          }
+
+          // Save data to state
           this_.setState({
             extraParent: dadosFinaisPai,
-            extraStudent: dadosFinaisAluno
+            extraStudent: dadosFinaisAluno,
+            extraPai: extraPai,
           });
         } else {
           console.log("doc não existe");
         }
       })
-      .catch(err => {
+      .catch((err) => {
         alert(err);
       });
-
-    console.log("Fim de rendering extras");
   }
 
   render() {
@@ -207,15 +604,21 @@ class Register_Page extends Component {
               <FormGroup>
                 <label htmlFor="parentName">Nome</label>
                 <FormInput
+                  invalid={this.state.parentNameFeedback}
                   id="parentName"
                   type="text"
                   placeholder="Nome"
                   required
+                  onChange={(e) => {
+                    this.setState({
+                      parentName: e.target.value,
+                    });
+                  }}
                 />
                 <FormFeedback
                   id="parentNameFeedback"
                   valid={false}
-                  style={{ display: "none" }}
+                  style={{ display: "d-block" }}
                 >
                   Por favor, preencha este campo
                 </FormFeedback>
@@ -224,11 +627,22 @@ class Register_Page extends Component {
               {/* Descricao Textarea */}
               <FormGroup>
                 <label htmlFor="nif">NIF</label>
-                <FormInput id="nif" type="text" placeholder="NIF" required />
+                <FormInput
+                  invalid={this.state.nifFeedback}
+                  id="nif"
+                  type="text"
+                  placeholder="NIF"
+                  required
+                  onChange={(e) => {
+                    this.setState({
+                      nif: e.target.value,
+                    });
+                  }}
+                />
                 <FormFeedback
                   id="nifFeedback"
                   valid={false}
-                  style={{ display: "none" }}
+                  style={{ display: "d-block" }}
                 >
                   Por favor, preencha este campo
                 </FormFeedback>
@@ -236,35 +650,52 @@ class Register_Page extends Component {
 
               <FormGroup>
                 <label htmlFor="job">Profissão (opcional)</label>
-                <FormInput id="job" placeholder="Profissão" />
-                <FormFeedback
-                  id="jobFeedback"
-                  valid={false}
-                  style={{ display: "none" }}
-                >
-                  Por favor, preencha este campo
-                </FormFeedback>
+                <FormInput
+                  onChange={(e) => {
+                    this.setState({
+                      job: e.target.value,
+                    });
+                  }}
+                  id="job"
+                  placeholder="Profissão"
+                />
               </FormGroup>
 
               <Row form>
                 <Col md="6" className="form-group">
                   <label htmlFor="localidade">Localidade</label>
-                  <FormInput id="çocalidade" />
+                  <FormInput
+                    invalid={this.state.localidadeFeedback}
+                    id="localidade"
+                    onChange={(e) => {
+                      this.setState({
+                        localidade: e.target.value,
+                      });
+                    }}
+                  />
                   <FormFeedback
-                    id="çocalidadeFeedback"
+                    id="localidadeFeedback"
                     valid={false}
-                    style={{ display: "none" }}
+                    style={{ display: "d-block" }}
                   >
                     Por favor, preencha este campo
                   </FormFeedback>
                 </Col>
                 <Col md="6" className="form-group">
                   <label htmlFor="zipCode">Código Postal</label>
-                  <FormInput id="zipCode" />
+                  <FormInput
+                    invalid={this.state.zipCodeFeedback}
+                    id="zipCode"
+                    onChange={(e) => {
+                      this.setState({
+                        zipCode: e.target.value,
+                      });
+                    }}
+                  />
                   <FormFeedback
                     id="zipCodeFeedback"
                     valid={false}
-                    style={{ display: "none" }}
+                    style={{ display: "d-block" }}
                   >
                     Por favor, preencha este campo
                   </FormFeedback>
@@ -274,19 +705,23 @@ class Register_Page extends Component {
               {/* Contactos */}
               <Row form>
                 <Col md="6">
-                  <FormGroup>
-                    <label htmlFor="email">Email</label>
-                    <FormInput
-                      id="email"
-                      type="email"
-                      placeholder="nome@exemplo.pt"
-                      required
-                    />
-                  </FormGroup>
+                  <label htmlFor="email">Email</label>
+                  <FormInput
+                    invalid={this.state.emailFeedback}
+                    onChange={(e) => {
+                      this.setState({
+                        email: e.target.value,
+                      });
+                    }}
+                    id="email"
+                    type="email"
+                    placeholder="nome@exemplo.pt"
+                    required
+                  />
                   <FormFeedback
                     id="emailFeedback"
                     valid={false}
-                    style={{ display: "none" }}
+                    style={{ display: "d-block" }}
                   >
                     Por favor, preencha este campo
                   </FormFeedback>
@@ -315,6 +750,14 @@ class Register_Page extends Component {
               <FormGroup>
                 <label htmlFor="studentName">Nome Aluno</label>
                 <FormInput
+                  invalid={this.state.nomeAlunoFeedBack[0]}
+                  onChange={(e) => {
+                    var newAdd = this.state.nomeAluno;
+                    newAdd[0] = e.target.value;
+                    this.setState({
+                      nomeAluno: newAdd,
+                    });
+                  }}
                   id="studentName"
                   type="text"
                   placeholder="Nome"
@@ -323,7 +766,7 @@ class Register_Page extends Component {
                 <FormFeedback
                   id="studentNameFeedback"
                   valid={false}
-                  style={{ display: "none" }}
+                  style={{ display: "d-block" }}
                 >
                   Por favor, preencha este campo
                 </FormFeedback>
@@ -333,6 +776,14 @@ class Register_Page extends Component {
               <FormGroup>
                 <label htmlFor="studentYear">Ano Escolaridade</label>
                 <FormInput
+                  invalid={this.state.anoEscolaridadeFeedBack[0]}
+                  onChange={(e) => {
+                    var newAdd1 = this.state.anoEscolaridade;
+                    newAdd1[0] = e.target.value;
+                    this.setState({
+                      anoEscolaridade: newAdd1,
+                    });
+                  }}
                   id="studentYear"
                   type="text"
                   placeholder="5º"
@@ -341,7 +792,7 @@ class Register_Page extends Component {
                 <FormFeedback
                   id="studentYearFeedback"
                   valid={false}
-                  style={{ display: "none" }}
+                  style={{ display: "d-block" }}
                 >
                   Por favor, preencha este campo
                 </FormFeedback>
@@ -359,7 +810,11 @@ class Register_Page extends Component {
               <Row form>
                 <Col md="12" className="form-group">
                   <FormGroup>
-                    <FormCheckbox id="policyCheckbox">
+                    <FormCheckbox
+                      id="policyCheckbox"
+                      checked={this.state.checkBoxStatus}
+                      onChange={this.handleChangeCheckBox}
+                    >
                       {/* eslint-disable-next-line */}Li e aceito a{" "}
                       <a href="#">Política de Privacidade</a>.
                     </FormCheckbox>
