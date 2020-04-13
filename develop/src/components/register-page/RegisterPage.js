@@ -41,7 +41,7 @@ class Register_Page extends Component {
       email: "",
       emailFeedback: null,
       nomeAluno: [""], //Store multiple names
-      nomeAlunoFeedBack: [null], //Store feedback for multiple names -> not working for studes other than the first one
+      nomeAlunoFeedBack: [null], //Store feedback for multiple names -> not working for students other than the first one
       anoEscolaridade: [""],
       anoEscolaridadeFeedBack: [null],
       checkBoxStatus: false,
@@ -85,7 +85,7 @@ class Register_Page extends Component {
   }
 
   /**
-    Function to verify and process all data  
+    Function to verify and process all data
    */
   sendForm() {
     var {
@@ -194,7 +194,7 @@ class Register_Page extends Component {
     }
 
     if (checkBoxStatus == false) {
-      alert("Por favor, indique que leu a política de privacidade!");
+      alert("Por favor, indique que leu a política de privacidade.");
       allRequiredDataFilled = false;
     }
 
@@ -259,7 +259,7 @@ class Register_Page extends Component {
   }
 
   /**
-    Function to add new student to form  
+    Function to add new student to form
    */
   addStudent() {
     var {
@@ -451,7 +451,7 @@ class Register_Page extends Component {
   }
 
   /**
-    Function to get extra parameters for parent and students from firestore and load them  
+    Function to get extra parameters for parent and students from firestore and load them
    */
   renderExtra() {
     var { extraParent, extraStudent, moreStudents, extraVars } = this.state;
