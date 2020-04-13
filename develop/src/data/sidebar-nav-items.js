@@ -37,6 +37,16 @@ export default function() {
       to: "/errors"
     },
     {
+      title: "Os meus educandos",
+      htmlBefore: '<i class="material-icons">face</i>',
+      to: "/user-profile-lite",
+    },
+    {
+      title: "Casos",
+      htmlBefore: '<i class="material-icons">description</i>',
+      to: "/casos",
+    },
+    {
       title: "Ver Config Form",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/assoc-config"

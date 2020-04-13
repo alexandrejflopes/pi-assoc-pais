@@ -15,6 +15,7 @@ import Tables from "./views/Tables";
 import BlogPosts from "./views/BlogPosts";
 import AssocConfiguration from "./views/AssocConfiguration";
 import LoginPage from "./views/Login";
+import Casos from "./views/Casos";
 import RegisterPage from "./views/Register";
 
 export default [
@@ -58,6 +59,11 @@ export default [
     path: "/blog-posts",
     layout: DefaultLayout,
     component: BlogPosts
+  },
+  {
+    path: "/casos",
+    layout: DefaultLayout,
+    component: Casos
   },
   {
     path: "/assoc-config",
