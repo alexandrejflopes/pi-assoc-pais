@@ -10,8 +10,8 @@ const DefaultConfigLayout = ({ children, noNavbar, noFooter }) => (
     <Row>
       <Col
         className="main-content p-0"
-        lg={{ size: 10, offset: 2 }}
-        md={{ size: 9, offset: 3 }}
+        lg={{ size: 10, offset: 1 }}
+        md={{ size: 9, offset: 2 }}
         sm="12"
         tag="main"
       >
