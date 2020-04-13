@@ -17,7 +17,8 @@ import {
 } from "shards-react";
 
 import PageTitle from "../components/common/PageTitle";
-import {initCasosExemplo, showAvailableCasos} from "../firebase_scripts/setupCasos";
+import {initCasosExemplo, showAvailableCasos} from "../firebase_scripts/casos";
+import CasosModal from "../components/casos/CasosModal";
 
 class Casos extends React.Component {
   constructor(props) {
@@ -37,6 +38,8 @@ class Casos extends React.Component {
           data: "29 February 2019"
         }
       ],
+
+      AddingNewCaso: false,
 
       Updated : false,
       // Third list of posts.
@@ -84,7 +87,7 @@ class Casos extends React.Component {
 
     casosPromise.then(result => {
       self.setState({ ListaCasos: result , Updated : true});
-    })
+    });
 
     console.log("state -> ", self.state);
   }
@@ -105,7 +108,14 @@ class Casos extends React.Component {
             <PageTitle sm="4" title="Casos" className="text-sm-left" />
           </Row>
 
-          {/* First Row of Issues */}
+          <Row noGutters className="page-header" style={{ marginTop: "10px", marginBottom: "20px" }}>
+            <CasosModal/>
+          </Row>
+
+
+
+
+          {/* First Row of Cases */}
           <Row>
             {ListaCasos.map((post, idx) => (
               <Col lg="4" key={idx}>
