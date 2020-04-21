@@ -54,6 +54,22 @@ function saveRegistToDB(json) {
     });
 }
 
+function saveCaseToDB(json) {
+  //console.log("Json to save to DB -> ", JSON.stringify(json));
+
+  const docRef = firestore.collection("casos");
+  const ref = docRef.doc();
+
+  ref
+    .set(json)
+    .then(function () {
+      alert("Sucesso!");
+    })
+    .catch(function (error) {
+      alert("Erro no envio do caso, por favor, tente novamente!");
+    });
+}
+
 // ------------------------------------------------------------
 // PROCESSAR CSV
 
@@ -473,4 +489,4 @@ function install() {
   } else alert("Campos em falta.");
 }
 
-export { install, saveRegistToDB };
+export { install, saveRegistToDB, saveCaseToDB };
