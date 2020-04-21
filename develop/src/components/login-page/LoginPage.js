@@ -6,7 +6,7 @@ import {
   Form,
   FormGroup,
   FormFeedback,
-  Input
+  Input,
 } from "reactstrap";
 import { Link } from "react-router-dom";
 import BlockUi from "react-block-ui";
@@ -24,9 +24,9 @@ class Login extends CostumForm {
       blocking: false,
       credentials: {
         email: "",
-        password: ""
+        password: "",
       },
-      errors: {}
+      errors: {},
     };
 
     this.googleSignIn = this.googleSignIn.bind(this);
@@ -51,19 +51,19 @@ class Login extends CostumForm {
     firebase
       .auth()
       .signInWithPopup(provider)
-      .then(function(result) {
+      .then(function (result) {
         console.log(result);
         console.log("Success... Google Account Linked");
         //Login com sucesso
-        window.location = "/";
+        window.location = "/user-profile-lite";
       })
-      .catch(function(error) {
+      .catch(function (error) {
         console.log(error);
         console.log("Failed to log in with google");
       });
   }
 
-  doSubmit = async e => {
+  doSubmit = async (e) => {
     e.preventDefault();
 
     const { credentials } = this.state;
@@ -74,7 +74,7 @@ class Login extends CostumForm {
     firebase
       .auth()
       .getRedirectResult()
-      .then(function(result) {
+      .then(function (result) {
         if (result.credential) {
           // This gives you a Google Access Token. You can use it to access the Google API.
           var token = result.credential.accessToken;
@@ -84,7 +84,7 @@ class Login extends CostumForm {
         var user = result.user;
         console.dir("User login: " + JSON.stringify(result));
       })
-      .catch(function(error) {
+      .catch(function (error) {
         // Handle Errors here.
         var errorCode = error.code;
         var errorMessage = error.message;
@@ -99,7 +99,7 @@ class Login extends CostumForm {
     const userDoc = firestore.doc("initialConfigs/defaultUser");
     userDoc
       .get()
-      .then(doc => {
+      .then((doc) => {
         console.log("doc -> ", doc);
 
         if (doc.exists === false) {
@@ -110,13 +110,13 @@ class Login extends CostumForm {
             credentials.password == dataDoc.password
           ) {
             //Login com sucesso
-            //window.location = "user-profile-lite";
+            window.location = "user-profile-lite";
           } else {
             alert("Falha no login! Valores inseridos estão errados");
           }
         }
       })
-      .catch(err => {
+      .catch((err) => {
         alert(err);
       });
   };
@@ -136,14 +136,14 @@ class Login extends CostumForm {
                 background: "url(" + bg1 + ")",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "cover",
-                backgroundPosition: "center center"
+                backgroundPosition: "center center",
               }}
             >
               <Col md="8" className="mx-auto app-login-box">
                 <div
                   className="modal-dialog w-100 mx-auto"
                   style={{
-                    boxShadow: "0px 1px 10px 0px rgba(52, 58, 64, 0.3)"
+                    boxShadow: "0px 1px 10px 0px rgba(52, 58, 64, 0.3)",
                   }}
                 >
                   <div className="modal-content" style={{ border: "none" }}>
@@ -198,7 +198,7 @@ class Login extends CostumForm {
                             background: "#34b4eb",
                             color: "#fff",
                             width: "200px",
-                            textAlign: "center"
+                            textAlign: "center",
                           }}
                         >
                           {"Sign In With Google"}
