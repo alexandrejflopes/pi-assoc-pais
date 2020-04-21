@@ -10,7 +10,7 @@ function getAndSaveJSONparamsData(jsonfile) {
 
   reader.onloadend = function () {
     fileString = reader.result;
-    console.log("reader result depois de loaded -> ", fileString);
+    //console.log("reader result depois de loaded -> ", fileString);
     const json = JSON.parse(fileString);
     saveNewParamsFromJSONToDB(json);
   };
@@ -24,7 +24,7 @@ function getAndSaveJSONparamsData(jsonfile) {
 function saveNewParamsFromJSONToDB(json) {
   const paramsDoc = json;
 
-  console.log("paramsDoc -> ", paramsDoc);
+  //console.log("paramsDoc -> ", paramsDoc);
 
   const docRef = firestore.doc("initialConfigs/newParameters");
 
@@ -102,21 +102,21 @@ function getandSaveCSVdata(parentsFile, childrenFile) {
 
 function setupCSVData(fileString) {
   const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
-  console.log("allLines -> ", allLines);
+  //console.log("allLines -> ", allLines);
 
   const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
   let rowsData = [];
 
-  console.log("headers -> ", headers);
+  //console.log("headers -> ", headers);
 
   for (let i = 1; i < allLines.length; i++) {
     let lineDict = {};
 
     let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
 
-    console.log("dadosLinha atual -> ", dadosLinha);
+    //console.log("dadosLinha atual -> ", dadosLinha);
 
-    console.assert(dadosLinha.length === headers.length);
+    //console.assert(dadosLinha.length === headers.length);
 
     for (let j = 0; j < dadosLinha.length; j++) {
       lineDict[headers[j]] = dadosLinha[j];
@@ -145,8 +145,8 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
     parseInt(a[Object.keys(a)[0]]) > parseInt(b[Object.keys(b)[0]]) ? 1 : -1
   );
 
-  console.log("parentDocList -> ", parentDocList);
-  console.log("childrenDocList -> ", childrenDocList);
+  //console.log("parentDocList -> ", parentDocList);
+  //console.log("childrenDocList -> ", childrenDocList);
 
   const docRef = firestore.collection("parents");
 
@@ -154,10 +154,10 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
   for (let i = 0; i < parentDocList.length; i++) {
     let parentDoc = parentDocList[i];
 
-    console.log("parentDoc atual -> ", parentDoc);
+    //console.log("parentDoc atual -> ", parentDoc);
     const numSocio = parentDoc[Object.keys(parentDoc)[0]];
 
-    console.log("numSocio atual -> ", numSocio);
+    //console.log("numSocio atual -> ", numSocio);
 
     let parentChildren = []; // educandos do encarregado de educacao atual
 
@@ -165,7 +165,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
     for (let j = 0; j < childrenDocList.length; j++) {
       const child = childrenDocList[j];
 
-      console.log("child atual -> ", child);
+      //console.log("child atual -> ", child);
 
       if (numSocio !== child[Object.keys(child)[0]])
         // se nao tem igual numSocio, entao nao e filho dele
@@ -173,7 +173,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 
       let childDoc = child;
 
-      console.log("childDoc a inserir -> ", childDoc);
+      //console.log("childDoc a inserir -> ", childDoc);
       // remover o numero de socio e nome do EE, pois vai para dentro do documento do seu EE
       delete childDoc[Object.keys(childDoc)[0]];
       delete childDoc[Object.keys(childDoc)[0]]; // remover o 0 porque o que estava a 1 passou a zero na linha de cima
@@ -189,7 +189,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
     parentRef
       .set(parentDoc)
       .then(function () {
-        console.log("EE e educandos guardados com sucesso.");
+        //console.log("EE e educandos guardados com sucesso.");
       })
       .catch(function (error) {
         alert("Erro: " + error);
@@ -204,7 +204,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 function saveChildDataFromFiletoDB(file) {
   const childrenDocList = setupCSVData(file);
 
-  console.log("childrenDocList -> ", childrenDocList);
+  //console.log("childrenDocList -> ", childrenDocList);
 
   const docRef = firestore.collection("children");
 
@@ -214,7 +214,7 @@ function saveChildDataFromFiletoDB(file) {
     // adicionar array para educandos
     childDoc["Educandos"] = [];
 
-    console.log("childDoc atual -> ", childDoc);
+    //console.log("childDoc atual -> ", childDoc);
 
     const parentRef = docRef.doc(childDoc[Object.keys(childDoc)[0]]); // numero socio
 
@@ -236,7 +236,7 @@ function saveChildDataFromFiletoDB(file) {
 function saveParentDataFromFiletoDB(file) {
   const parentDocList = setupCSVData(file);
 
-  console.log("parentDocList -> ", parentDocList);
+  //console.log("parentDocList -> ", parentDocList);
 
   const docRef = firestore.collection("parents");
 
@@ -246,7 +246,7 @@ function saveParentDataFromFiletoDB(file) {
     // adicionar array para educandos
     parentDoc["Educandos"] = [];
 
-    console.log("personsDoc atual -> ", parentDoc);
+    //console.log("personsDoc atual -> ", parentDoc);
 
     const parentRef = docRef.doc(parentDoc[Object.keys(parentDoc)[0]]); // numero socio
 
@@ -277,7 +277,7 @@ function createDefaultUser() {
   docRefUser
     .set(defaultUser)
     .then(function () {
-      console.log("defaultUserDoc -> ", defaultUser);
+      //console.log("defaultUserDoc -> ", defaultUser);
     })
     .catch(function (error) {
       alert("Erro: " + error);
@@ -407,7 +407,7 @@ function install() {
 
   const inputsInfo = getFormElementsAndValues(); // { "labelText" : input }
 
-  console.log("inputsInfo -> ", inputsInfo);
+  //console.log("inputsInfo -> ", inputsInfo);
 
   for (const label in inputsInfo) {
     let input = inputsInfo[label];
@@ -458,11 +458,11 @@ function install() {
 
     const dataDoc = setupDataDoc();
 
-    console.log("dataDoc -> ", dataDoc);
+    //console.log("dataDoc -> ", dataDoc);
 
     const docRef = firestore.doc("initialConfigs/parameters");
 
-    alert("ler os consoles");
+    //alert("ler os consoles");
 
     docRef
       .set(dataDoc)
@@ -475,7 +475,7 @@ function install() {
         initDoc
           .set(doc)
           .then(function () {
-            console.log("initDoc -> ", doc);
+            //console.log("initDoc -> ", doc);
             createDefaultUser(); // TODO: usar Firebase Authentication
             window.location.href = "/";
           })

@@ -22,7 +22,6 @@ import { saveCaseToDB } from "../../firebase_scripts/installation";
 class CasosModal extends React.Component {
   constructor(props) {
     super(props);
-    console.log("props: " + props);
 
     this.state = {
       members: [],
@@ -222,7 +221,7 @@ class CasosModal extends React.Component {
                 <Col>
                   <Form>
                     <FormGroup>
-                      <label htmlFor="configAssocName">Título de caso</label>
+                      <label htmlFor="configAssocName">Título do caso</label>
                       <FormInput
                         id="novoCasoTitulo"
                         type="text"
