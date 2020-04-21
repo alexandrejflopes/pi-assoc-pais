@@ -19,9 +19,9 @@ const updateInitialRoute = () => {
   return initDoc
     .get()
     .then(doc => {
-      console.log("doc -> ", doc);
+      //console.log("doc -> ", doc);
 
-      console.log("doc install ->", doc["install"]);
+      //console.log("doc install ->", doc["install"]);
 
       if (doc.exists === false) {
         console.log("vou devolver /assoc-config");
@@ -41,7 +41,7 @@ const updateInitialRoute = () => {
         };
       }
       flag = true;
-      console.log("primeiro component depois do update: ", routes[0].component);
+      //console.log("primeiro component depois do update: ", routes[0].component);
 
       return true;
     })
@@ -70,7 +70,7 @@ class App extends React.Component {
   }
 
   render() {
-    console.log("state data antes do render -> ", this.state.data);
+    //console.log("state data antes do render -> ", this.state.data);
 
     if (this.state.data) {
       // se a verificacao ja tiver sido feita, renderizamos a pagina
