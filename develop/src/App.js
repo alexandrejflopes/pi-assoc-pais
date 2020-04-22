@@ -29,7 +29,7 @@ const updateInitialRoute = () => {
           path: "/",
           exact: true,
           layout: DefaultLayout,
-          component: () => <Redirect to={"/assoc-config"} />
+          component: () => <Redirect to={"/init"} />
         };
       } else {
         console.log("vou devolver /login");

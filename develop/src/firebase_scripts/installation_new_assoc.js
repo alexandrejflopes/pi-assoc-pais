@@ -61,197 +61,6 @@ function saveRegistToDB(json) {
 // ------------------------------------------------------------
 // PROCESSAR CSV
 
-/*
- * funcao que processa os CSV de membros e alunos:
- *   dado um CSV, extrai os cabecalhos e analisa cada linha
- *   - resultado para cada linha { "header1" : info1, "header2" : info2, ...}
- * */
-function getandSaveCSVdata(parentsFile, childrenFile) {
-  const parentReader = new FileReader();
-  const childrenReader = new FileReader();
-  let parentFileString = "NR";
-  let childrenFileString = "NR";
-
-  parentReader.onloadend = function () {
-    parentFileString = parentReader.result;
-    const parentList = setupCSVData(parentFileString);
-
-    childrenReader.onloadend = function () {
-      childrenFileString = childrenReader.result;
-      const childrenList = setupCSVData(childrenFileString);
-
-      saveParentsAndChildrenFromFileDatatoDB(parentList, childrenList);
-    };
-  };
-
-  parentReader.readAsText(parentsFile, "UTF-8");
-  childrenReader.readAsText(childrenFile, "UTF-8");
-}
-
-function setupCSVData(fileString) {
-  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
-  //console.log("allLines -> ", allLines);
-
-  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
-  let rowsData = [];
-
-  //console.log("headers -> ", headers);
-
-  for (let i = 1; i < allLines.length; i++) {
-    let lineDict = {};
-
-    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
-
-    //console.log("dadosLinha atual -> ", dadosLinha);
-
-    //console.assert(dadosLinha.length === headers.length);
-
-    for (let j = 0; j < dadosLinha.length; j++) {
-      lineDict[headers[j]] = dadosLinha[j];
-    }
-
-    rowsData.push(lineDict);
-  }
-
-  return rowsData;
-}
-
-/*
- * analisa os dados processados do CSV e guarda-os na Firestore:
- *   - para cada EE, vai ver os educandos com o seu numero de Socio
- *     para esse educando ser adicionado ao array de educandos (documentos)
- *     desse EE;
- *   - no final, o EE (já com o seu array de educandos) é guardado na Firestore
- * */
-function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
-  // lista de filhos e pais, ordenados pelo numero de socio do EE
-  const parentDocList = parentsList.sort((a, b) =>
-    parseInt(a[Object.keys(a)[0]]) > parseInt(b[Object.keys(b)[0]]) ? 1 : -1
-  );
-
-  const childrenDocList = childrenList.sort((a, b) =>
-    parseInt(a[Object.keys(a)[0]]) > parseInt(b[Object.keys(b)[0]]) ? 1 : -1
-  );
-
-  //console.log("parentDocList -> ", parentDocList);
-  //console.log("childrenDocList -> ", childrenDocList);
-
-  const docRef = firestore.collection("parents");
-
-  // adicionar a cada EE os educandos com numSocio do EE igual ao EE atual
-  for (let i = 0; i < parentDocList.length; i++) {
-    let parentDoc = parentDocList[i];
-
-    //console.log("parentDoc atual -> ", parentDoc);
-    const numSocio = parentDoc[Object.keys(parentDoc)[0]];
-
-    const email = parentDoc[Object.keys(parentDoc)[6]];
-    //console.log("email parentDoc -> " + email);
-
-    //console.log("numSocio atual -> ", numSocio);
-
-    let parentChildren = []; // educandos do encarregado de educacao atual
-
-    // procurar por educandos com EE com o numSocio acima
-    for (let j = 0; j < childrenDocList.length; j++) {
-      const child = childrenDocList[j];
-
-      //console.log("child atual -> ", child);
-
-      if (numSocio !== child[Object.keys(child)[0]])
-        // se nao tem igual numSocio, entao nao e filho dele
-        continue;
-
-      let childDoc = child;
-
-      //console.log("childDoc a inserir -> ", childDoc);
-      // remover o numero de socio e nome do EE, pois vai para dentro do documento do seu EE
-      delete childDoc[Object.keys(childDoc)[0]];
-      delete childDoc[Object.keys(childDoc)[0]]; // remover o 0 porque o que estava a 1 passou a zero na linha de cima
-
-      parentChildren.push(childDoc);
-    }
-
-    // adicionar array para educandos
-    parentDoc["Educandos"] = parentChildren;
-
-    const parentRef = docRef.doc(email); // email como id do documento
-
-    parentRef
-      .set(parentDoc)
-      .then(function () {
-        //console.log("EE e educandos guardados com sucesso.");
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
-      });
-  }
-}
-
-/*
- * (nao usada)
- * analisa os dados processados do CSV de educandos e guarda-os na Firestore:
- * */
-function saveChildDataFromFiletoDB(file) {
-  const childrenDocList = setupCSVData(file);
-
-  //console.log("childrenDocList -> ", childrenDocList);
-
-  const docRef = firestore.collection("children");
-
-  for (let i = 0; i < childrenDocList.length; i++) {
-    let childDoc = childrenDocList[i];
-
-    // adicionar array para educandos
-    childDoc["Educandos"] = [];
-
-    //console.log("childDoc atual -> ", childDoc);
-
-    const parentRef = docRef.doc(childDoc[Object.keys(childDoc)[0]]); // numero socio
-
-    parentRef
-      .set(childDoc)
-      .then(function () {
-        //alert("EE guardado com sucesso.");
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
-      });
-  }
-}
-
-/*
- * (possivelmente, nao usada)
- * analisa os dados processados do CSV de EE e guarda-os na Firestore:
- * */
-function saveParentDataFromFiletoDB(file) {
-  const parentDocList = setupCSVData(file);
-
-  //console.log("parentDocList -> ", parentDocList);
-
-  const docRef = firestore.collection("parents");
-
-  for (let i = 0; i < parentDocList.length; i++) {
-    let parentDoc = parentDocList[i];
-
-    // adicionar array para educandos
-    parentDoc["Educandos"] = [];
-
-    //console.log("personsDoc atual -> ", parentDoc);
-
-    const parentRef = docRef.doc(parentDoc[Object.keys(parentDoc)[0]]); // numero socio
-
-    parentRef
-      .set(parentDoc)
-      .then(function () {
-        //alert("EE guardado com sucesso.");
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
-      });
-  }
-}
-
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
@@ -432,43 +241,19 @@ function install() {
       "block";
   }
 
-  //------------------------
-
-  /*const setupDataDocTest = () => {
-    let temp = {};
-    for (const label in inputsInfo) {
-      temp[label] = inputsInfo[label].value;
-    }
-
-    return temp;
-  };
-
-  const dataDocTest = setupDataDocTest();
-  console.log("dataDocTest -> ", dataDocTest);*/
-
-  //-------------------------
-
   if (validatedFields && policyCheckboxChecked) {
     // uploads
-    //uploadNewLogo("configAssocLogo");
-    uploadAssocDataFiles("configAssocMembers");
-    uploadAssocDataFiles("configAssocStudents");
     uploadAssocDataFiles("configAssocNewParams");
 
     // ler ficheiros e guardar dados
-    const paramsJSONfile = document.getElementById("configAssocNewParams")
-      .files[0];
-    const membersFile = document.getElementById("configAssocMembers").files[0];
-    const studentsFile = document.getElementById("configAssocStudents")
-      .files[0];
+    const paramsJSONfile = document.getElementById("configAssocNewParams").files[0];
 
     getAndSaveJSONparamsData(paramsJSONfile);
-    getandSaveCSVdata(membersFile, studentsFile);
 
     const fileArray = document.getElementById("configAssocLogo").files;
 
     if(fileArray.length!==0){
-      const file = fileArray[0]; // so da para fazer upload de 1 logo
+      const file = fileArray[0]; // so dá para fazer upload de 1 logo
       const uploadTask = uploadNewLogo(file);
       uploadTask.on('state_changed', function(snapshot){
         // Observe state change events such as progress, pause, and resume
@@ -484,7 +269,7 @@ function install() {
             break;
         }
       }, function(error) {
-          console.log("Upload não tem sucesso: " + error);
+        console.log("Upload não tem sucesso: " + error);
       }, function() {
         // Handle successful uploads on complete
         // get the download URL
