@@ -57,7 +57,7 @@ const NewAssocOptions = () => (
                         Nova Associação
                       </h3>
                       <p>
-                        Associação ainda sem associados para importar para a plataforma
+                        Associação não formalaziada fisicamente e ainda sem associados para importar para a plataforma
                       </p>
                     </ListGroup.Item>
                   </ListGroup>
@@ -69,7 +69,7 @@ const NewAssocOptions = () => (
                         Associação existente
                       </h3>
                       <p>
-                        Associação já existente com dados de associados e alunos para importar para a plataforma
+                        Associação já formalizada e a operar na escola fisicamente, com dados de associados e educandos para importar para a plataforma
                       </p>
                     </ListGroup.Item>
 
