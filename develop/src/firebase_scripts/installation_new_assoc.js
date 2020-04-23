@@ -3,7 +3,12 @@ import firebase from "firebase";
 import React from "react";
 
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
+import MD5 from "crypto-js/md5";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
+
+function getRandomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min) ) + min;
+}
 
 // ------------------------------------------------------------
 // NOVOS PARAMETROS
@@ -78,6 +83,50 @@ function createDefaultUser() {
     .set(defaultUser)
     .then(function () {
       //console.log("defaultUserDoc -> ", defaultUser);
+    })
+    .catch(function (error) {
+      alert("Erro: " + error);
+    });
+}
+
+function createInstallerParent(nome, email) {
+
+  const docRef = firestore.collection("parents");
+
+  let parentDoc = {};
+
+  //console.log("parentDoc atual -> ", parentDoc);
+  const numSocio = getRandomInteger(10000,100000);
+
+  parentDoc["Admin"] = true;
+  parentDoc["Cargo"] = "";
+  parentDoc["Cartão Cidadão"] = "";
+  parentDoc["Cotas"] = [];
+  parentDoc["Código Postal"] = "";
+  parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // obter data no formato 2015-03-25;
+  // adicionar array para educandos
+  parentDoc["Educandos"] = [];
+  parentDoc["Email"] = email;
+  parentDoc["Localidade"] = "";
+  parentDoc["Morada"] = "";
+  parentDoc["NIF"] = "";
+  parentDoc["Nome"] = nome;
+  parentDoc["Número de Sócio"] = numSocio;
+  parentDoc["Profissão"] = "";
+  parentDoc["Quotas pagas"] = "";
+  parentDoc["Telemóvel"] = "";
+  parentDoc["Validated"] = true; // EEs importados são logo validados
+  parentDoc["blocked"] = false; // EEs não estão bloqueados inicialmente
+  // avatar
+  parentDoc["photo"] = getGravatarURL(email);
+
+
+  const parentRef = docRef.doc(email); // email como id do documento
+
+  parentRef
+    .set(parentDoc)
+    .then(function () {
+      //console.log("EE e educandos guardados com sucesso.");
     })
     .catch(function (error) {
       alert("Erro: " + error);
@@ -210,6 +259,16 @@ function removeAllInvalidFeedbacks() {
   }
 }
 
+/* função para fazer hash do email com MD5 para o Gravatar */
+function getGravatarURL(email) {
+  const emailProcessed = (email.trim()).toLowerCase();
+  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
+  return "https://www.gravatar.com/avatar/" + hashedEmail +
+    "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
+
+}
+
+
 function install() {
   removeAllInvalidFeedbacks();
 
@@ -292,8 +351,8 @@ function install() {
   } else alert("Campos em falta.");
 }
 
-
 function continueInstallation(inputsInfo, logoURL) {
+
 
   const setupDataDoc = () => {
     let temp = {};
@@ -315,6 +374,8 @@ function continueInstallation(inputsInfo, logoURL) {
   };
 
   const dataDoc = setupDataDoc();
+  // nome e email de quem instala para criar o doc do parent respetivo
+  createInstallerParent(dataDoc["O seu nome"], dataDoc["O seu email"]);
 
   console.log("dataDoc antes de instalar -> " + JSON.stringify(dataDoc));
 

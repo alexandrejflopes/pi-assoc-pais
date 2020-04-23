@@ -1,6 +1,7 @@
 import { firestore, storageRef, initDoc, storage } from "../firebase-config";
 import firebase from "firebase";
 import React from "react";
+import MD5 from "crypto-js/md5";
 
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
@@ -116,6 +117,17 @@ function setupCSVData(fileString) {
   return rowsData;
 }
 
+
+/* função para fazer hash do email com MD5 para o Gravatar */
+function getGravatarURL(email) {
+  const emailProcessed = (email.trim()).toLowerCase();
+  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
+  return "https://www.gravatar.com/avatar/" + hashedEmail +
+    "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
+
+}
+
+
 /*
  * analisa os dados processados do CSV e guarda-os na Firestore:
  *   - para cada EE, vai ver os educandos com o seu numero de Socio
@@ -174,6 +186,18 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 
     // adicionar array para educandos
     parentDoc["Educandos"] = parentChildren;
+
+    // converter o boolean de admin de string para boolean
+    parentDoc["Admin"] = (parentDoc["Admin"] === "true");
+
+    // adicionar outros parâmetros necessários
+    parentDoc["Cotas"] = [];
+    parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // obter data no formato 2015-03-25;
+    parentDoc["Validated"] = true; // EEs importados são logo validados
+    parentDoc["blocked"] = false; // EEs não estão bloqueados inicialmente
+
+    // avatar
+    parentDoc["photo"] = getGravatarURL(email);
 
     const parentRef = docRef.doc(email); // email como id do documento
 
@@ -549,7 +573,7 @@ function continueInstallation(inputsInfo, logoURL) {
         .set(doc)
         .then(function () {
           //console.log("initDoc -> ", doc);
-          createDefaultUser(); // TODO: enviar link de auth para o email do registador
+          createDefaultUser(); // TODO: enviar link de auth para os emails
           window.location.href = "/";
         })
         .catch(function (error) {

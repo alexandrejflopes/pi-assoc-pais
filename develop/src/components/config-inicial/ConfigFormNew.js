@@ -22,6 +22,28 @@ const ConfigFormNew = () => (
     <ListGroupItem className="p-3">
       <Col>
         <Form>
+          <h5>Sobre si</h5>
+          <Row form>
+            <Col md="6" className="form-group">
+              <label htmlFor="configAssocAdminNome">O seu nome</label>
+              <FormInput id="configAssocAdminNome" type="text" required />
+              <FormFeedback id="configAssocAdminNomeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+            </Col>
+            <Col md="6">
+              <FormGroup>
+                <label htmlFor="configAdminEmail">O seu email</label>
+                <FormInput
+                  id="configAdminEmail"
+                  type="email"
+                  placeholder="joao@associacao.pt"
+                  required
+                />
+              </FormGroup>
+              <FormFeedback id="configAdminEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+            </Col>
+          </Row>
+          <hr />
+          <h5>A Associação</h5>
           <FormGroup>
             <label htmlFor="configAssocName">Nome da Associação de Pais</label>
             <FormInput
@@ -89,19 +111,7 @@ const ConfigFormNew = () => (
           </Row>
 
           <Row form>
-            <Col md="6">
-              <FormGroup>
-                <label htmlFor="configAdminEmail">O seu email</label>
-                <FormInput
-                  id="configAdminEmail"
-                  type="email"
-                  placeholder="joao@associacao.pt"
-                  required
-                />
-              </FormGroup>
-              <FormFeedback id="configAdminEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
-            </Col>
-            <Col md="6">
+            <Col md="12">
               <FormGroup>
                 <label htmlFor="configAssocIBAN">IBAN (opcional)</label>
                 <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72"/>

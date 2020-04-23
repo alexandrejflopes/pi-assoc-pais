@@ -91,19 +91,7 @@ const ConfigForm = () => (
             </Row>
 
             <Row form>
-              <Col md="6">
-                <FormGroup>
-                  <label htmlFor="configAdminEmail">O seu email</label>
-                  <FormInput
-                    id="configAdminEmail"
-                    type="email"
-                    placeholder="joao@associacao.pt"
-                    required
-                  />
-                </FormGroup>
-                <FormFeedback id="configAdminEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
-              </Col>
-              <Col md="6">
+              <Col md="12">
                 <FormGroup>
                   <label htmlFor="configAssocIBAN">IBAN (opcional)</label>
                   <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72"/>
