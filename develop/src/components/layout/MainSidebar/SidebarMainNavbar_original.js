@@ -4,15 +4,10 @@ import { Navbar, NavbarBrand } from "shards-react";
 
 import { Dispatcher, Constants } from "../../../flux";
 
-import {getAssocDoc} from "../../../firebase_scripts/get_assoc_info"
-
 class SidebarMainNavbar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      assocLogoUrl: "",
-      assocName: ""
-    };
+
     this.handleToggleSidebar = this.handleToggleSidebar.bind(this);
   }
 
@@ -20,27 +15,6 @@ class SidebarMainNavbar extends React.Component {
     Dispatcher.dispatch({
       actionType: Constants.TOGGLE_SIDEBAR
     });
-  }
-
-  componentDidMount() {
-    const promise = getAssocDoc();
-
-    console.log("promise -> " + promise);
-
-    promise.then(doc => {
-        if (!doc.exists) {
-          console.log('No assotiation document found!');
-        } else {
-          const data = doc.data();
-          this.setState({
-            assocLogoUrl: data["Logótipo"],
-            assocName: data["Nome da Associação de Pais"]
-          });
-        }
-      })
-      .catch(err => {
-        console.log('Error getting document', err);
-      });
   }
 
   render() {
@@ -60,13 +34,13 @@ class SidebarMainNavbar extends React.Component {
               <img
                 id="main-logo"
                 className="d-inline-block align-top mr-1"
-                style={{ maxWidth: "100px", maxHeight: "40px" }}
-                src={this.state.assocLogoUrl}
-                alt={this.state.assocName}
+                style={{ maxWidth: "25px" }}
+                src={require("../../../images/shards-dashboards-logo.svg")}
+                alt="Shards Dashboard"
               />
-              {hideLogoText && (
+              {!hideLogoText && (
                 <span className="d-none d-md-inline ml-1">
-                  {this.state.assocName}
+                  Shards Dashboard
                 </span>
               )}
             </div>

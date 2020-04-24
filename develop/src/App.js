@@ -8,7 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./shards-dashboard/styles/shards-dashboards.1.1.0.min.css";
 
 
-import {firestore, initDoc} from "./firebase-config";
+import {initDoc} from "./firebase-config";
 import {DefaultLayout} from "./layouts";
 import {Container} from "shards-react";
 
@@ -24,7 +24,7 @@ const updateInitialRoute = () => {
       //console.log("doc install ->", doc["install"]);
 
       if (doc.exists === false) {
-        console.log("vou devolver /assoc-config");
+        console.log("vou devolver /init");
         routes[0] = {
           path: "/",
           exact: true,

@@ -1,6 +1,5 @@
-import { firestore, storageRef, initDoc, storage } from "../firebase-config";
+import { firestore, storageRef, initDoc } from "../firebase-config";
 import firebase from "firebase";
-import React from "react";
 import MD5 from "crypto-js/md5";
 
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
@@ -212,70 +211,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
   }
 }
 
-/*
- * (nao usada)
- * analisa os dados processados do CSV de educandos e guarda-os na Firestore:
- * */
-function saveChildDataFromFiletoDB(file) {
-  const childrenDocList = setupCSVData(file);
-
-  //console.log("childrenDocList -> ", childrenDocList);
-
-  const docRef = firestore.collection("children");
-
-  for (let i = 0; i < childrenDocList.length; i++) {
-    let childDoc = childrenDocList[i];
-
-    // adicionar array para educandos
-    childDoc["Educandos"] = [];
-
-    //console.log("childDoc atual -> ", childDoc);
-
-    const parentRef = docRef.doc(childDoc[Object.keys(childDoc)[0]]); // numero socio
-
-    parentRef
-      .set(childDoc)
-      .then(function () {
-        //alert("EE guardado com sucesso.");
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
-      });
-  }
-}
-
-/*
- * (possivelmente, nao usada)
- * analisa os dados processados do CSV de EE e guarda-os na Firestore:
- * */
-function saveParentDataFromFiletoDB(file) {
-  const parentDocList = setupCSVData(file);
-
-  //console.log("parentDocList -> ", parentDocList);
-
-  const docRef = firestore.collection("parents");
-
-  for (let i = 0; i < parentDocList.length; i++) {
-    let parentDoc = parentDocList[i];
-
-    // adicionar array para educandos
-    parentDoc["Educandos"] = [];
-
-    //console.log("personsDoc atual -> ", parentDoc);
-
-    const parentRef = docRef.doc(parentDoc[Object.keys(parentDoc)[0]]); // numero socio
-
-    parentRef
-      .set(parentDoc)
-      .then(function () {
-        //alert("EE guardado com sucesso.");
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
-      });
-  }
-}
-
+// TODO: apagar em detrimento do envio de email para login
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 

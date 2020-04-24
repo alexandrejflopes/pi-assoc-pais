@@ -1,6 +1,5 @@
-import { firestore, storageRef, initDoc, storage } from "../firebase-config";
+import { firestore, storageRef, initDoc } from "../firebase-config";
 import firebase from "firebase";
-import React from "react";
 
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 import MD5 from "crypto-js/md5";
@@ -66,6 +65,7 @@ function saveRegistToDB(json) {
 // ------------------------------------------------------------
 // PROCESSAR CSV
 
+// TODO: apagar em detrimento do envio de email para login
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
