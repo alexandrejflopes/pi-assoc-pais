@@ -1,4 +1,4 @@
-import { firestore, storageRef, initDoc } from "../firebase-config";
+import { firestore, storageRef, initDoc, firebaseConfig } from "../firebase-config";
 import firebase from "firebase";
 
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
@@ -39,7 +39,7 @@ function saveNewParamsFromJSONToDB(json) {
   docRef
     .set(paramsDoc)
     .then(function () {
-      alert("Novos parâmetros guardados com sucesso.");
+      console.log("Novos parâmetros guardados com sucesso.");
     })
     .catch(function (error) {
       alert("Erro: " + error);
@@ -89,6 +89,8 @@ function createDefaultUser() {
     });
 }
 
+// -------------- pessoa que instala --------------
+
 function createInstallerParent(nome, email) {
 
   const docRef = firestore.collection("parents");
@@ -132,6 +134,31 @@ function createInstallerParent(nome, email) {
       alert("Erro: " + error);
     });
 }
+
+async function sendEmailToInstallerParent(nome, email) {
+
+  // TODO: remover este email hardcoded
+  const tempEmail = "alexandrejflopes@ua.pt";
+
+  const project_id = firebaseConfig.projectId;
+  let uri = "https://us-central1-" + project_id + ".cloudfunctions.net/api/sendUserImportEmail?" +
+    "email=" + tempEmail + "&" +
+    "nome=" + nome;
+
+  //alert("uri -> " + uri);
+  const request = async () => {
+    await fetch(uri)
+      .then()
+      .catch(function (error) {
+        console.log("Error sendindo import email: " + error);
+      });
+  };
+
+  return request();
+
+}
+
+// ------------------------------------------------
 
 
 // --------- upload logos ---------
@@ -374,8 +401,10 @@ function continueInstallation(inputsInfo, logoURL) {
   };
 
   const dataDoc = setupDataDoc();
+  const installerNome = dataDoc["O seu nome"];
+  const installerEmail = dataDoc["O seu email"];
   // nome e email de quem instala para criar o doc do parent respetivo
-  createInstallerParent(dataDoc["O seu nome"], dataDoc["O seu email"]);
+  createInstallerParent(installerNome, installerEmail);
 
   console.log("dataDoc antes de instalar -> " + JSON.stringify(dataDoc));
 
@@ -395,7 +424,8 @@ function continueInstallation(inputsInfo, logoURL) {
         .set(doc)
         .then(function () {
           //console.log("initDoc -> ", doc);
-          createDefaultUser(); // TODO: enviar link de auth para o email do registador
+          createDefaultUser();
+          sendEmailToInstallerParent(installerNome, installerEmail).then();
           window.location.href = "/";
         })
         .catch(function (error) {

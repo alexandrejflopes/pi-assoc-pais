@@ -1,9 +1,16 @@
-import { firestore, storageRef, initDoc } from "../firebase-config";
+import {
+  firestore,
+  storageRef,
+  initDoc,
+  firebaseConfig
+} from "../firebase-config";
 import firebase from "firebase";
 import MD5 from "crypto-js/md5";
 
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
+let membersEmails = {};
+
 
 // ------------------------------------------------------------
 // NOVOS PARAMETROS
@@ -35,7 +42,7 @@ function saveNewParamsFromJSONToDB(json) {
   docRef
     .set(paramsDoc)
     .then(function () {
-      alert("Novos parâmetros guardados com sucesso.");
+      console.log("Novos parâmetros guardados com sucesso.");
     })
     .catch(function (error) {
       alert("Erro: " + error);
@@ -88,45 +95,6 @@ function getandSaveCSVdata(parentsFile, childrenFile) {
   childrenReader.readAsText(childrenFile, "UTF-8");
 }
 
-function setupCSVData(fileString) {
-  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
-  //console.log("allLines -> ", allLines);
-
-  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
-  let rowsData = [];
-
-  //console.log("headers -> ", headers);
-
-  for (let i = 1; i < allLines.length; i++) {
-    let lineDict = {};
-
-    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
-
-    //console.log("dadosLinha atual -> ", dadosLinha);
-
-    //console.assert(dadosLinha.length === headers.length);
-
-    for (let j = 0; j < dadosLinha.length; j++) {
-      lineDict[headers[j]] = dadosLinha[j];
-    }
-
-    rowsData.push(lineDict);
-  }
-
-  return rowsData;
-}
-
-
-/* função para fazer hash do email com MD5 para o Gravatar */
-function getGravatarURL(email) {
-  const emailProcessed = (email.trim()).toLowerCase();
-  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
-  return "https://www.gravatar.com/avatar/" + hashedEmail +
-    "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
-
-}
-
-
 /*
  * analisa os dados processados do CSV e guarda-os na Firestore:
  *   - para cada EE, vai ver os educandos com o seu numero de Socio
@@ -156,7 +124,9 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
     //console.log("parentDoc atual -> ", parentDoc);
     const numSocio = parentDoc[Object.keys(parentDoc)[0]];
 
+    const nome = parentDoc[Object.keys(parentDoc)[3]].split(" ")[0]; // primeiro nome
     const email = parentDoc[Object.keys(parentDoc)[6]];
+    membersEmails[nome] = email; // armazenar nome e email para enviar email depois
     //console.log("email parentDoc -> " + email);
 
     //console.log("numSocio atual -> ", numSocio);
@@ -211,7 +181,84 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
   }
 }
 
-// TODO: apagar em detrimento do envio de email para login
+function setupCSVData(fileString) {
+  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
+  //console.log("allLines -> ", allLines);
+
+  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
+  let rowsData = [];
+
+  //console.log("headers -> ", headers);
+
+  for (let i = 1; i < allLines.length; i++) {
+    let lineDict = {};
+
+    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
+
+    //console.log("dadosLinha atual -> ", dadosLinha);
+
+    //console.assert(dadosLinha.length === headers.length);
+
+    for (let j = 0; j < dadosLinha.length; j++) {
+      lineDict[headers[j]] = dadosLinha[j];
+    }
+
+    rowsData.push(lineDict);
+  }
+
+  return rowsData;
+}
+
+
+
+// --------- utilizador
+/*
+* função para enviar email a avisar da importação */
+async function sendImportEmailToParent(nome, email) {
+
+  // TODO: remover este email hardcoded
+  const tempEmail = "alexandrejflopes@ua.pt";
+
+  const project_id = firebaseConfig.projectId;
+  let uri = "https://us-central1-" + project_id + ".cloudfunctions.net/api/sendUserImportEmail?" +
+    "email=" + tempEmail + "&" +
+    "nome=" + nome;
+
+  const request = async () => {
+    await fetch(uri)
+      .then()
+      .catch(function (error) {
+        console.log("Error sending import email: " + error);
+      });
+  };
+
+  return request();
+
+}
+
+/* função para fazer hash do email com MD5 para o Gravatar */
+function getGravatarURL(email) {
+  const emailProcessed = (email.trim()).toLowerCase();
+  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
+  return "https://www.gravatar.com/avatar/" + hashedEmail +
+    "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
+
+}
+
+
+function notifyAllParents() {
+
+  for(let name in membersEmails){
+    const email = membersEmails[name];
+    console.log(name + " : " + email);
+    sendImportEmailToParent(name, email).then();
+  }
+
+}
+
+
+
+// TODO: apagar no final
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
@@ -240,7 +287,7 @@ function createDefaultUser() {
 
 function uploadDefaultLogo() {
   // se não for carregado nenhum logo, considerar o default
-  console.log("defaultLogoFile -> " + defaultLogoFile);
+  //console.log("defaultLogoFile -> " + defaultLogoFile);
   const defaultLogoFileParts = defaultLogoFile.split("/");
   const defaultLogoFileName = defaultLogoFileParts[defaultLogoFileParts.length-1];
 
@@ -250,7 +297,7 @@ function uploadDefaultLogo() {
   const ext = fileNameParts[fileNameParts.length-1];
   const filename = nome + "." + ext;
 
-  console.log("defaultLogoFile name -> " + filename);
+  //console.log("defaultLogoFile name -> " + filename);
 
   return storageRef.child("logo/default/" + filename).getDownloadURL();
 }
@@ -491,6 +538,8 @@ function continueInstallation(inputsInfo, logoURL) {
 
   const dataDoc = setupDataDoc();
 
+  notifyAllParents();
+
   console.log("dataDoc antes de instalar -> " + JSON.stringify(dataDoc));
 
   const docRef = firestore.doc("initialConfigs/parameters");
@@ -509,7 +558,7 @@ function continueInstallation(inputsInfo, logoURL) {
         .set(doc)
         .then(function () {
           //console.log("initDoc -> ", doc);
-          createDefaultUser(); // TODO: enviar link de auth para os emails
+          createDefaultUser();
           window.location.href = "/";
         })
         .catch(function (error) {
