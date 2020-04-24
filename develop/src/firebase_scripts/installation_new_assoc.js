@@ -375,7 +375,7 @@ function install() {
 
     }
 
-  } else alert("Campos em falta.");
+  } else alert("Por favor, preencha os campos em falta.");
 }
 
 function continueInstallation(inputsInfo, logoURL) {
@@ -410,7 +410,7 @@ function continueInstallation(inputsInfo, logoURL) {
 
   const docRef = firestore.doc("initialConfigs/parameters");
 
-  alert("ler os consoles");
+  //alert("ler os consoles");
 
   docRef
     .set(dataDoc)
@@ -426,6 +426,8 @@ function continueInstallation(inputsInfo, logoURL) {
           //console.log("initDoc -> ", doc);
           createDefaultUser();
           sendEmailToInstallerParent(installerNome, installerEmail).then();
+          alert("A associação foi registada com sucesso!\nPor favor consulte o seu email para começar a usar a plataforma.\n\n" +
+            "Nota: se não recebeu nenhum email, aguarde ou verifique a pasta de Lixo ou Spam. Obrigado.");
           window.location.href = "/";
         })
         .catch(function (error) {
