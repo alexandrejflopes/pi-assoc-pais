@@ -17,67 +17,73 @@ import AssocConfiguration from "./views/AssocConfiguration";
 import LoginPage from "./views/Login";
 import Casos from "./views/Casos";
 import RegisterPage from "./views/Register";
+import ApprovalPage from "./views/Approval";
 
 export default [
   {
     path: "/",
     exact: true,
     layout: DefaultLayout,
-    component: () => <Redirect to={"/blog-overview"} />
+    component: () => <Redirect to={"/blog-overview"} />,
   },
   {
     path: "/blog-overview",
     layout: DefaultLayout,
-    component: BlogOverview
+    component: BlogOverview,
   },
   {
     path: "/user-profile-lite",
     layout: DefaultLayout,
-    component: UserProfileLite
+    component: UserProfileLite,
   },
   {
     path: "/add-new-post",
     layout: DefaultLayout,
-    component: AddNewPost
+    component: AddNewPost,
   },
   {
     path: "/errors",
     layout: DefaultLayout,
-    component: Errors
+    component: Errors,
   },
   {
     path: "/components-overview",
     layout: DefaultLayout,
-    component: ComponentsOverview
+    component: ComponentsOverview,
   },
   {
     path: "/tables",
     layout: DefaultLayout,
-    component: Tables
+    component: Tables,
   },
   {
     path: "/blog-posts",
     layout: DefaultLayout,
-    component: BlogPosts
+    component: BlogPosts,
   },
   {
     path: "/casos",
     layout: DefaultLayout,
-    component: Casos
+    component: Casos,
   },
   {
     path: "/assoc-config",
     layout: DefaultConfigLayout,
-    component: AssocConfiguration
+    component: AssocConfiguration,
   },
   {
     path: "/login",
     layout: DefaultConfigLayout,
-    component: LoginPage
+    component: LoginPage,
   },
   {
     path: "/register",
     layout: DefaultConfigLayout,
-    component: RegisterPage
-  }
+    component: RegisterPage,
+  },
+  {
+    path: "/approval",
+    layout: DefaultLayout,
+    component: ApprovalPage,
+  },
 ];

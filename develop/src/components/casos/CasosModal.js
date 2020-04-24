@@ -82,6 +82,7 @@ class CasosModal extends React.Component {
     parentsCollection.get().then((querySnapshot) => {
       var membersArray = [];
       querySnapshot.forEach((doc) => {
+        console.log(JSON.stringify(doc.data()));
         if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
           membersArray.push(doc.data()["Nome"]);
         }
@@ -92,6 +93,7 @@ class CasosModal extends React.Component {
         for (var x = 0; x < membersArray.length; x++) {
           var member = membersArray[x];
           var idx = member.trim() + "CheckBox";
+          console.log(idx);
           membersCheckBoxStatus[idx] = false;
         }
         this.setState({
@@ -175,23 +177,39 @@ class CasosModal extends React.Component {
         privateVal = true;
       }
 
-      var date = new Date().getTime();
+      let uri =
+        "https://us-central1-associacao-pais.cloudfunctions.net/api/addCaso?" +
+        "titulo=" +
+        caseTitle +
+        "&" +
+        "descricao=" +
+        descricao +
+        "&" +
+        "membros=" +
+        listaMembros +
+        "&" +
+        "privado=" +
+        privateVal +
+        "&" +
+        "nome_autor=" +
+        "por fazer" +
+        "&" +
+        "id_autor=" +
+        "por fazer";
 
-      var json = {};
-      var autor = {};
-      autor["nome"] = "por fazer";
-      autor["id"] = "por fazer";
-      json["autor"] = autor;
-      json["data_criacao"] = date;
-      json["membros"] = listaMembros;
-      json["observacoes"] = [];
-      json["ficheiros"] = [];
-      json["privado"] = privateVal;
-      json["titulo"] = caseTitle;
-      json["descricao"] = descricao;
-      json["arquivado"] = false;
+      const request = async () => {
+        await fetch(uri)
+          .then(function (data) {
+            console.log("Caso adicionado com sucesso.");
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      };
 
-      saveCaseToDB(json);
+      request();
+
+      //saveCaseToDB(json);
       this.setState({ caseTitle: "", descricao: "" });
       this.closeModal();
       this.props.componentDidMount();

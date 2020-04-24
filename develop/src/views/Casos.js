@@ -15,6 +15,7 @@ import {
   Badge,
   Button,
 } from "shards-react";
+import { Redirect } from "react-router";
 
 import PageTitle from "../components/common/PageTitle";
 import {
@@ -22,6 +23,7 @@ import {
   showAvailableCasos,
 } from "../firebase_scripts/casos";
 import CasosModal from "../components/casos/CasosModal";
+var dateFormat = require("dateformat");
 
 class Casos extends React.Component {
   constructor(props) {
@@ -75,8 +77,11 @@ class Casos extends React.Component {
           data: "29 February 2019",
         },
       ],
+      casoDetail: null,
     };
 
+    this.closeCasoDetails = this.closeCasoDetails.bind(this);
+    this.showCasoDetails = this.showCasoDetails.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
@@ -88,10 +93,83 @@ class Casos extends React.Component {
     const casosPromise = showAvailableCasos();
 
     casosPromise.then((result) => {
+      console.log("Result: " + JSON.stringify(result));
       self.setState({ ListaCasos: result, Updated: true });
     });
 
     console.log("state -> ", self.state);
+  }
+
+  closeCasoDetails() {
+    this.setState({ casoDetail: null });
+  }
+
+  showCasoDetails(e) {
+    const id = e.target.id;
+    const this_ = this;
+
+    //var casos = showAvailableCasos();
+    //casos.then((result) => {
+    for (var i = 0; i < this.state.ListaCasos.length; i++) {
+      if (
+        this.state.ListaCasos[i].id != undefined &&
+        this.state.ListaCasos[i].id == id
+      ) {
+        console.log(
+          "Caso escolhido: " + JSON.stringify(this.state.ListaCasos[i])
+        );
+        var c = this.state.ListaCasos[i];
+        var caso = (
+          <Row>
+            <Card small className="card-post mb-4">
+              <CardBody>
+                <h5 className="card-title">{c.titulo}</h5>
+                <p
+                  className="card-text text-muted"
+                  style={{
+                    whiteSpace: "nowrap",
+                    width: "inherit",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {c.descricao}
+                </p>
+              </CardBody>
+              <CardBody>
+                <p
+                  className="card-text text-muted"
+                  style={{
+                    whiteSpace: "nowrap",
+                    width: "inherit",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {c.autor.nome}
+                </p>
+              </CardBody>
+
+              <CardFooter className="border-top d-flex">
+                <div className="my-auto ml-auto">
+                  <Button
+                    size="sm"
+                    theme="primary"
+                    id={"fechar"}
+                    onClick={this.closeCasoDetails}
+                  >
+                    <i className="fa fa-times mr-1" /> Fechar
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          </Row>
+        );
+
+        this_.setState({ casoDetail: caso });
+      }
+    }
+    // });
   }
 
   render() {
@@ -148,11 +226,24 @@ class Casos extends React.Component {
                         <span className="card-post__author-name">
                           {post.autor.nome}
                         </span>
-                        <small className="text-muted">29 março 2020</small>
+                        <small className="text-muted">
+                          {" "}
+                          {post.data_criacao
+                            ? dateFormat(
+                                new Date(post.data_criacao._seconds * 1000),
+                                "dd-mm-yyyy, h:MM:ss TT"
+                              )
+                            : "-"}
+                        </small>
                       </div>
                     </div>
                     <div className="my-auto ml-auto">
-                      <Button size="sm" theme="primary" id={`'${post.id}'`}>
+                      <Button
+                        size="sm"
+                        theme="primary"
+                        id={`${post.id}`}
+                        onClick={this.showCasoDetails}
+                      >
                         <i className="fa fa-search mr-1" /> Ver mais
                       </Button>
                     </div>
@@ -161,6 +252,8 @@ class Casos extends React.Component {
               </Col>
             ))}
           </Row>
+
+          {this.state.casoDetail}
         </Container>
       );
     } else {

@@ -4,6 +4,9 @@ import {
   ListGroupItem,
   Row,
   Col,
+  Card,
+  CardBody,
+  CardFooter,
   Form,
   FormInput,
   FormGroup,
@@ -22,11 +25,14 @@ import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
 import { saveRegistToDB } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import ApprovalModal from "./ApprovalModal";
 
-class Register_Page extends Component {
+class Approval_Page extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      resgistosPorAprovar: null,
+      dicionarioRegistos: null,
       blocking: false,
       errors: {},
       parentName: "",
@@ -55,13 +61,19 @@ class Register_Page extends Component {
     };
 
     this.renderExtra = this.renderExtra.bind(this);
-    this.sendForm = this.sendForm.bind(this);
+    this.reload = this.reload.bind(this);
     this.addStudent = this.addStudent.bind(this);
     this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
+    this.getParentsToApprove = this.getParentsToApprove.bind(this);
+    this.getParentsToApprove();
     this.renderExtra();
   }
 
   /*********************************** LIFECYCLE ***********************************/
+  reload() {
+    this.getParentsToApprove();
+    this.renderExtra();
+  }
   componentDidMount() {
     this._isMounted = true;
 
@@ -82,203 +94,6 @@ class Register_Page extends Component {
     }
 
     this.setState({ checkBoxStatus: checkBoxStatus });
-  }
-
-  /**
-    Function to verify and process all data
-   */
-  sendForm() {
-    var {
-      parentName,
-      nif,
-      job,
-      localidade,
-      zipCode,
-      email,
-      nomeAluno,
-      nomeAlunoFeedBack,
-      anoEscolaridade,
-      anoEscolaridadeFeedBack,
-      extraStudent,
-      moreStudents,
-      studentNumber,
-      extraVars,
-      extraPai,
-      checkBoxStatus,
-    } = this.state;
-
-    //Remove all warnings at the beggining
-    var nomeAlunoFeedBackArray = nomeAlunoFeedBack;
-    for (var i = 0; i < nomeAlunoFeedBackArray.length; i++) {
-      nomeAlunoFeedBackArray[i] = false;
-    }
-    var anoEscolaridadeFeedBackArray = anoEscolaridadeFeedBack;
-    for (var q = 0; q < anoEscolaridadeFeedBackArray.length; q++) {
-      anoEscolaridadeFeedBackArray[q] = false;
-    }
-
-    this.setState({
-      parentNameFeedback: false,
-      nifFeedback: false,
-      localidadeFeedback: false,
-      zipCodeFeedback: false,
-      emailFeedback: false,
-      nomeAlunoFeedBack: nomeAlunoFeedBackArray,
-      anoEscolaridadeFeedBack: anoEscolaridadeFeedBackArray,
-    });
-
-    //Verify values were inserted and show feedback if not
-    var allRequiredDataFilled = true;
-    if (parentName == "") {
-      allRequiredDataFilled = false;
-      this.setState({ parentNameFeedback: true });
-    }
-    if (nif == "") {
-      allRequiredDataFilled = false;
-      this.setState({ nifFeedback: true });
-    }
-    if (localidade == "") {
-      allRequiredDataFilled = false;
-      this.setState({ localidadeFeedback: true });
-    }
-    if (zipCode == "") {
-      allRequiredDataFilled = false;
-      this.setState({ zipCodeFeedback: true });
-    }
-    if (email == "" || !email.match(/.+@.+/)) {
-      allRequiredDataFilled = false;
-      this.setState({ emailFeedback: true });
-    }
-    for (var x = 0; x < nomeAluno.length; x++) {
-      if (nomeAluno[x] == "") {
-        allRequiredDataFilled = false;
-        nomeAlunoFeedBackArray[x] = true; //not working, using alert method
-        if (x != 0) {
-          var n = x + 1;
-          alert("Por favor preencha o nome do " + n + "º aluno!");
-        }
-      }
-    }
-    for (var a = 0; a < anoEscolaridade.length; a++) {
-      if (anoEscolaridade[a] == "") {
-        allRequiredDataFilled = false;
-        anoEscolaridadeFeedBackArray[a] = true;
-        if (a != 0) {
-          var n = a + 1;
-          alert(
-            "Por favor preencha o ano de escolaridade do " + n + "º aluno!"
-          );
-        }
-      }
-    }
-    this.setState({
-      nomeAlunoFeedBack: nomeAlunoFeedBackArray,
-      anoEscolaridadeFeedBack: anoEscolaridadeFeedBackArray,
-    });
-
-    //Same verification process for extraVars
-    var breakVar = false;
-    for (var i = 0; i < extraVars.length; i++) {
-      var currentArray = extraVars[i];
-      var keys = Object.keys(currentArray);
-      if (breakVar) break;
-
-      keys.forEach((key) => {
-        if (currentArray[key] == "" && !breakVar) {
-          var message = "Por favor, preencha " + key.split("-")[0];
-          allRequiredDataFilled = false;
-          alert(message);
-          breakVar = true;
-        }
-      });
-    }
-
-    if (checkBoxStatus == false) {
-      alert("Por favor, indique que leu a política de privacidade.");
-      allRequiredDataFilled = false;
-    }
-
-    //All date was inserted, process it to database
-    if (allRequiredDataFilled) {
-      //console.log("Dados todos: " + JSON.stringify(this.state));
-
-      //Parent Json
-      var parentJson = {};
-      parentJson.Nome = parentName;
-      parentJson.NIF = nif;
-      if (job != "") {
-        parentJson.Emprego = job;
-      }
-      parentJson.Localidade = localidade;
-      parentJson.ZIP = zipCode;
-      parentJson.Email = email;
-
-      // Get extra parent values and store in Json -> they are in extraVars[0] along with student extra values and there are extraPai number of parent values
-      var extraArray = extraVars[0]; // Dictionary of values
-
-      for (var i = 0; i < extraPai; i++) {
-        var keys = Object.keys(extraArray);
-        var key = keys[i];
-        parentJson[key] = extraArray[key];
-      }
-      parentJson.Validated = "false";
-      parentJson["Número de Sócio"] = "";
-      parentJson["Quotas Pagas"] = "Não";
-
-      // Student's part
-      var studentArray = [];
-      for (var i = 0; i < extraVars.length; i++) {
-        var currentArray = extraVars[i];
-        var keys = Object.keys(currentArray);
-
-        var studentJson = {};
-
-        //Nome aluno
-        studentJson.Nome = nomeAluno[i];
-        //Ano de escolaridade
-        studentJson.Ano = anoEscolaridade[i];
-
-        var x = 0;
-        keys.forEach((key) => {
-          //Exclude parents extra values
-          if (i == 0 && x < extraPai) {
-            //Do nothing, skip these vars
-          } else {
-            studentJson[key.split("-")[0]] = currentArray[key];
-          }
-
-          x++;
-        });
-        studentArray.push(studentJson);
-      }
-      parentJson.Educandos = studentArray;
-
-      //Save values to database
-      saveRegistToDB(parentJson);
-      let uri =
-        "https://us-central1-mytestproject-ffacc.cloudfunctions.net/sendRegisterEmail?" +
-        "email=" +
-        email +
-        "&" +
-        "nome=" +
-        parentName;
-      const request = async () => {
-        let resposta;
-        await fetch(uri)
-          .then((resp) => resp.json()) // Transform the data into json
-          .then(function (data) {
-            console.log("ShowEmaildata: ", data);
-            resposta = data;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-
-        return resposta;
-      };
-
-      return request();
-    }
   }
 
   /**
@@ -473,6 +288,44 @@ class Register_Page extends Component {
       });
   }
 
+  getParentsToApprove() {
+    var this_ = this;
+    let uri =
+      "https://us-central1-associacao-pais.cloudfunctions.net/api/getParents";
+    const request = async () => {
+      let resposta;
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          //console.log("ShowEmaildata: ", data);
+          var resgistosPorAprovar = [];
+          var dicionarioRegistos = {};
+          for (var i = 0; i < data.length; i++) {
+            if (
+              data[i]["Validated"] != undefined &&
+              data[i]["Validated"] != null &&
+              data[i]["Validated"] == "false"
+            ) {
+              resgistosPorAprovar.push(data[i]);
+              var title = data[i]["Email"];
+              dicionarioRegistos[title] = data[i];
+            }
+          }
+          this_.setState({
+            dicionarioRegistos: dicionarioRegistos,
+            resgistosPorAprovar: resgistosPorAprovar,
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      return resposta;
+    };
+
+    var dados = request();
+  }
+
+  showDetails(e) {}
   /**
     Function to get extra parameters for parent and students from firestore and load them
    */
@@ -623,249 +476,44 @@ class Register_Page extends Component {
       <ListGroup flush>
         <ListGroupItem className="p-3">
           <Col>
-            <Form>
-              <FormGroup>
-                <label htmlFor="parentName">Nome</label>
-                <FormInput
-                  invalid={this.state.parentNameFeedback}
-                  id="parentName"
-                  type="text"
-                  placeholder="Nome"
-                  required
-                  onChange={(e) => {
-                    this.setState({
-                      parentName: e.target.value,
-                    });
-                  }}
-                />
-                <FormFeedback
-                  id="parentNameFeedback"
-                  valid={false}
-                  style={{ display: "d-block" }}
-                >
-                  Por favor, preencha este campo
-                </FormFeedback>
-              </FormGroup>
-
-              {/* Descricao Textarea */}
-              <FormGroup>
-                <label htmlFor="nif">NIF</label>
-                <FormInput
-                  invalid={this.state.nifFeedback}
-                  id="nif"
-                  type="text"
-                  placeholder="NIF"
-                  required
-                  onChange={(e) => {
-                    this.setState({
-                      nif: e.target.value,
-                    });
-                  }}
-                />
-                <FormFeedback
-                  id="nifFeedback"
-                  valid={false}
-                  style={{ display: "d-block" }}
-                >
-                  Por favor, preencha este campo
-                </FormFeedback>
-              </FormGroup>
-
-              <FormGroup>
-                <label htmlFor="job">Profissão (opcional)</label>
-                <FormInput
-                  onChange={(e) => {
-                    this.setState({
-                      job: e.target.value,
-                    });
-                  }}
-                  id="job"
-                  placeholder="Profissão"
-                />
-              </FormGroup>
-
-              <Row form>
-                <Col md="6" className="form-group">
-                  <label htmlFor="localidade">Localidade</label>
-                  <FormInput
-                    invalid={this.state.localidadeFeedback}
-                    id="localidade"
-                    onChange={(e) => {
-                      this.setState({
-                        localidade: e.target.value,
-                      });
-                    }}
-                  />
-                  <FormFeedback
-                    id="localidadeFeedback"
-                    valid={false}
-                    style={{ display: "d-block" }}
-                  >
-                    Por favor, preencha este campo
-                  </FormFeedback>
-                </Col>
-                <Col md="6" className="form-group">
-                  <label htmlFor="zipCode">Código Postal</label>
-                  <FormInput
-                    invalid={this.state.zipCodeFeedback}
-                    id="zipCode"
-                    onChange={(e) => {
-                      this.setState({
-                        zipCode: e.target.value,
-                      });
-                    }}
-                  />
-                  <FormFeedback
-                    id="zipCodeFeedback"
-                    valid={false}
-                    style={{ display: "d-block" }}
-                  >
-                    Por favor, preencha este campo
-                  </FormFeedback>
-                </Col>
-              </Row>
-
-              {/* Contactos */}
-              <Row form>
-                <Col md="6">
-                  <label htmlFor="email">Email</label>
-                  <FormInput
-                    invalid={this.state.emailFeedback}
-                    onChange={(e) => {
-                      this.setState({
-                        email: e.target.value,
-                      });
-                    }}
-                    id="email"
-                    type="email"
-                    placeholder="nome@exemplo.pt"
-                    required
-                  />
-                  <FormFeedback
-                    id="emailFeedback"
-                    valid={false}
-                    style={{ display: "d-block" }}
-                  >
-                    Por favor, preencha este campo
-                  </FormFeedback>
-                </Col>
-                <Col md="6">
-                  <FormGroup>
-                    <label htmlFor="phone">
-                      Telemóvel / Telefone (opcional)
-                    </label>
-                    <FormInput id="phone" type="tel" placeholder="200345678" />
-                    <FormFeedback
-                      id="phoneFeedback"
-                      valid={false}
-                      style={{ display: "none" }}
-                    >
-                      Por favor, preencha este campo
-                    </FormFeedback>
-                  </FormGroup>
-                </Col>
-              </Row>
-
-              {this.state.extraParent}
-
-              <hr />
-
-              <FormGroup>
-                <label htmlFor="studentName">Nome Aluno</label>
-                <FormInput
-                  invalid={this.state.nomeAlunoFeedBack[0]}
-                  onChange={(e) => {
-                    var newAdd = this.state.nomeAluno;
-                    newAdd[0] = e.target.value;
-                    this.setState({
-                      nomeAluno: newAdd,
-                    });
-                  }}
-                  id="studentName"
-                  type="text"
-                  placeholder="Nome"
-                  required
-                />
-                <FormFeedback
-                  id="studentNameFeedback"
-                  valid={false}
-                  style={{ display: "d-block" }}
-                >
-                  Por favor, preencha este campo
-                </FormFeedback>
-              </FormGroup>
-
-              {/* Descricao Textarea */}
-              <FormGroup>
-                <label htmlFor="studentYear">Ano Escolaridade</label>
-                <FormInput
-                  invalid={this.state.anoEscolaridadeFeedBack[0]}
-                  onChange={(e) => {
-                    var newAdd1 = this.state.anoEscolaridade;
-                    newAdd1[0] = e.target.value;
-                    this.setState({
-                      anoEscolaridade: newAdd1,
-                    });
-                  }}
-                  id="studentYear"
-                  type="text"
-                  placeholder="5º"
-                  required
-                />
-                <FormFeedback
-                  id="studentYearFeedback"
-                  valid={false}
-                  style={{ display: "d-block" }}
-                >
-                  Por favor, preencha este campo
-                </FormFeedback>
-              </FormGroup>
-
-              {this.state.extraStudent}
-              {this.state.moreStudents}
-            </Form>
-          </Col>
-        </ListGroupItem>
-
-        <ListGroupItem className="p-3">
-          <Col>
-            <Form>
-              <Row form>
-                <Col md="12" className="form-group">
-                  <FormGroup>
-                    <FormCheckbox
-                      id="policyCheckbox"
-                      checked={this.state.checkBoxStatus}
-                      onChange={this.handleChangeCheckBox}
-                    >
-                      {/* eslint-disable-next-line */}Li e aceito a{" "}
-                      <a href="#">Política de Privacidade</a>.
-                    </FormCheckbox>
-                    <FormFeedback
-                      id="policyCheckboxFeedback"
-                      valid={false}
-                      style={{ display: "none" }}
-                    >
-                      Para efectuar a inscrição, precisa de aceitar a Política
-                      de Privacidade
-                    </FormFeedback>
-                  </FormGroup>
-                  <Button onClick={this.sendForm}>Enviar</Button>{" "}
-                  <Button onClick={this.addStudent}>
-                    Adicionar mais um aluno
-                  </Button>
-                  <Link
-                    to="/login"
-                    style={{ float: "right" }}
-                    className="text-primary"
-                  >
-                    <Button>
-                      <span>Cancelar</span>
-                    </Button>
-                  </Link>
-                </Col>
-              </Row>
-            </Form>
+            <Row>
+              {this.state.resgistosPorAprovar && this.state.dicionarioRegistos
+                ? this.state.resgistosPorAprovar.map((post, idx) => (
+                    <Col lg="4" key={idx}>
+                      <Card small className="card-post mb-4">
+                        <CardBody>
+                          <h5 className="card-title">{post.Nome}</h5>
+                          <p
+                            className="card-text text-muted"
+                            style={{
+                              whiteSpace: "nowrap",
+                              width: "inherit",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {post.Email}
+                          </p>
+                        </CardBody>
+                        <CardFooter className="border-top d-flex">
+                          <div className="card-post__author d-flex"></div>
+                          <div className="my-auto ml-auto">
+                            <ApprovalModal
+                              dados={
+                                this.state.dicionarioRegistos
+                                  ? this.state.dicionarioRegistos[post.Email]
+                                  : ""
+                              }
+                              parentComponent={this}
+                              componentDidMount={this.componentDidMount}
+                            />
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    </Col>
+                  ))
+                : "A obter pedidos..."}
+            </Row>
           </Col>
         </ListGroupItem>
       </ListGroup>
@@ -873,4 +521,4 @@ class Register_Page extends Component {
   }
 }
 
-export default Register_Page;
+export default Approval_Page;
