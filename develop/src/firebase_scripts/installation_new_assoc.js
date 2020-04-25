@@ -439,4 +439,4 @@ function continueInstallation(inputsInfo, logoURL) {
     });
 
 }
-export { install, saveRegistToDB };
+export { install, saveRegistToDB, getGravatarURL };

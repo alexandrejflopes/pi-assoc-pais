@@ -53,6 +53,10 @@ class Login extends CostumForm {
       .signInWithPopup(provider)
       .then(function (result) {
         console.log(result);
+        /*
+        * TODO: verificar se o este email já existe
+        *  - se não existe, apagar o registo feito (apagar o user)
+        * */
         console.log("Success... Google Account Linked");
         //Login com sucesso
         window.location = "/user-profile-lite";

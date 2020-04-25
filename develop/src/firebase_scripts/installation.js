@@ -117,6 +117,10 @@ function getandSaveCSVdata(parentsFile, childrenFile) {
  *     desse EE;
  *   - no final, o EE (já com o seu array de educandos) é guardado na Firestore
  * */
+/*
+* TODO:
+*  - funcao que faz replace dos "ND" vindos do CSV por strings vazias
+*  - guardar os parametros extra que também venham do excel (verificar se são iguais ao JSON)*/
 function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
   // lista de filhos e pais, ordenados pelo numero de socio do EE
   const parentDocList = parentsList.sort((a, b) =>
@@ -584,4 +588,4 @@ function continueInstallation(inputsInfo, logoURL) {
       alert("Erro: " + error);
     });
 }
-export { install, saveRegistToDB, saveCaseToDB };
+export { install, saveRegistToDB, saveCaseToDB, getGravatarURL };

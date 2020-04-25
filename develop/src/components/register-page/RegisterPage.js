@@ -19,9 +19,14 @@ import { Link } from "react-router-dom";
 import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
 import MembersFileUpload from "../config-inicial/MembersFileUpload";
 import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
-import { saveRegistToDB } from "../../firebase_scripts/installation";
+import { saveRegistToDB, getGravatarURL } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig
+} from "../../firebase-config";
 
 class Register_Page extends Component {
   constructor(props) {
@@ -40,6 +45,7 @@ class Register_Page extends Component {
       zipCodeFeedback: null,
       email: "",
       emailFeedback: null,
+      phone: null,
       nomeAluno: [""], //Store multiple names
       nomeAlunoFeedBack: [null], //Store feedback for multiple names -> not working for students other than the first one
       anoEscolaridade: [""],
@@ -95,6 +101,7 @@ class Register_Page extends Component {
       localidade,
       zipCode,
       email,
+      phone,
       nomeAluno,
       nomeAlunoFeedBack,
       anoEscolaridade,
@@ -207,11 +214,12 @@ class Register_Page extends Component {
       parentJson.Nome = parentName;
       parentJson.NIF = nif;
       if (job != "") {
-        parentJson.Emprego = job;
+        parentJson.Profissão = job;
       }
       parentJson.Localidade = localidade;
-      parentJson.ZIP = zipCode;
+      parentJson["Código Postal"] = zipCode;
       parentJson.Email = email;
+      parentJson["Telemóvel"] = phone;
 
       // Get extra parent values and store in Json -> they are in extraVars[0] along with student extra values and there are extraPai number of parent values
       var extraArray = extraVars[0]; // Dictionary of values
@@ -221,9 +229,19 @@ class Register_Page extends Component {
         var key = keys[i];
         parentJson[key] = extraArray[key];
       }
-      parentJson.Validated = "false";
+      parentJson.Validated = false;
       parentJson["Número de Sócio"] = "";
       parentJson["Quotas Pagas"] = "Não";
+      parentJson.Cotas = [];
+      parentJson["Cartão Cidadão"] = "Não";
+      parentJson.blocked = false;
+      parentJson.Cargo = "";
+      parentJson.Admin = ""; // TODO: vazio? os órgãos sociais convidam outros OS, ou órgãos sociais só entrar por convite de outros OS?
+      parentJson.Cargo = ""; // TODO: os que se registam podem entrar todos como regulares e depois pedem aos OS da plataforma para os aceitar como OS?
+      parentJson["Data inscricao"] = ""; // data quando for aprovado
+
+      // avatar
+      parentJson.photo = getGravatarURL(email);
 
       // Student's part
       var studentArray = [];
@@ -255,8 +273,9 @@ class Register_Page extends Component {
 
       //Save values to database
       saveRegistToDB(parentJson);
+      const project_id = firebaseConfig.projectId;
       let uri =
-        "https://us-central1-mytestproject-ffacc.cloudfunctions.net/sendRegisterEmail?" +
+        "https://us-central1-" + project_id + ".cloudfunctions.net/api/sendRegisterEmail?" +
         "email=" +
         email +
         "&" +
@@ -754,7 +773,16 @@ class Register_Page extends Component {
                     <label htmlFor="phone">
                       Telemóvel / Telefone (opcional)
                     </label>
-                    <FormInput id="phone" type="tel" placeholder="200345678" />
+                    <FormInput
+                      invalid={this.state.phoneFeedback}
+                      onChange={(e) => {
+                        this.setState({
+                          phone: e.target.value,
+                        });
+                      }}
+                      id="phone"
+                      type="tel"
+                      placeholder="200345678" />
                     <FormFeedback
                       id="phoneFeedback"
                       valid={false}

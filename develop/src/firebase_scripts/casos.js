@@ -266,4 +266,12 @@ async function addNewCaso() {
   return request();
 }
 
+// ---------------- NOVAS VERSOES --------------
+
+
+
+
+
+
+
 export { initCasosExemplo, showAvailableCasos };
