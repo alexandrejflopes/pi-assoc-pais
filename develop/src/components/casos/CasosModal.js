@@ -84,7 +84,13 @@ class CasosModal extends React.Component {
       querySnapshot.forEach((doc) => {
         console.log(JSON.stringify(doc.data()));
         if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
-          membersArray.push(doc.data()["Nome"]);
+          if (
+            doc.data()["Validated"] != undefined &&
+            doc.data()["Validated"] != null &&
+            doc.data()["Validated"].toString() != "false"
+          ) {
+            membersArray.push(doc.data()["Nome"]);
+          }
         }
       });
       if (membersArray.length != 0) {

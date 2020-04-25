@@ -217,7 +217,7 @@ class ApprovalModal extends React.Component {
       .doc(dados.Email)
       .set(
         {
-          Validated: "true",
+          Validated: true,
         },
         { merge: true }
       )
