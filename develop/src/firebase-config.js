@@ -28,7 +28,7 @@ const storage = firebase.storage();
 const storageRef = storage.ref();
 
 
-export { firestore, firebase_auth, storageRef, firebase, initDoc }
+export { firestore, firebase_auth, storageRef, firebase, initDoc, storage, firebaseConfig }
 
 
 //var functionsURL = "https://us-central1-associacao-de-pais-prototipo.cloudfunctions.net/api/";

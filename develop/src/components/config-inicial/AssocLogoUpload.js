@@ -3,7 +3,7 @@ import {FormFeedback, FormGroup} from "shards-react";
 
 const AssocLogoUpload = () => (
   <div className="custom-file mb-3">
-    <input id="configAssocLogo" type="file" className="custom-file-input" accept="image/png, image/jpeg, image/svg" required/>
+    <input id="configAssocLogo" type="file" className="custom-file-input" accept="image/png, image/jpeg, image/svg" />
     <label className="custom-file-label" htmlFor="customFile2">
       Escolha uma imagem...
     </label>

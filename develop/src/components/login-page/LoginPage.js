@@ -55,7 +55,7 @@ class Login extends CostumForm {
         console.log(result);
         console.log("Success... Google Account Linked");
         //Login com sucesso
-        window.location = "/";
+        window.location = "/user-profile-lite";
       })
       .catch(function (error) {
         console.log(error);

@@ -18,6 +18,8 @@ import LoginPage from "./views/Login";
 import Casos from "./views/Casos";
 import RegisterPage from "./views/Register";
 import ApprovalPage from "./views/Approval";
+import NewAssocChoicePage from "./views/NewAssocChoicePage";
+import AssocConfigurationNew from "./views/AssocConfigurationNew";
 
 export default [
   {
@@ -72,6 +74,11 @@ export default [
     component: AssocConfiguration,
   },
   {
+    path: "/new-assoc-config",
+    layout: DefaultConfigLayout,
+    component: AssocConfigurationNew,
+  },
+  {
     path: "/login",
     layout: DefaultConfigLayout,
     component: LoginPage,
@@ -85,5 +92,10 @@ export default [
     path: "/approval",
     layout: DefaultLayout,
     component: ApprovalPage,
+  },
+  {
+    path: "/init",
+    layout: DefaultConfigLayout,
+    component: NewAssocChoicePage,
   },
 ];
