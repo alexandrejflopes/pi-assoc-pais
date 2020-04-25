@@ -35,22 +35,6 @@ class Approval_Page extends Component {
       dicionarioRegistos: null,
       blocking: false,
       errors: {},
-      parentName: "",
-      parentNameFeedback: null,
-      nif: "",
-      job: "",
-      nifFeedback: null,
-      localidade: "",
-      localidadeFeedback: null,
-      zipCode: "",
-      zipCodeFeedback: null,
-      email: "",
-      emailFeedback: null,
-      nomeAluno: [""], //Store multiple names
-      nomeAlunoFeedBack: [null], //Store feedback for multiple names -> not working for students other than the first one
-      anoEscolaridade: [""],
-      anoEscolaridadeFeedBack: [null],
-      checkBoxStatus: false,
 
       extraParent: null,
       extraStudent: null,
@@ -63,7 +47,6 @@ class Approval_Page extends Component {
     this.renderExtra = this.renderExtra.bind(this);
     this.reload = this.reload.bind(this);
     this.addStudent = this.addStudent.bind(this);
-    this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
     this.getParentsToApprove = this.getParentsToApprove.bind(this);
     this.getParentsToApprove();
     this.renderExtra();
@@ -71,6 +54,10 @@ class Approval_Page extends Component {
 
   /*********************************** LIFECYCLE ***********************************/
   reload() {
+    this.setState({
+      dicionarioRegistos: null,
+      resgistosPorAprovar: null,
+    });
     this.getParentsToApprove();
     this.renderExtra();
   }
@@ -82,18 +69,6 @@ class Approval_Page extends Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-  }
-
-  handleChangeCheckBox() {
-    var { checkBoxStatus } = this.state;
-
-    if (checkBoxStatus) {
-      checkBoxStatus = false;
-    } else {
-      checkBoxStatus = true;
-    }
-
-    this.setState({ checkBoxStatus: checkBoxStatus });
   }
 
   /**
@@ -304,7 +279,7 @@ class Approval_Page extends Component {
             if (
               data[i]["Validated"] != undefined &&
               data[i]["Validated"] != null &&
-              data[i]["Validated"] == "false"
+              data[i]["Validated"].toString() == "false"
             ) {
               resgistosPorAprovar.push(data[i]);
               var title = data[i]["Email"];
