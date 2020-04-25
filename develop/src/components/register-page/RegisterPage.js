@@ -214,7 +214,7 @@ class Register_Page extends Component {
       parentJson.Nome = parentName;
       parentJson.NIF = nif;
       if (job != "") {
-        parentJson.Profissão = job;
+        parentJson["Profissão"] = job;
       }
       parentJson.Localidade = localidade;
       parentJson["Código Postal"] = zipCode;
