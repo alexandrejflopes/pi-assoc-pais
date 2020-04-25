@@ -9,6 +9,7 @@ class Form extends Component {
 
   validate() {
     const { credentials, errors } = { ...this.state };
+    console.log("Credenciais: " + JSON.stringify(credentials));
     var error = false;
     for (let [name, value] of Object.entries(credentials)) {
       switch (name) {
@@ -64,6 +65,7 @@ class Form extends Component {
   };
 
   handleChange = ({ currentTarget: input }) => {
+    console.log("Aqui -> " + input.value);
     const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
     if (errorMessage) errors[input.name] = errorMessage;
@@ -74,6 +76,8 @@ class Form extends Component {
     this.setState({ credentials, errors });
   };
   renderButton(label) {
+    var validation = this.validate();
+    console.log("Validation: " + validation);
     return (
       <Button
         type="submit"
@@ -81,9 +85,9 @@ class Form extends Component {
           background: "#34b4eb",
           color: "#fff",
           width: "200px",
-          textAlign: "center"
+          textAlign: "center",
         }}
-        disabled={this.validate()}
+        disabled={validation}
       >
         {label}
       </Button>
@@ -91,6 +95,7 @@ class Form extends Component {
   }
   renderInput(name, type, label, placeholder = "Password here...") {
     const { credentials, errors } = this.state;
+    console.log("Credenciais1: " + JSON.stringify(credentials));
     return (
       <InputForm
         type={type}

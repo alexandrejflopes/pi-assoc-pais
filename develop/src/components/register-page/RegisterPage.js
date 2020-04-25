@@ -255,6 +255,29 @@ class Register_Page extends Component {
 
       //Save values to database
       saveRegistToDB(parentJson);
+      let uri =
+        "https://us-central1-mytestproject-ffacc.cloudfunctions.net/sendRegisterEmail?" +
+        "email=" +
+        email +
+        "&" +
+        "nome=" +
+        parentName;
+      const request = async () => {
+        let resposta;
+        await fetch(uri)
+          .then((resp) => resp.json()) // Transform the data into json
+          .then(function (data) {
+            console.log("ShowEmaildata: ", data);
+            resposta = data;
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+
+        return resposta;
+      };
+
+      return request();
     }
   }
 

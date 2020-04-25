@@ -18,6 +18,9 @@ import LoginPage from "./views/Login";
 import Casos from "./views/Casos";
 import RegisterPage from "./views/Register";
 import QuotaPage from "./views/Quotas";
+import ApprovalPage from "./views/Approval";
+import NewAssocChoicePage from "./views/NewAssocChoicePage";
+import AssocConfigurationNew from "./views/AssocConfigurationNew";
 
 export default [
   {
@@ -64,12 +67,17 @@ export default [
   {
     path: "/casos",
     layout: DefaultLayout,
-    component: Casos
+    component: Casos,
   },
   {
     path: "/assoc-config",
     layout: DefaultConfigLayout,
     component: AssocConfiguration,
+  },
+  {
+    path: "/new-assoc-config",
+    layout: DefaultConfigLayout,
+    component: AssocConfigurationNew,
   },
   {
     path: "/login",
@@ -85,5 +93,15 @@ export default [
     path: "/quotas",
     layout: DefaultLayout,
     component: QuotaPage,
+  },
+  {
+    path: "/approval",
+    layout: DefaultLayout,
+    component: ApprovalPage,
+  },
+  {
+    path: "/init",
+    layout: DefaultConfigLayout,
+    component: NewAssocChoicePage,
   },
 ];

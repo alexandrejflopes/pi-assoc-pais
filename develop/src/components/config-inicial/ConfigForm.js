@@ -66,7 +66,7 @@ const ConfigForm = () => (
             <Row form>
               <Col md="6">
                 <FormGroup>
-                  <label htmlFor="configAssocEmail">Email</label>
+                  <label htmlFor="configAssocEmail">Email da Associação</label>
                   <FormInput
                     id="configAssocEmail"
                     type="email"
@@ -90,11 +90,18 @@ const ConfigForm = () => (
               </Col>
             </Row>
 
-            <FormGroup>
-              <label htmlFor="configAssocIBAN">IBAN</label>
-              <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72" required/>
-              <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
-            </FormGroup>
+            <Row form>
+              <Col md="12">
+                <FormGroup>
+                  <label htmlFor="configAssocIBAN">IBAN (opcional)</label>
+                  <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72"/>
+                  <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+                </FormGroup>
+
+              </Col>
+            </Row>
+
+
           </Form>
         </Col>
 
@@ -106,7 +113,7 @@ const ConfigForm = () => (
           <Row form>
             <Col md="6">
               <FormGroup>
-                <label htmlFor="configAssocLogo">Logótipo (associação/escola) (formatos: PNG, JPEG, SVG)</label>
+                <label htmlFor="configAssocLogo">Logótipo da associação/escola (opcional) (formatos: PNG, JPEG, SVG)</label>
                 <AssocLogoUpload/>
               </FormGroup>
             </Col>

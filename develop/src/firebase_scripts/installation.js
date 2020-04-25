@@ -1,5 +1,15 @@
-import { firestore, storageRef, initDoc } from "../firebase-config";
-import React from "react";
+import {
+  firestore,
+  storageRef,
+  initDoc,
+  firebaseConfig,
+} from "../firebase-config";
+import firebase from "firebase";
+import MD5 from "crypto-js/md5";
+
+import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
+const defaultIBAN = "PT50 1234 4321 12345678901 72";
+let membersEmails = {};
 
 // ------------------------------------------------------------
 // NOVOS PARAMETROS
@@ -31,7 +41,7 @@ function saveNewParamsFromJSONToDB(json) {
   docRef
     .set(paramsDoc)
     .then(function () {
-      alert("Novos parâmetros guardados com sucesso.");
+      console.log("Novos parâmetros guardados com sucesso.");
     })
     .catch(function (error) {
       alert("Erro: " + error);
@@ -51,6 +61,22 @@ function saveRegistToDB(json) {
     })
     .catch(function (error) {
       alert("Erro no envio da inscrição, por favor, tente novamente!");
+    });
+}
+
+function saveCaseToDB(json) {
+  //console.log("Json to save to DB -> ", JSON.stringify(json));
+
+  const docRef = firestore.collection("casos");
+  const ref = docRef.doc();
+
+  ref
+    .set(json)
+    .then(function () {
+      alert("Sucesso!");
+    })
+    .catch(function (error) {
+      alert("Erro no envio do caso, por favor, tente novamente!");
     });
 }
 
@@ -84,34 +110,6 @@ function getandSaveCSVdata(parentsFile, childrenFile) {
   childrenReader.readAsText(childrenFile, "UTF-8");
 }
 
-function setupCSVData(fileString) {
-  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
-  //console.log("allLines -> ", allLines);
-
-  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
-  let rowsData = [];
-
-  //console.log("headers -> ", headers);
-
-  for (let i = 1; i < allLines.length; i++) {
-    let lineDict = {};
-
-    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
-
-    //console.log("dadosLinha atual -> ", dadosLinha);
-
-    //console.assert(dadosLinha.length === headers.length);
-
-    for (let j = 0; j < dadosLinha.length; j++) {
-      lineDict[headers[j]] = dadosLinha[j];
-    }
-
-    rowsData.push(lineDict);
-  }
-
-  return rowsData;
-}
-
 /*
  * analisa os dados processados do CSV e guarda-os na Firestore:
  *   - para cada EE, vai ver os educandos com o seu numero de Socio
@@ -141,6 +139,11 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
     //console.log("parentDoc atual -> ", parentDoc);
     const numSocio = parentDoc[Object.keys(parentDoc)[0]];
 
+    const nome = parentDoc[Object.keys(parentDoc)[3]].split(" ")[0]; // primeiro nome
+    const email = parentDoc[Object.keys(parentDoc)[6]];
+    membersEmails[nome] = email; // armazenar nome e email para enviar email depois
+    //console.log("email parentDoc -> " + email);
+
     //console.log("numSocio atual -> ", numSocio);
 
     let parentChildren = []; // educandos do encarregado de educacao atual
@@ -168,7 +171,19 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
     // adicionar array para educandos
     parentDoc["Educandos"] = parentChildren;
 
-    const parentRef = docRef.doc(numSocio); // numero socio
+    // converter o boolean de admin de string para boolean
+    parentDoc["Admin"] = parentDoc["Admin"] === "true";
+
+    // adicionar outros parâmetros necessários
+    parentDoc["Cotas"] = [];
+    parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // obter data no formato 2015-03-25;
+    parentDoc["Validated"] = true; // EEs importados são logo validados
+    parentDoc["blocked"] = false; // EEs não estão bloqueados inicialmente
+
+    // avatar
+    parentDoc["photo"] = getGravatarURL(email);
+
+    const parentRef = docRef.doc(email); // email como id do documento
 
     parentRef
       .set(parentDoc)
@@ -181,70 +196,79 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
   }
 }
 
+function setupCSVData(fileString) {
+  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
+  //console.log("allLines -> ", allLines);
+
+  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
+  let rowsData = [];
+
+  //console.log("headers -> ", headers);
+
+  for (let i = 1; i < allLines.length; i++) {
+    let lineDict = {};
+
+    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
+
+    //console.log("dadosLinha atual -> ", dadosLinha);
+
+    //console.assert(dadosLinha.length === headers.length);
+
+    for (let j = 0; j < dadosLinha.length; j++) {
+      lineDict[headers[j]] = dadosLinha[j];
+    }
+
+    rowsData.push(lineDict);
+  }
+
+  return rowsData;
+}
+
+// --------- utilizador
 /*
- * (nao usada)
- * analisa os dados processados do CSV de educandos e guarda-os na Firestore:
- * */
-function saveChildDataFromFiletoDB(file) {
-  const childrenDocList = setupCSVData(file);
+ * função para enviar email a avisar da importação */
+async function sendImportEmailToParent(nome, email) {
+  // TODO: remover este email hardcoded
+  const tempEmail = "alexandrejflopes@ua.pt";
 
-  //console.log("childrenDocList -> ", childrenDocList);
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/sendUserImportEmail?" +
+    "email=" +
+    tempEmail +
+    "&" +
+    "nome=" +
+    nome;
 
-  const docRef = firestore.collection("children");
-
-  for (let i = 0; i < childrenDocList.length; i++) {
-    let childDoc = childrenDocList[i];
-
-    // adicionar array para educandos
-    childDoc["Educandos"] = [];
-
-    //console.log("childDoc atual -> ", childDoc);
-
-    const parentRef = docRef.doc(childDoc[Object.keys(childDoc)[0]]); // numero socio
-
-    parentRef
-      .set(childDoc)
-      .then(function () {
-        alert("EE guardado com sucesso.");
-      })
+  const request = async () => {
+    await fetch(uri)
+      .then()
       .catch(function (error) {
-        alert("Erro: " + error);
+        console.log("Error sending import email: " + error);
       });
+  };
+
+  return request();
+}
+
+/* função para fazer hash do email com MD5 para o Gravatar */
+function getGravatarURL(email) {
+  const emailProcessed = email.trim().toLowerCase();
+  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
+  return "https://www.gravatar.com/avatar/" + hashedEmail + "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
+}
+
+function notifyAllParents() {
+  for (let name in membersEmails) {
+    const email = membersEmails[name];
+    console.log(name + " : " + email);
+    sendImportEmailToParent(name, email).then();
   }
 }
 
-/*
- * (possivelmente, nao usada)
- * analisa os dados processados do CSV de EE e guarda-os na Firestore:
- * */
-function saveParentDataFromFiletoDB(file) {
-  const parentDocList = setupCSVData(file);
-
-  //console.log("parentDocList -> ", parentDocList);
-
-  const docRef = firestore.collection("parents");
-
-  for (let i = 0; i < parentDocList.length; i++) {
-    let parentDoc = parentDocList[i];
-
-    // adicionar array para educandos
-    parentDoc["Educandos"] = [];
-
-    //console.log("personsDoc atual -> ", parentDoc);
-
-    const parentRef = docRef.doc(parentDoc[Object.keys(parentDoc)[0]]); // numero socio
-
-    parentRef
-      .set(parentDoc)
-      .then(function () {
-        alert("EE guardado com sucesso.");
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
-      });
-  }
-}
-
+// TODO: apagar no final
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
@@ -268,21 +292,32 @@ function createDefaultUser() {
     });
 }
 
-function uploadLogo(inputID) {
-  //var imagesRef = storageRef.child("images");
+// --------- upload logos ---------
 
-  const file = document.getElementById(inputID).files[0];
+function uploadDefaultLogo() {
+  // se não for carregado nenhum logo, considerar o default
+  //console.log("defaultLogoFile -> " + defaultLogoFile);
+  const defaultLogoFileParts = defaultLogoFile.split("/");
+  const defaultLogoFileName =
+    defaultLogoFileParts[defaultLogoFileParts.length - 1];
 
-  storageRef
-    .child("logo/" + file.name)
-    .put(file)
-    .then(function (snapshot) {
-      alert("Uploaded a blob or file!");
-    })
-    .catch(function (error) {
-      alert(error);
-    });
+  // ficar só com o nome e a extensão (porque o nome estava a ficar 'nome.<numeros>.<extensao>'....
+  const fileNameParts = defaultLogoFileName.split(".");
+  const nome = fileNameParts[0];
+  const ext = fileNameParts[fileNameParts.length - 1];
+  const filename = nome + "." + ext;
+
+  //console.log("defaultLogoFile name -> " + filename);
+
+  return storageRef.child("logo/default/" + filename).getDownloadURL();
 }
+
+function uploadNewLogo(file) {
+  const logoRef = storageRef.child("logo/" + file.name);
+  return logoRef.put(file);
+}
+
+// --------------------------------
 
 function uploadAssocDataFiles(inputID) {
   const file = document.getElementById(inputID).files[0];
@@ -291,7 +326,7 @@ function uploadAssocDataFiles(inputID) {
     .child("assoc_config_files/" + file.name)
     .put(file)
     .then(function (snapshot) {
-      alert("Uploaded a blob or file!");
+      //alert("Uploaded a blob or file!");
     })
     .catch(function (error) {
       alert(error);
@@ -414,9 +449,25 @@ function install() {
       "block";
   }
 
+  //------------------------
+
+  /*const setupDataDocTest = () => {
+    let temp = {};
+    for (const label in inputsInfo) {
+      temp[label] = inputsInfo[label].value;
+    }
+
+    return temp;
+  };
+
+  const dataDocTest = setupDataDocTest();
+  console.log("dataDocTest -> ", dataDocTest);*/
+
+  //-------------------------
+
   if (validatedFields && policyCheckboxChecked) {
     // uploads
-    uploadLogo("configAssocLogo");
+    //uploadNewLogo("configAssocLogo");
     uploadAssocDataFiles("configAssocMembers");
     uploadAssocDataFiles("configAssocStudents");
     uploadAssocDataFiles("configAssocNewParams");
@@ -431,46 +482,106 @@ function install() {
     getAndSaveJSONparamsData(paramsJSONfile);
     getandSaveCSVdata(membersFile, studentsFile);
 
-    const setupDataDoc = () => {
-      let temp = {};
-      for (const label in inputsInfo) {
-        temp[label] = inputsInfo[label].value;
-      }
+    const fileArray = document.getElementById("configAssocLogo").files;
 
-      return temp;
-    };
-
-    const dataDoc = setupDataDoc();
-
-    //console.log("dataDoc -> ", dataDoc);
-
-    const docRef = firestore.doc("initialConfigs/parameters");
-
-    //alert("ler os consoles");
-
-    docRef
-      .set(dataDoc)
-      .then(function () {
-        // ------------- documento instalacao
-        const doc = {
-          installation: true,
-        };
-
-        initDoc
-          .set(doc)
-          .then(function () {
-            //console.log("initDoc -> ", doc);
-            createDefaultUser(); // TODO: usar Firebase Authentication
-            window.location.href = "/";
-          })
-          .catch(function (error) {
-            alert("Erro: " + error);
+    if (fileArray.length !== 0) {
+      const file = fileArray[0]; // so da para fazer upload de 1 logo
+      const uploadTask = uploadNewLogo(file);
+      uploadTask.on(
+        "state_changed",
+        function (snapshot) {
+          // Observe state change events such as progress, pause, and resume
+          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+          var progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log("Upload " + progress + "% concluído");
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+              console.log("Upload em pausa");
+              break;
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+              console.log("Upload em progresso");
+              break;
+          }
+        },
+        function (error) {
+          console.log("Upload não tem sucesso: " + error);
+        },
+        function () {
+          // Handle successful uploads on complete
+          // get the download URL
+          uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+            console.log("Logo URL -> ", downloadURL);
+            continueInstallation(inputsInfo, downloadURL);
           });
-      })
-      .catch(function (error) {
-        alert("Erro: " + error);
+        }
+      );
+    } else if (fileArray.length === 0) {
+      const defaultLogoTask = uploadDefaultLogo();
+      defaultLogoTask.then(function (downloadURL) {
+        console.log("Default Logo URL -> ", downloadURL);
+        continueInstallation(inputsInfo, downloadURL);
       });
-  } else alert("Campos em falta.");
+    }
+  } else alert("Por favor, preencha os campos em falta.");
 }
 
-export { install, saveRegistToDB };
+function continueInstallation(inputsInfo, logoURL) {
+  const setupDataDoc = () => {
+    let temp = {};
+    for (const label in inputsInfo) {
+      // IBAN default, caso não seja fornecido nenhum
+      if (label === "IBAN" && inputsInfo[label].value === "") {
+        temp[label] = defaultIBAN;
+        continue;
+      }
+      // logo default, caso não seja fornecido nenhum
+      if (label === "Logótipo") {
+        temp[label] = logoURL;
+        continue;
+      }
+      temp[label] = inputsInfo[label].value;
+    }
+
+    return temp;
+  };
+
+  const dataDoc = setupDataDoc();
+
+  notifyAllParents();
+
+  console.log("dataDoc antes de instalar -> " + JSON.stringify(dataDoc));
+
+  const docRef = firestore.doc("initialConfigs/parameters");
+
+  //alert("ler os consoles");
+
+  docRef
+    .set(dataDoc)
+    .then(function () {
+      // ------------- documento instalacao
+      const doc = {
+        installation: true,
+      };
+
+      initDoc
+        .set(doc)
+        .then(function () {
+          //console.log("initDoc -> ", doc);
+          createDefaultUser();
+          alert(
+            "A associação foi registada com sucesso e todos os seus membros foram notificados por email.\n" +
+              "Por favor consulte o seu email para começar a usar a plataforma.\n\n" +
+              "Nota: se não recebeu nenhum email, aguarde ou verifique a pasta de Lixo ou Spam. Obrigado."
+          );
+          window.location.href = "/";
+        })
+        .catch(function (error) {
+          alert("Erro: " + error);
+        });
+    })
+    .catch(function (error) {
+      alert("Erro: " + error);
+    });
+}
+export { install, saveRegistToDB, saveCaseToDB };

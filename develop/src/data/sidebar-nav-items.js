@@ -47,6 +47,11 @@ export default function () {
       to: "/casos",
     },
     {
+      title: "Ver Approval Page",
+      htmlBefore: '<i class="material-icons">description</i>',
+      to: "/approval",
+    },
+    {
       title: "Ver Config Form",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/assoc-config",

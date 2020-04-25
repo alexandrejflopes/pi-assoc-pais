@@ -1,8 +1,8 @@
 /* eslint jsx-a11y/anchor-is-valid: 0 */
 
-import React, {Fragment, useState} from "react";
-import ReactDOM from 'react-dom';
-import Modal from 'react-bootstrap/Modal'
+import React, { Fragment, useState } from "react";
+import ReactDOM from "react-dom";
+import Modal from "react-bootstrap/Modal";
 import {
   ListGroup,
   ListGroupItem,
@@ -13,17 +13,21 @@ import {
   FormInput,
   FormFeedback,
   FormTextarea,
-  FormCheckbox
+  FormCheckbox,
 } from "shards-react";
-
+import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import { toast, Bounce } from "react-toastify";
+import { saveCaseToDB } from "../../firebase_scripts/installation";
 
 class CasosModal extends React.Component {
-
   constructor(props) {
     super(props);
 
     this.state = {
-      membrosList : [
+      members: [],
+      membersComponent: null,
+      membersCheckBoxStatus: null,
+      membrosList: [
         <Fragment>
           <FormGroup>
             <label htmlFor="novoCasoMembroEmail1">Email</label>
@@ -34,112 +38,200 @@ class CasosModal extends React.Component {
               required
             />
           </FormGroup>
-        </Fragment>
+        </Fragment>,
       ],
-      numMembros : 1,
-      show : false,
-      checkBoxStatus: false
+      numMembros: 1,
+      show: false,
+      checkBoxStatus: false,
+      caseTitle: "",
+      descricao: "",
     };
 
-    this.addMember = this.addMember.bind(this);
+    this.createCase = this.createCase.bind(this);
+    this.handleChangeDescricao = this.handleChangeDescricao.bind(this);
+    this.handleChangeCaseTitle = this.handleChangeCaseTitle.bind(this);
     this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
-    this.hideMembersFragment = this.closeModal.bind(this);
-    this.showMembersFragment = this.closeModal.bind(this);
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
+    this.loadParents = this.loadParents.bind(this);
+    this.handleChangeCheckBoxMembers = this.handleChangeCheckBoxMembers.bind(
+      this
+    );
+    this.loadParents();
   }
 
+  handleChangeCheckBoxMembers(e) {
+    const id = e.target.id;
 
+    var array = this.state.membersCheckBoxStatus;
+    var prev = array[id];
+    var newVal;
+    if (prev) {
+      newVal = false;
+    } else {
+      newVal = true;
+    }
 
-  showModal(){
-    this.setState({show:true});
+    array[id] = newVal;
+    this.setState({ membersCheckBoxStatus: array });
   }
 
-  closeModal(){
-    this.setState({show:false});
+  loadParents() {
+    const parentsCollection = firestore.collection("parents");
+
+    parentsCollection.get().then((querySnapshot) => {
+      var membersArray = [];
+      querySnapshot.forEach((doc) => {
+        console.log(JSON.stringify(doc.data()));
+        if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
+          if (
+            doc.data()["Validated"] != undefined &&
+            doc.data()["Validated"] != null &&
+            doc.data()["Validated"].toString() != "false"
+          ) {
+            membersArray.push(doc.data()["Nome"]);
+          }
+        }
+      });
+      if (membersArray.length != 0) {
+        var listCheckBoxesMembers = [];
+        var membersCheckBoxStatus = {};
+        for (var x = 0; x < membersArray.length; x++) {
+          var member = membersArray[x];
+          var idx = member.trim() + "CheckBox";
+          console.log(idx);
+          membersCheckBoxStatus[idx] = false;
+        }
+        this.setState({
+          membersCheckBoxStatus: membersCheckBoxStatus,
+        });
+
+        for (var i = 0; i < membersArray.length; i++) {
+          if (i == 0 || i % 2 == 0) {
+          }
+          var member = membersArray[i];
+          var idx = member.trim() + "CheckBox";
+          var checkBox = (
+            <FormGroup>
+              <FormCheckbox
+                id={idx}
+                onChange={this.handleChangeCheckBoxMembers}
+                isChecked={this.state.membersCheckBoxStatus[idx]}
+              >
+                {member}
+              </FormCheckbox>
+            </FormGroup>
+          );
+          listCheckBoxesMembers.push(checkBox);
+        }
+
+        this.setState({
+          members: membersArray,
+          membersComponent: listCheckBoxesMembers,
+        });
+      }
+    });
   }
 
-  handleChangeCheckBox(){
+  showModal() {
+    this.setState({ show: true });
+  }
+
+  closeModal() {
+    this.setState({ show: false });
+  }
+
+  handleChangeCheckBox() {
     let { checkBoxStatus } = this.state;
-    checkBoxStatus = !checkBoxStatus;
+    var newValue = false;
+    if (checkBoxStatus) {
+      newValue = false;
+    } else {
+      newValue = true;
+    }
 
-    if(checkBoxStatus)
-      this.showMembersFragment();
-    else
-      this.hideMembersFragment();
-
-    this.setState({ checkBoxStatus: checkBoxStatus });
+    this.setState({ checkBoxStatus: newValue });
   }
 
-
-  hideMembersFragment(){
-    this.setState({membrosList : []})
+  handleChangeCaseTitle(e) {
+    this.setState({ caseTitle: e.target.value });
   }
 
-  showMembersFragment(){
-    this.setState({membrosList : [
-        <Fragment>
-          <FormGroup>
-            <label htmlFor="novoCasoMembroEmail1">Email</label>
-            <FormInput
-              id="novoCasoMembroEmail1"
-              type="email"
-              placeholder="socio@exemplo.pt"
-              required
-            />
-          </FormGroup>
-        </Fragment>
-      ]})
+  handleChangeDescricao(e) {
+    this.setState({ descricao: e.target.value });
   }
 
+  createCase() {
+    const { checkBoxStatus, caseTitle, descricao } = this.state;
 
-  addMember() {
+    console.log(caseTitle);
+    if (caseTitle == "") {
+      var message = "Título do caso em falta!";
+      toast.configure();
+      toast(message, {
+        transition: Bounce,
+        closeButton: true,
+        autoClose: 2000,
+        position: "top-right",
+        type: "error",
+      });
+    } else {
+      var listaMembros = [];
+      var privateVal = false;
 
-    const novoNumMembros = this.state.membrosList.length + 1;
-    const novoId = "novoCasoMembroEmail"+novoNumMembros;
+      if (checkBoxStatus) {
+        privateVal = true;
+      }
 
-    let membrosAtuais =  this.state.membrosList;
+      let uri =
+        "https://us-central1-associacao-pais.cloudfunctions.net/api/addCaso?" +
+        "titulo=" +
+        caseTitle +
+        "&" +
+        "descricao=" +
+        descricao +
+        "&" +
+        "membros=" +
+        listaMembros +
+        "&" +
+        "privado=" +
+        privateVal +
+        "&" +
+        "nome_autor=" +
+        "por fazer" +
+        "&" +
+        "id_autor=" +
+        "por fazer";
 
-    console.log("membros atuais antes -> " + membrosAtuais);
+      const request = async () => {
+        await fetch(uri)
+          .then(function (data) {
+            console.log("Caso adicionado com sucesso.");
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      };
 
-    let add =
-      <Fragment>
-        <FormGroup>
-          <label htmlFor={novoId}>Email</label>
-          <FormInput
-            id={novoId}
-            type="email"
-            placeholder="socio@exemplo.pt"
-            required
-          />
-        </FormGroup>
-      </Fragment>
-    ;
+      request();
 
-    console.log("add -> ", add);
-
-    membrosAtuais.push(add);
-
-    console.log("membros atuais depois -> " + membrosAtuais);
-
-    this.setState({
-      membrosList : membrosAtuais,
-      numMembros : novoNumMembros
-    })
-
-
+      //saveCaseToDB(json);
+      this.setState({ caseTitle: "", descricao: "" });
+      this.closeModal();
+      this.props.componentDidMount();
+    }
   }
-
-
-
-
 
   render() {
-    console.log("começar render");
-    console.log("state a render -> " + JSON.stringify(this.state));
+    //console.log("state a render -> " + JSON.stringify(this.state));
     return (
       <>
-        <Button size="md" theme="primary" id="new_case" onClick={this.showModal}>
+        <Button
+          size="md"
+          theme="primary"
+          id="new_case"
+          onClick={this.showModal}
+        >
           <i className="fa fa-plus mr-1" /> Abrir um novo caso
         </Button>
 
@@ -158,59 +250,70 @@ class CasosModal extends React.Component {
                         id="novoCasoTitulo"
                         type="text"
                         placeholder="Breve título do situação que origina o caso."
+                        value={this.state.caseTitle}
+                        onChange={this.handleChangeCaseTitle}
                         required
                       />
-                      <FormFeedback id="novoCasoTituloFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+                      <FormFeedback
+                        id="novoCasoTituloFeedback"
+                        valid={false}
+                        style={{ display: "none" }}
+                      >
+                        Por favor, preencha este campo
+                      </FormFeedback>
                     </FormGroup>
 
                     {/* Descricao Textarea */}
                     <FormGroup>
-                      <label htmlFor="novoCasoDescricao">Descrição (opcional)</label>
-                      <FormTextarea id="novoCasoDescricao" placeholder="Descrição breve da situação que origina o caso." />
-                      <FormFeedback id="novoCasoDescricaoFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+                      <label htmlFor="novoCasoDescricao">
+                        Descrição (opcional)
+                      </label>
+                      <FormTextarea
+                        id="novoCasoDescricao"
+                        placeholder="Descrição breve da situação que origina o caso."
+                        value={this.state.descricao}
+                        onChange={this.handleChangeDescricao}
+                      />
+                      <FormFeedback
+                        id="novoCasoDescricaoFeedback"
+                        valid={false}
+                        style={{ display: "none" }}
+                      >
+                        Por favor, preencha este campo
+                      </FormFeedback>
                     </FormGroup>
 
                     <FormGroup>
-                      <FormCheckbox id="novoCasoPrivadoCheckbox" checked={this.state.checkBoxStatus} onChange={this.handleChangeCheckBox}>
+                      <FormCheckbox
+                        id="novoCasoPrivadoCheckbox"
+                        checked={this.state.checkBoxStatus}
+                        onChange={this.handleChangeCheckBox}
+                      >
                         {/* eslint-disable-next-line */}Este caso é privado.
                       </FormCheckbox>
                     </FormGroup>
 
-                    <ListGroup id="listaMembros">
-                      <h5>
-                        Membros
-                      </h5>
-
-                      {this.state.membrosList}
-
-                      <Button onClick={this.addMember}>
-                        Adicionar mais um membro
-                      </Button>
-                    </ListGroup>
-
+                    {this.state.checkBoxStatus
+                      ? this.state.membersComponent
+                      : ""}
                   </Form>
                 </Col>
-
               </ListGroupItem>
             </ListGroup>
           </Modal.Body>
-
 
           <Modal.Footer>
             <Button variant="secondary" onClick={this.closeModal}>
               Fechar
             </Button>
-            <Button variant="primary" onClick={this.closeModal}>
+            <Button variant="primary" onClick={this.createCase}>
               Criar caso
             </Button>
           </Modal.Footer>
         </Modal>
-
-
       </>
     );
   }
 }
-
 
 export default CasosModal;
