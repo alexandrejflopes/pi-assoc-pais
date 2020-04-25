@@ -48,8 +48,8 @@ class Quotas_Page extends Component {
           arrayOfRecetorValues.push(doc.data()["Confirmado Recetor"]);
         });
 
-        console.log("Valores: " + JSON.stringify(arrayOfDocs));
-        console.log("Valores: " + JSON.stringify(arrayOfPaganteValues));
+        //console.log("Valores: " + JSON.stringify(arrayOfDocs));
+        //console.log("Valores: " + JSON.stringify(arrayOfPaganteValues));
         // Save data to state
         this_.setState({
           items: arrayOfDocs,
@@ -82,17 +82,17 @@ class Quotas_Page extends Component {
           <td>
             <input
               type="checkbox"
-              checked={this.state.checkBoxPagante[x]}
-              disabled={this.state.checkBoxPagante[x]}
-              onChange={this.handleChangeCheckBoxPagante.bind(this, x)}
+              checked={this.state.checkBoxRecetor[x]}
+              disabled={this.state.checkBoxRecetor[x]}
+              onChange={this.handleChangeCheckBoxRecetor.bind(this, x)}
             />
           </td>
           <td>
             <input
               type="checkbox"
-              checked={this.state.checkBoxRecetor[x]}
-              disabled={this.state.checkBoxRecetor[x]}
-              onChange={this.handleChangeCheckBoxRecetor.bind(this, x)}
+              checked={this.state.checkBoxPagante[x]}
+              disabled={this.state.checkBoxPagante[x]}
+              onChange={this.handleChangeCheckBoxPagante.bind(this, x)}
             />
           </td>
         </tr>
@@ -101,7 +101,7 @@ class Quotas_Page extends Component {
   }
 
   handleChangeCheckBoxRecetor(i) {
-    console.log("função checkBox Recetor " + i);
+    //console.log("função checkBox Recetor " + i);
     //TODO: Confirmar que utilizador a fazer clique é o correto
 
     if (this.state.checkBoxRecetor[i] == false) {
@@ -170,10 +170,10 @@ class Quotas_Page extends Component {
                         Ano letivo
                       </th>
                       <th scope="col" className="border-0">
-                        Confirmado pelo pagante
+                        Confirmado pelo recetor
                       </th>
                       <th scope="col" className="border-0">
-                        Confirmado pelo recetor
+                        Confirmado pelo pagante
                       </th>
                     </tr>
                   </thead>
