@@ -385,10 +385,10 @@ function continueInstallation(inputsInfo, logoURL) {
     let temp = {};
     for (const label in inputsInfo) {
       // IBAN default, caso não seja fornecido nenhum
-      if(label==="IBAN" && inputsInfo[label].value===""){
+      /*if(label==="IBAN" && inputsInfo[label].value===""){
         temp[label] = defaultIBAN;
         continue;
-      }
+      }*/
       // logo default, caso não seja fornecido nenhum
       if(label==="Logótipo"){
         temp[label] = logoURL;

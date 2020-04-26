@@ -10,6 +10,11 @@ import MD5 from "crypto-js/md5";
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
 let membersEmails = {};
+let jsonCorrect = true; // controlar se o processament de JSON não teve erros
+const jsonErrorMessage =
+  "O ficheiro JSON fornecido é inválido!\n" +
+  "Por favor, verifique se tem o formato conforme o manual de utilização ou se a sintaxe está correta.\n" +
+  "Obrigado.";
 
 // ------------------------------------------------------------
 // NOVOS PARAMETROS
@@ -21,8 +26,15 @@ function getAndSaveJSONparamsData(jsonfile) {
   reader.onloadend = function () {
     fileString = reader.result;
     //console.log("reader result depois de loaded -> ", fileString);
-    const json = JSON.parse(fileString);
-    saveNewParamsFromJSONToDB(json);
+    try{
+      const json = JSON.parse(fileString);
+      saveNewParamsFromJSONToDB(json);
+    }
+    catch (e) {
+      alert(jsonErrorMessage);
+      jsonCorrect = false;
+    }
+
   };
 
   reader.readAsText(jsonfile, "UTF-8");
@@ -534,11 +546,11 @@ function continueInstallation(inputsInfo, logoURL) {
   const setupDataDoc = () => {
     let temp = {};
     for (const label in inputsInfo) {
-      // IBAN default, caso não seja fornecido nenhum
-      if (label === "IBAN" && inputsInfo[label].value === "") {
+      // IBAN default, caso não seja fornecido nenhum: fica vazio mesmo
+      /*if (label === "IBAN" && inputsInfo[label].value === "") {
         temp[label] = defaultIBAN;
         continue;
-      }
+      }*/
       // logo default, caso não seja fornecido nenhum
       if (label === "Logótipo") {
         temp[label] = logoURL;
