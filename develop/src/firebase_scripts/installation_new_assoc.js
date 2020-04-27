@@ -1,13 +1,7 @@
 import { firestore, storageRef, initDoc, firebaseConfig } from "../firebase-config";
 import firebase from "firebase";
 
-import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
-import MD5 from "crypto-js/md5";
-const defaultIBAN = "PT50 1234 4321 12345678901 72";
-
-function getRandomInteger(min, max) {
-  return Math.floor(Math.random() * (max - min) ) + min;
-}
+import {getGravatarURL, defaultIBAN, defaultLogoFile, getRandomInteger} from "../utils/general_utils";
 
 // ------------------------------------------------------------
 // NOVOS PARAMETROS
@@ -69,9 +63,9 @@ function saveRegistToDB(json) {
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
-  const defaultEmail = "ricardo@email.pt";
+  const defaultEmail = "dgomes@pi-assoc-pais.com";
   const defaultPassword = "pass";
-  const defaultName = "Ricardo Silva";
+  const defaultName = "Diogo Gomes";
 
   const defaultUser = {
     email: defaultEmail,
@@ -286,15 +280,6 @@ function removeAllInvalidFeedbacks() {
   }
 }
 
-/* função para fazer hash do email com MD5 para o Gravatar */
-function getGravatarURL(email) {
-  const emailProcessed = (email.trim()).toLowerCase();
-  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
-  return "https://www.gravatar.com/avatar/" + hashedEmail +
-    "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
-
-}
-
 
 function install() {
   removeAllInvalidFeedbacks();
@@ -384,11 +369,6 @@ function continueInstallation(inputsInfo, logoURL) {
   const setupDataDoc = () => {
     let temp = {};
     for (const label in inputsInfo) {
-      // IBAN default, caso não seja fornecido nenhum
-      /*if(label==="IBAN" && inputsInfo[label].value===""){
-        temp[label] = defaultIBAN;
-        continue;
-      }*/
       // logo default, caso não seja fornecido nenhum
       if(label==="Logótipo"){
         temp[label] = logoURL;

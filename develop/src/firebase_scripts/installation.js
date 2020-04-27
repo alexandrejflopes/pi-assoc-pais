@@ -5,19 +5,89 @@ import {
   firebaseConfig,
 } from "../firebase-config";
 import firebase from "firebase";
-import MD5 from "crypto-js/md5";
 
-import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
-const defaultIBAN = "PT50 1234 4321 12345678901 72";
+import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities} from "../utils/general_utils";
+
 let membersEmails = {};
 let jsonCorrect = true; // controlar se o processament de JSON não teve erros
 const jsonErrorMessage =
   "O ficheiro JSON fornecido é inválido!\n" +
-  "Por favor, verifique se tem o formato conforme o manual de utilização ou se a sintaxe está correta.\n" +
+  "Por favor, verifique se tem o formato conforme o manual de utilização e se a sintaxe está correta.\n" +
   "Obrigado.";
 
 // ------------------------------------------------------------
 // NOVOS PARAMETROS
+
+function checkJSONparamsEntitiesAndTypes(json) {
+
+  // check entities
+  const entities = Object.keys(json).length;
+
+  // check if null or undefined
+  const parentParams = json[newParametersEntities.parent[languageCode]];
+  const studentParams = json[newParametersEntities.student[languageCode]];
+
+  console.log("parentParams -> " + parentParams);
+  console.log("studentParams -> " + studentParams);
+
+  if(entities === 0){ // sem parametros
+    return true;
+  }
+  if(entities >=3){
+    // apenas 2 entidades, no maximo (pai e filho)
+    return false;
+  }
+  else if(1 <= entities <= 2) {
+    // nenhum deles for pai nem filho, é inválido
+    if((parentParams==null) && (studentParams==null)){
+      return false;
+    }
+    else {
+      // ver os parametros
+      if(Object.keys(parentParams).length === 0 || Object.keys(studentParams).length === 0){
+        // se algum deles existir, mas nao tiver parametros, não passa (para isso, não mete essa entidade no JSON)
+        return false;
+      }
+      const TEXT = newParametersTypes.TEXT[languageCode];
+      const INT = newParametersTypes.INT[languageCode];
+      const FLOAT = newParametersTypes.FLOAT[languageCode];
+      // verificar os parametros do EE
+      if(parentParams!==null){
+        const keys = Object.keys(parentParams);
+        if(keys.length<0){
+          for (let k in keys){
+            console.log("k -> " + k);
+            // se não for nenhum dos parametros, é inválido
+            if(parentParams[k]!==TEXT && parentParams[k]!==INT && parentParams[k]!==FLOAT){
+              return false;
+            }
+          }
+        }
+      }
+      // verificar os parametros do aluno
+      if(studentParams!==null){
+        const keys = Object.keys(studentParams);
+        if(keys.length<0){
+          for (let k in keys){
+            console.log("k -> " + k);
+            // se não for nenhum dos parametros, é inválido
+            if(parentParams[k]!==TEXT && parentParams[k]!==INT && parentParams[k]!==FLOAT){
+              return false;
+            }
+          }
+        }
+      }
+
+    }
+  }
+
+
+
+
+
+
+
+}
 
 function getAndSaveJSONparamsData(jsonfile) {
   let reader = new FileReader();
@@ -269,12 +339,6 @@ async function sendImportEmailToParent(nome, email) {
   return request();
 }
 
-/* função para fazer hash do email com MD5 para o Gravatar */
-function getGravatarURL(email) {
-  const emailProcessed = email.trim().toLowerCase();
-  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
-  return "https://www.gravatar.com/avatar/" + hashedEmail + "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
-}
 
 function notifyAllParents() {
   for (let name in membersEmails) {
@@ -288,9 +352,9 @@ function notifyAllParents() {
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
-  const defaultEmail = "ricardo@email.pt";
+  const defaultEmail = "dgomes@pi-assoc-pais.com";
   const defaultPassword = "pass";
-  const defaultName = "Ricardo Silva";
+  const defaultName = "Diogo Gomes";
 
   const defaultUser = {
     email: defaultEmail,
@@ -546,11 +610,6 @@ function continueInstallation(inputsInfo, logoURL) {
   const setupDataDoc = () => {
     let temp = {};
     for (const label in inputsInfo) {
-      // IBAN default, caso não seja fornecido nenhum: fica vazio mesmo
-      /*if (label === "IBAN" && inputsInfo[label].value === "") {
-        temp[label] = defaultIBAN;
-        continue;
-      }*/
       // logo default, caso não seja fornecido nenhum
       if (label === "Logótipo") {
         temp[label] = logoURL;

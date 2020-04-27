@@ -9,18 +9,12 @@ import {
   FormGroup,
   FormCheckbox,
   Button,
-  FormTextarea,
   FormFeedback,
 } from "shards-react";
-import { toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Label, Input, FormText } from "reactstrap";
 import { Link } from "react-router-dom";
-import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
-import MembersFileUpload from "../config-inicial/MembersFileUpload";
-import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
-import { saveRegistToDB, getGravatarURL } from "../../firebase_scripts/installation";
-import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
+import { saveRegistToDB } from "../../firebase_scripts/installation";
+import {getGravatarURL, regular_role_PT} from "../../utils/general_utils";
 import {
   firestore,
   firebase_auth,
@@ -236,8 +230,8 @@ class Register_Page extends Component {
       parentJson["Cartão Cidadão"] = "Não";
       parentJson.blocked = false;
       parentJson.Cargo = "";
-      parentJson.Admin = ""; // TODO: vazio? os órgãos sociais convidam outros OS, ou órgãos sociais só entrar por convite de outros OS?
-      parentJson.Cargo = ""; // TODO: os que se registam podem entrar todos como regulares e depois pedem aos OS da plataforma para os aceitar como OS?
+      parentJson.Admin = true;
+      parentJson.Cargo = regular_role_PT;
       parentJson["Data inscricao"] = ""; // data quando for aprovado
 
       // avatar

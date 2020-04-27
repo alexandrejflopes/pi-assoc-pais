@@ -111,11 +111,10 @@ function addCasosExemplo() {
         "sem a sua autorização.",
       privado: true,
       membros: [
-        { nome: "Vera Teixeira", id: "vera@pi-assoc-pais.com" },
         { nome: "Olivério Baptista", id: "oliverio@pi-assoc-pais.com" },
         { nome: "Luísa Santos", id: "luisa.santos@pi-assoc-pais.com" },
       ],
-      nome_autor: "Vera Teixeira",
+      nome_autor: "Vera Teixeira", // autor é adicionado automaticamente ao caso
       id_autor: "vera@pi-assoc-pais.com",
     },
   ];
