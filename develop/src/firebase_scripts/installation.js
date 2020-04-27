@@ -9,7 +9,7 @@ import firebase from "firebase";
 import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities} from "../utils/general_utils";
 
 let membersEmails = {};
-let jsonCorrect = true; // controlar se o processament de JSON não teve erros
+let jsonCorrect = false; // controlar se o processament de JSON não teve erros
 const jsonErrorMessage =
   "O ficheiro JSON fornecido é inválido!\n" +
   "Por favor, verifique se tem o formato conforme o manual de utilização e se a sintaxe está correta.\n" +
@@ -27,8 +27,8 @@ function checkJSONparamsEntitiesAndTypes(json) {
   const parentParams = json[newParametersEntities.parent[languageCode]];
   const studentParams = json[newParametersEntities.student[languageCode]];
 
-  console.log("parentParams -> " + parentParams);
-  console.log("studentParams -> " + studentParams);
+  parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
+  studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
 
   if(entities === 0){ // sem parametros
     return true;
@@ -44,19 +44,30 @@ function checkJSONparamsEntitiesAndTypes(json) {
     }
     else {
       // ver os parametros
-      if(Object.keys(parentParams).length === 0 || Object.keys(studentParams).length === 0){
-        // se algum deles existir, mas nao tiver parametros, não passa (para isso, não mete essa entidade no JSON)
-        return false;
+
+      // se algum deles existir, mas nao tiver parametros, não passa (para isso, não mete essa entidade no JSON)
+      if(parentParams){
+        if(Object.keys(parentParams).length === 0)
+          return false;
       }
+      if(studentParams){
+        if(Object.keys(studentParams).length === 0)
+          return false;
+      }
+
       const TEXT = newParametersTypes.TEXT[languageCode];
       const INT = newParametersTypes.INT[languageCode];
       const FLOAT = newParametersTypes.FLOAT[languageCode];
+      console.log("TEXT -> " + TEXT);
+      console.log("INT -> " + INT);
+      console.log("FLOAT -> " + FLOAT);
       // verificar os parametros do EE
-      if(parentParams!==null){
+      if(parentParams!=null){
         const keys = Object.keys(parentParams);
-        if(keys.length<0){
+        if(keys.length>0){
           for (let k in keys){
             console.log("k -> " + k);
+            console.log("parentParams[k] -> " + parentParams[k]);
             // se não for nenhum dos parametros, é inválido
             if(parentParams[k]!==TEXT && parentParams[k]!==INT && parentParams[k]!==FLOAT){
               return false;
@@ -65,31 +76,29 @@ function checkJSONparamsEntitiesAndTypes(json) {
         }
       }
       // verificar os parametros do aluno
-      if(studentParams!==null){
+      if(studentParams!=null){
         const keys = Object.keys(studentParams);
-        if(keys.length<0){
+        if(keys.length>0){
           for (let k in keys){
             console.log("k -> " + k);
+            console.log("studentParams[k] -> " + studentParams[k]);
             // se não for nenhum dos parametros, é inválido
-            if(parentParams[k]!==TEXT && parentParams[k]!==INT && parentParams[k]!==FLOAT){
+            if(studentParams[k]!==TEXT && studentParams[k]!==INT && studentParams[k]!==FLOAT){
               return false;
             }
           }
         }
       }
-
     }
   }
 
-
-
-
-
-
+  return true;
 
 }
 
-function getAndSaveJSONparamsData(jsonfile) {
+
+function getAndSaveJSONparamsData(jsonfile, callback) {
+  // callback vai ser o resto da instalação
   let reader = new FileReader();
   let fileString = "NR";
 
@@ -98,11 +107,23 @@ function getAndSaveJSONparamsData(jsonfile) {
     //console.log("reader result depois de loaded -> ", fileString);
     try{
       const json = JSON.parse(fileString);
-      saveNewParamsFromJSONToDB(json);
+      console.log("json no try -> ", JSON.stringify(json));
+      jsonCorrect = true; // se chegar aqui,
+      if(checkJSONparamsEntitiesAndTypes(json)){
+        jsonCorrect = true;
+        saveNewParamsFromJSONToDB(json);
+        callback(jsonCorrect);
+      }
+      else{
+        jsonCorrect = false;
+        callback(jsonCorrect);
+      }
     }
     catch (e) {
-      alert(jsonErrorMessage);
+      console.log("entrei no catch porque: ", e);
+      //alert(jsonErrorMessage);
       jsonCorrect = false;
+      callback(jsonCorrect);
     }
 
   };
@@ -418,81 +439,40 @@ function getFormElementsAndValues() {
   let all_inputs = Array.from(document.querySelectorAll("input"));
   all_inputs.push(document.querySelector("#configAssocDescricao")); // adicionar a textarea
 
-  //console.log("all_labels -> ", all_labels);
-  //console.log("all_inputs -> ", all_inputs);
-
-  /*const assoc_name = document.querySelector("#configAssocName");
-  const assoc_descricao = document.querySelector("#configAssocDescricao");
-  const assoc_morada = document.querySelector("#configAssocAddress");
-  const assoc_localidade = document.querySelector("#configAssocLocalidade");
-  const assoc_codigo_postal = document.querySelector("#configAssocZip");
-  const assoc_email = document.querySelector("#configAssocEmail");
-  const assoc_telefone = document.querySelector("#configAssocPhone");
-  const assoc_iban = document.querySelector("#configAssocIBAN");
-
-  const assoc_logo = document.querySelector("#configAssocLogo");
-  const assoc_members = document.querySelector("#configAssocMembers");
-  const assoc_students = document.querySelector("#configAssocStudents");
-  const assoc_params = document.querySelector("#configAssocNewParams");
-
-  let allInputs = [assoc_name, assoc_descricao, assoc_morada, assoc_localidade, assoc_codigo_postal,
-    assoc_email, assoc_telefone, assoc_iban, assoc_logo, assoc_members, assoc_students, assoc_params];*/
-
   let submittedInputs = {};
-
-  //console.log("all_labels.length -> ", all_labels.length);
-  //console.log("all_inputs.length -> ", all_inputs.length);
 
   for (let i = 0; i < all_labels.length; i++) {
     for (let j = 0; j < all_inputs.length; j++) {
       const label = all_labels[i];
       const input = all_inputs[j];
 
-      //console.log("label atual: ", label + " : " + i);
-      //console.log("input atual: ", input + " : " + j);
-
       let labelText = label.innerText;
       let labelHtmlFor = label.htmlFor;
       let inputId = input.id;
-
-      //console.log("label atual text: ", labelText);
-      //console.log("label atual htmlFor: ", labelHtmlFor);
-      //console.log("input atual id: ", inputId);
 
       if (labelHtmlFor === inputId) {
         if (labelText.includes("(") || labelText.includes("/")) {
           labelText = labelText.split(" ")[0];
         }
-
-        //console.log("vou adicionar: {" + labelText + " : " + inputId + "}");
-
         submittedInputs[labelText] = input;
-
         break;
       }
     }
   }
-
-  //console.log("submitted que vou devolver -> ", submittedInputs);
 
   return submittedInputs;
 }
 
 function removeAllInvalidFeedbacks() {
   const feedbacks = Array.from(document.querySelectorAll(".invalid-feedback"));
-  //console.log("feedbacks -> ", feedbacks);
   const inputs = Array.from(document.querySelectorAll("input"));
-  //console.log("inputs -> ", inputs);
 
   for (let i = 0; i < feedbacks.length; i++) {
-    //console.log("f -> ", feedbacks[i]);
     feedbacks[i].style.display = "none";
   }
 
   for (let i = 0; i < inputs.length; i++) {
-    //console.log("input a remover atual -> ", inputs);
     if (inputs[i].classList.contains("is-invalid")) {
-      //console.log("remover invalid de ", inputs[i]);
       inputs[i].classList.remove("is-invalid");
     }
   }
@@ -500,23 +480,17 @@ function removeAllInvalidFeedbacks() {
 
 function install() {
   removeAllInvalidFeedbacks();
-
-  let validatedFields = true;
+  let requiredFieldsProvided = true;
   let policyCheckboxChecked = true;
-
   const inputsInfo = getFormElementsAndValues(); // { "labelText" : input }
-
-  //console.log("inputsInfo -> ", inputsInfo);
 
   for (const label in inputsInfo) {
     let input = inputsInfo[label];
-    //console.log("input atual -> ", input);
     if (input.value === "" && input.required) {
       input.classList.add("is-invalid");
-      //console.log("inputID -> ", input.id);
       document.querySelector("#" + input.id + "Feedback").style.display =
         "block";
-      validatedFields = false; // se houver um input obrigatorio sem nada, não submete
+      requiredFieldsProvided = false; // se houver um input obrigatorio sem nada, não submete
       //break;
     }
   }
@@ -545,12 +519,10 @@ function install() {
 
   //-------------------------
 
-  if (validatedFields && policyCheckboxChecked) {
-    // uploads
-    //uploadNewLogo("configAssocLogo");
-    uploadAssocDataFiles("configAssocMembers");
-    uploadAssocDataFiles("configAssocStudents");
-    uploadAssocDataFiles("configAssocNewParams");
+  if (requiredFieldsProvided && policyCheckboxChecked) {
+    //console.log("jsonCorrect quando valido -> " + jsonCorrect);
+
+
 
     // ler ficheiros e guardar dados
     const paramsJSONfile = document.getElementById("configAssocNewParams")
@@ -559,51 +531,72 @@ function install() {
     const studentsFile = document.getElementById("configAssocStudents")
       .files[0];
 
-    getAndSaveJSONparamsData(paramsJSONfile);
-    getandSaveCSVdata(membersFile, studentsFile);
+    getAndSaveJSONparamsData(paramsJSONfile, function (jsonCorrect) {
+      if(!jsonCorrect){
+        const paramsInput = document.getElementById("configAssocNewParams");
+        paramsInput.classList.add("is-invalid");
+        document.querySelector("#" + paramsInput.id + "Feedback").style.display =
+          "block";
+        paramsInput.value = "";
+        alert(jsonErrorMessage);
+      }
+      else{
+        getandSaveCSVdata(membersFile, studentsFile);
 
-    const fileArray = document.getElementById("configAssocLogo").files;
+        // uploads depois dos ficheiros estarem validados
+        //uploadNewLogo("configAssocLogo");
+        uploadAssocDataFiles("configAssocMembers");
+        uploadAssocDataFiles("configAssocStudents");
+        uploadAssocDataFiles("configAssocNewParams");
 
-    if (fileArray.length !== 0) {
-      const file = fileArray[0]; // so da para fazer upload de 1 logo
-      const uploadTask = uploadNewLogo(file);
-      uploadTask.on(
-        "state_changed",
-        function (snapshot) {
-          // Observe state change events such as progress, pause, and resume
-          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-          var progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload " + progress + "% concluído");
-          switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED: // or 'paused'
-              console.log("Upload em pausa");
-              break;
-            case firebase.storage.TaskState.RUNNING: // or 'running'
-              console.log("Upload em progresso");
-              break;
-          }
-        },
-        function (error) {
-          console.log("Upload não tem sucesso: " + error);
-        },
-        function () {
-          // Handle successful uploads on complete
-          // get the download URL
-          uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
-            console.log("Logo URL -> ", downloadURL);
+        const fileArray = document.getElementById("configAssocLogo").files;
+
+        if (fileArray.length !== 0) {
+          const file = fileArray[0]; // so da para fazer upload de 1 logo
+          const uploadTask = uploadNewLogo(file);
+          uploadTask.on(
+            "state_changed",
+            function (snapshot) {
+              // Observe state change events such as progress, pause, and resume
+              // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+              var progress =
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log("Upload " + progress + "% concluído");
+              switch (snapshot.state) {
+                case firebase.storage.TaskState.PAUSED: // or 'paused'
+                  console.log("Upload em pausa");
+                  break;
+                case firebase.storage.TaskState.RUNNING: // or 'running'
+                  console.log("Upload em progresso");
+                  break;
+              }
+            },
+            function (error) {
+              console.log("Upload não tem sucesso: " + error);
+            },
+            function () {
+              // Handle successful uploads on complete
+              // get the download URL
+              uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+                console.log("Logo URL -> ", downloadURL);
+                continueInstallation(inputsInfo, downloadURL);
+              });
+            }
+          );
+        } else if (fileArray.length === 0) {
+          const defaultLogoTask = uploadDefaultLogo();
+          defaultLogoTask.then(function (downloadURL) {
+            console.log("Default Logo URL -> ", downloadURL);
             continueInstallation(inputsInfo, downloadURL);
           });
         }
-      );
-    } else if (fileArray.length === 0) {
-      const defaultLogoTask = uploadDefaultLogo();
-      defaultLogoTask.then(function (downloadURL) {
-        console.log("Default Logo URL -> ", downloadURL);
-        continueInstallation(inputsInfo, downloadURL);
-      });
-    }
-  } else alert("Por favor, preencha os campos em falta.");
+      }
+
+    });
+
+  } else {
+      alert("Por favor, preencha os campos em falta.");
+  }
 }
 
 function continueInstallation(inputsInfo, logoURL) {
