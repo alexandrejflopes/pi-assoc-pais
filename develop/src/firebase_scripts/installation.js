@@ -7,45 +7,51 @@ import {
 import firebase from "firebase";
 
 import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities} from "../utils/general_utils";
+import {jsonParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage} from "../utils/messages_strings";
+const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
+const sucessImportMessage = importSucessMessage[languageCode];
+const requiredFieldsMissingMessage = provideRequiredFieldsMessage[languageCode];
 
 let membersEmails = {};
-let jsonCorrect = false; // controlar se o processament de JSON não teve erros
-const jsonErrorMessage =
-  "O ficheiro JSON fornecido é inválido!\n" +
-  "Por favor, verifique se tem o formato conforme o manual de utilização e se a sintaxe está correta.\n" +
-  "Obrigado.";
 
 // ------------------------------------------------------------
-// NOVOS PARAMETROS
+// NEW PARAMETERS
 
 function checkJSONparamsEntitiesAndTypes(json) {
 
   // check entities
   const entities = Object.keys(json).length;
-
-  // check if null or undefined
+  //console.log("entities -> " + Object.keys(json));
   const parentParams = json[newParametersEntities.parent[languageCode]];
   const studentParams = json[newParametersEntities.student[languageCode]];
 
-  parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
-  studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
+  if(entities===2 && ((parentParams==null) || (studentParams==null))){
+    // if there are 2, but one of them is null: invalid JSON
+    return false;
+  }
 
-  if(entities === 0){ // sem parametros
+  //parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
+  //studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
+
+  if(entities === 0){ // allow no parameters, as the input field is required
     return true;
   }
   if(entities >=3){
-    // apenas 2 entidades, no maximo (pai e filho)
+    // only 2 entities, at max (parent and student)
     return false;
   }
-  else if(1 <= entities <= 2) {
-    // nenhum deles for pai nem filho, é inválido
+  else if(entities===1) {
+    // if none of them is parent or student: invalid JSON
     if((parentParams==null) && (studentParams==null)){
       return false;
     }
     else {
-      // ver os parametros
+      // check parameters themselves
 
-      // se algum deles existir, mas nao tiver parametros, não passa (para isso, não mete essa entidade no JSON)
+      /* if they exist, but have no parameters: JSON no accepted
+      *   - if the user does not want parameters for either
+      *     parent or student, simply does not write them in the JSON
+      * */
       if(parentParams){
         if(Object.keys(parentParams).length === 0)
           return false;
@@ -54,36 +60,30 @@ function checkJSONparamsEntitiesAndTypes(json) {
         if(Object.keys(studentParams).length === 0)
           return false;
       }
-
       const TEXT = newParametersTypes.TEXT[languageCode];
       const INT = newParametersTypes.INT[languageCode];
       const FLOAT = newParametersTypes.FLOAT[languageCode];
-      console.log("TEXT -> " + TEXT);
-      console.log("INT -> " + INT);
-      console.log("FLOAT -> " + FLOAT);
-      // verificar os parametros do EE
+      //  check parent's parameters
       if(parentParams!=null){
         const keys = Object.keys(parentParams);
         if(keys.length>0){
-          for (let k in keys){
-            console.log("k -> " + k);
-            console.log("parentParams[k] -> " + parentParams[k]);
-            // se não for nenhum dos parametros, é inválido
-            if(parentParams[k]!==TEXT && parentParams[k]!==INT && parentParams[k]!==FLOAT){
+          for (let i = 0; i< keys.length; i++){
+            const chave = keys[i];
+            // if none of supported parameters: invalid JSON
+            if(parentParams[chave]!==TEXT && parentParams[chave]!==INT && parentParams[chave]!==FLOAT){
               return false;
             }
           }
         }
       }
-      // verificar os parametros do aluno
+      //  check student's parameters
       if(studentParams!=null){
         const keys = Object.keys(studentParams);
         if(keys.length>0){
-          for (let k in keys){
-            console.log("k -> " + k);
-            console.log("studentParams[k] -> " + studentParams[k]);
-            // se não for nenhum dos parametros, é inválido
-            if(studentParams[k]!==TEXT && studentParams[k]!==INT && studentParams[k]!==FLOAT){
+          for (let i = 0; i< keys.length; i++){
+            const chave = keys[i];
+            // if none of supported parameters: invalid JSON
+            if(studentParams[chave]!==TEXT && studentParams[chave]!==INT && studentParams[chave]!==FLOAT){
               return false;
             }
           }
@@ -98,17 +98,16 @@ function checkJSONparamsEntitiesAndTypes(json) {
 
 
 function getAndSaveJSONparamsData(jsonfile, callback) {
-  // callback vai ser o resto da instalação
+  // callback will be the rest of the installation
   let reader = new FileReader();
   let fileString = "NR";
 
   reader.onloadend = function () {
     fileString = reader.result;
-    //console.log("reader result depois de loaded -> ", fileString);
+    let jsonCorrect = false; // control if there were problems with JSON or not
     try{
       const json = JSON.parse(fileString);
-      console.log("json no try -> ", JSON.stringify(json));
-      jsonCorrect = true; // se chegar aqui,
+      jsonCorrect = true;
       if(checkJSONparamsEntitiesAndTypes(json)){
         jsonCorrect = true;
         saveNewParamsFromJSONToDB(json);
@@ -120,8 +119,6 @@ function getAndSaveJSONparamsData(jsonfile, callback) {
       }
     }
     catch (e) {
-      console.log("entrei no catch porque: ", e);
-      //alert(jsonErrorMessage);
       jsonCorrect = false;
       callback(jsonCorrect);
     }
@@ -132,19 +129,15 @@ function getAndSaveJSONparamsData(jsonfile, callback) {
 }
 
 /*
- * recebe um obeto JSON e guarda-o na FireStore
+ * receives a JSON object and saves it to Firestore
  * */
 function saveNewParamsFromJSONToDB(json) {
   const paramsDoc = json;
-
-  //console.log("paramsDoc -> ", paramsDoc);
-
   const docRef = firestore.doc("initialConfigs/newParameters");
-
   docRef
     .set(paramsDoc)
     .then(function () {
-      console.log("Novos parâmetros guardados com sucesso.");
+      //console.log("Novos parâmetros guardados com sucesso.");
     })
     .catch(function (error) {
       alert("Erro: " + error);
@@ -152,11 +145,8 @@ function saveNewParamsFromJSONToDB(json) {
 }
 
 function saveRegistToDB(json) {
-  //console.log("Json to save to DB -> ", JSON.stringify(json));
-
   const docRef = firestore.collection("parents");
   const parentRef = docRef.doc(json["Email"]);
-
   parentRef
     .set(json)
     .then(function () {
@@ -184,12 +174,12 @@ function saveCaseToDB(json) {
 }
 
 // ------------------------------------------------------------
-// PROCESSAR CSV
+// PROCESS CSV
 
 /*
- * funcao que processa os CSV de membros e alunos:
- *   dado um CSV, extrai os cabecalhos e analisa cada linha
- *   - resultado para cada linha { "header1" : info1, "header2" : info2, ...}
+ * function to process CSV with members and students' data:
+ *  extract the headers an analyse each line
+ *    - result for each line: { "header1" : data1, "header2" : data2, ...}
  * */
 function getandSaveCSVdata(parentsFile, childrenFile) {
   const parentReader = new FileReader();
@@ -214,18 +204,20 @@ function getandSaveCSVdata(parentsFile, childrenFile) {
 }
 
 /*
- * analisa os dados processados do CSV e guarda-os na Firestore:
- *   - para cada EE, vai ver os educandos com o seu numero de Socio
- *     para esse educando ser adicionado ao array de educandos (documentos)
- *     desse EE;
- *   - no final, o EE (já com o seu array de educandos) é guardado na Firestore
+ * analyse processed CSV data and saves it in Firestore
+ *   -  for each parent, will check the students with the corresponding
+ *      associate number and add that students documents in the array
+ *      of children of that parent document
+ *   -  finally, the parent document (with its children) will be saved
+ *      in Firestore
  * */
 /*
 * TODO:
-*  - funcao que faz replace dos "ND" vindos do CSV por strings vazias
-*  - guardar os parametros extra que também venham do excel (verificar se são iguais ao JSON)*/
+*   - replace "ND" from CSV for empty strings
+*   - check that parameters in CSV are the same as JSON's
+* */
 function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
-  // lista de filhos e pais, ordenados pelo numero de socio do EE
+  // parents and children list ordered by associate number
   const parentDocList = parentsList.sort((a, b) =>
     parseInt(a[Object.keys(a)[0]]) > parseInt(b[Object.keys(b)[0]]) ? 1 : -1
   );
@@ -239,58 +231,50 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 
   const docRef = firestore.collection("parents");
 
-  // adicionar a cada EE os educandos com numSocio do EE igual ao EE atual
+  // add each to parent the students with the same parent's associate number
   for (let i = 0; i < parentDocList.length; i++) {
     let parentDoc = parentDocList[i];
-
-    //console.log("parentDoc atual -> ", parentDoc);
     const numSocio = parentDoc[Object.keys(parentDoc)[0]];
 
-    const nome = parentDoc[Object.keys(parentDoc)[3]].split(" ")[0]; // primeiro nome
+    const nome = parentDoc[Object.keys(parentDoc)[3]].split(" ")[0]; // first name
     const email = parentDoc[Object.keys(parentDoc)[6]];
-    membersEmails[nome] = email; // armazenar nome e email para enviar email depois
-    //console.log("email parentDoc -> " + email);
+    membersEmails[nome] = email; // get name and email to send email afterwards
 
-    //console.log("numSocio atual -> ", numSocio);
+    let parentChildren = []; // childrens of the current parent
 
-    let parentChildren = []; // educandos do encarregado de educacao atual
-
-    // procurar por educandos com EE com o numSocio acima
+    // search for children with the same parent's associate number as above
     for (let j = 0; j < childrenDocList.length; j++) {
       const child = childrenDocList[j];
-
-      //console.log("child atual -> ", child);
-
       if (numSocio !== child[Object.keys(child)[0]])
-        // se nao tem igual numSocio, entao nao e filho dele
+        // if associate number is not equal, then this is not child of the current parent
         continue;
 
       let childDoc = child;
 
-      //console.log("childDoc a inserir -> ", childDoc);
-      // remover o numero de socio e nome do EE, pois vai para dentro do documento do seu EE
+      // remove associate number and parent's name from child's document, as
+      // it will be inside its parent documento
       delete childDoc[Object.keys(childDoc)[0]];
-      delete childDoc[Object.keys(childDoc)[0]]; // remover o 0 porque o que estava a 1 passou a zero na linha de cima
+      delete childDoc[Object.keys(childDoc)[0]]; // remove 0 because the element at 1 shifted to 0 in the line above
 
       parentChildren.push(childDoc);
     }
 
-    // adicionar array para educandos
+    // add children document array to parent's documento
     parentDoc["Educandos"] = parentChildren;
 
-    // converter o boolean de admin de string para boolean
+    // convert admin boolean from CSV from string to boolean
     parentDoc["Admin"] = parentDoc["Admin"] === "true";
 
-    // adicionar outros parâmetros necessários
+    // add remaining necessary parameters
     parentDoc["Cotas"] = [];
-    parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // obter data no formato 2015-03-25;
-    parentDoc["Validated"] = true; // EEs importados são logo validados
-    parentDoc["blocked"] = false; // EEs não estão bloqueados inicialmente
+    parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
+    parentDoc["Validated"] = true; // imported parents are validated
+    parentDoc["blocked"] = false; // imported parents are not blocked initially
 
     // avatar
     parentDoc["photo"] = getGravatarURL(email);
 
-    const parentRef = docRef.doc(email); // email como id do documento
+    const parentRef = docRef.doc(email); // email as document id
 
     parentRef
       .set(parentDoc)
@@ -304,10 +288,10 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 }
 
 function setupCSVData(fileString) {
-  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remover strings vazias
+  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
   //console.log("allLines -> ", allLines);
 
-  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remover strings vazias
+  const headers = allLines[0].split(/[,;]+/).filter((item) => item); // remove empty strings
   let rowsData = [];
 
   //console.log("headers -> ", headers);
@@ -315,7 +299,7 @@ function setupCSVData(fileString) {
   for (let i = 1; i < allLines.length; i++) {
     let lineDict = {};
 
-    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remover strings vazias
+    let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item); // remove empty strings
 
     //console.log("dadosLinha atual -> ", dadosLinha);
 
@@ -331,11 +315,12 @@ function setupCSVData(fileString) {
   return rowsData;
 }
 
-// --------- utilizador
+// --------- USER
 /*
- * função para enviar email a avisar da importação */
+ * send email to parent to notify it was imported to platform
+ */
 async function sendImportEmailToParent(nome, email) {
-  // TODO: remover este email hardcoded
+  // TODO: remove this hardcoded email
   const tempEmail = "alexandrejflopes@ua.pt";
 
   const project_id = firebaseConfig.projectId;
@@ -369,7 +354,7 @@ function notifyAllParents() {
   }
 }
 
-// TODO: apagar no final
+// TODO: remove after authentication has been strongly implemented
 function createDefaultUser() {
   const docRefUser = firestore.doc("initialConfigs/defaultUser");
 
@@ -396,20 +381,15 @@ function createDefaultUser() {
 // --------- upload logos ---------
 
 function uploadDefaultLogo() {
-  // se não for carregado nenhum logo, considerar o default
-  //console.log("defaultLogoFile -> " + defaultLogoFile);
+  // if no logo is provided, consider the default
   const defaultLogoFileParts = defaultLogoFile.split("/");
   const defaultLogoFileName =
     defaultLogoFileParts[defaultLogoFileParts.length - 1];
-
-  // ficar só com o nome e a extensão (porque o nome estava a ficar 'nome.<numeros>.<extensao>'....
+  // get just name and extension (because the name above was like 'name.<some_numbers>.<extension>'....
   const fileNameParts = defaultLogoFileName.split(".");
   const nome = fileNameParts[0];
   const ext = fileNameParts[fileNameParts.length - 1];
   const filename = nome + "." + ext;
-
-  //console.log("defaultLogoFile name -> " + filename);
-
   return storageRef.child("logo/default/" + filename).getDownloadURL();
 }
 
@@ -420,6 +400,9 @@ function uploadNewLogo(file) {
 
 // --------------------------------
 
+/*
+* receives the HTML input id and upload the file it holds
+* */
 function uploadAssocDataFiles(inputID) {
   const file = document.getElementById(inputID).files[0];
 
@@ -437,7 +420,7 @@ function uploadAssocDataFiles(inputID) {
 function getFormElementsAndValues() {
   const all_labels = Array.from(document.querySelectorAll("label"));
   let all_inputs = Array.from(document.querySelectorAll("input"));
-  all_inputs.push(document.querySelector("#configAssocDescricao")); // adicionar a textarea
+  all_inputs.push(document.querySelector("#configAssocDescricao")); // add description textarea
 
   let submittedInputs = {};
 
@@ -490,12 +473,12 @@ function install() {
       input.classList.add("is-invalid");
       document.querySelector("#" + input.id + "Feedback").style.display =
         "block";
-      requiredFieldsProvided = false; // se houver um input obrigatorio sem nada, não submete
+      requiredFieldsProvided = false; // if there's an empty required input, no submit
       //break;
     }
   }
 
-  // confirmar a checkBox
+  // verify the checkBox
   const policyCheckbox = document.querySelector("input[type=checkbox]");
   if (!policyCheckbox.checked) {
     policyCheckboxChecked = false;
@@ -520,11 +503,7 @@ function install() {
   //-------------------------
 
   if (requiredFieldsProvided && policyCheckboxChecked) {
-    //console.log("jsonCorrect quando valido -> " + jsonCorrect);
-
-
-
-    // ler ficheiros e guardar dados
+    // read files and save their data
     const paramsJSONfile = document.getElementById("configAssocNewParams")
       .files[0];
     const membersFile = document.getElementById("configAssocMembers").files[0];
@@ -533,6 +512,7 @@ function install() {
 
     getAndSaveJSONparamsData(paramsJSONfile, function (jsonCorrect) {
       if(!jsonCorrect){
+        // if there's an error with JSON, not allow to submit the form
         const paramsInput = document.getElementById("configAssocNewParams");
         paramsInput.classList.add("is-invalid");
         document.querySelector("#" + paramsInput.id + "Feedback").style.display =
@@ -543,8 +523,7 @@ function install() {
       else{
         getandSaveCSVdata(membersFile, studentsFile);
 
-        // uploads depois dos ficheiros estarem validados
-        //uploadNewLogo("configAssocLogo");
+        // uploads after files are validated
         uploadAssocDataFiles("configAssocMembers");
         uploadAssocDataFiles("configAssocStudents");
         uploadAssocDataFiles("configAssocNewParams");
@@ -552,7 +531,7 @@ function install() {
         const fileArray = document.getElementById("configAssocLogo").files;
 
         if (fileArray.length !== 0) {
-          const file = fileArray[0]; // so da para fazer upload de 1 logo
+          const file = fileArray[0]; // just one logo is uploaded
           const uploadTask = uploadNewLogo(file);
           uploadTask.on(
             "state_changed",
@@ -561,24 +540,23 @@ function install() {
               // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
               var progress =
                 (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              console.log("Upload " + progress + "% concluído");
+              console.log("Upload " + progress + "% completed");
               switch (snapshot.state) {
                 case firebase.storage.TaskState.PAUSED: // or 'paused'
-                  console.log("Upload em pausa");
+                  console.log("Upload on pause");
                   break;
                 case firebase.storage.TaskState.RUNNING: // or 'running'
-                  console.log("Upload em progresso");
+                  console.log("Upload in progress");
                   break;
               }
             },
             function (error) {
-              console.log("Upload não tem sucesso: " + error);
+              console.log("Upload failed: " + error);
             },
             function () {
               // Handle successful uploads on complete
               // get the download URL
               uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
-                console.log("Logo URL -> ", downloadURL);
                 continueInstallation(inputsInfo, downloadURL);
               });
             }
@@ -586,7 +564,6 @@ function install() {
         } else if (fileArray.length === 0) {
           const defaultLogoTask = uploadDefaultLogo();
           defaultLogoTask.then(function (downloadURL) {
-            console.log("Default Logo URL -> ", downloadURL);
             continueInstallation(inputsInfo, downloadURL);
           });
         }
@@ -595,7 +572,7 @@ function install() {
     });
 
   } else {
-      alert("Por favor, preencha os campos em falta.");
+      alert(requiredFieldsMissingMessage);
   }
 }
 
@@ -603,7 +580,7 @@ function continueInstallation(inputsInfo, logoURL) {
   const setupDataDoc = () => {
     let temp = {};
     for (const label in inputsInfo) {
-      // logo default, caso não seja fornecido nenhum
+      // default logo, when no one is provided
       if (label === "Logótipo") {
         temp[label] = logoURL;
         continue;
@@ -614,20 +591,16 @@ function continueInstallation(inputsInfo, logoURL) {
     return temp;
   };
 
-  const dataDoc = setupDataDoc();
-
+  const dataDoc = setupDataDoc(); // {"label" : "input value"}
   notifyAllParents();
-
-  console.log("dataDoc antes de instalar -> " + JSON.stringify(dataDoc));
+  console.log("dataDoc before install -> " + JSON.stringify(dataDoc));
 
   const docRef = firestore.doc("initialConfigs/parameters");
-
-  //alert("ler os consoles");
 
   docRef
     .set(dataDoc)
     .then(function () {
-      // ------------- documento instalacao
+      // ------------- installation control doc
       const doc = {
         installation: true,
       };
@@ -635,13 +608,8 @@ function continueInstallation(inputsInfo, logoURL) {
       initDoc
         .set(doc)
         .then(function () {
-          //console.log("initDoc -> ", doc);
           createDefaultUser();
-          alert(
-            "A associação foi registada com sucesso e todos os seus membros foram notificados por email.\n" +
-              "Por favor consulte o seu email para começar a usar a plataforma.\n\n" +
-              "Nota: se não recebeu nenhum email, aguarde ou verifique a pasta de Lixo ou Spam. Obrigado."
-          );
+          alert(sucessImportMessage);
           window.location.href = "/";
         })
         .catch(function (error) {

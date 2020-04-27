@@ -1,12 +1,16 @@
 /*
-* ficheiro para guardar funções (ou listas, etc.) que sejam para reutilizar e que sejam mais genéricas,
-* como funções para gerar números aleatorios ou obter o url do gravatar a partir de um email */
+* file to save functions (or others, like lists) that will be reused and might be more general,
+* like functions to generate randoms or get the gravatar URL from an email, etc
+* */
 
 // --------------------------------------------- IMPORTS ----------------------------------------------
 import MD5 from "crypto-js/md5";
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 
-// -------------------------------------------- CONSTANTES --------------------------------------------
+// -------------------------------------------- CONSTANTS --------------------------------------------
+
+const regular_role_PT = "Associado(a)";
+const defaultIBAN = "PT50 1234 4321 12345678901 72";
 
 const languageCode = "pt_PT";
 
@@ -31,8 +35,6 @@ const newParametersEntities = {
   }
 };
 
-const regular_role_PT = "Associado(a)";
-const defaultIBAN = "PT50 1234 4321 12345678901 72";
 
 
 
@@ -42,13 +44,16 @@ const defaultIBAN = "PT50 1234 4321 12345678901 72";
 
 
 
-// ---------------------------------------------- FUNCOES ---------------------------------------------
 
-/* função para fazer hash do email com MD5 para o Gravatar */
+
+
+// ---------------------------------------------- FUNCTIONS ---------------------------------------------
+
+/* hash the email with MD5 to implement Gravatar */
 function getGravatarURL(email) {
   const emailProcessed = email.trim().toLowerCase();
-  const hashedEmail = MD5(emailProcessed); // hash do email em minusculas com MD5
-  return "https://www.gravatar.com/avatar/" + hashedEmail + "?d=mp"; // avatar default caso nao haja avatar para o email fornecido
+  const hashedEmail = MD5(emailProcessed); // email hash with lowercase with MD5
+  return "https://www.gravatar.com/avatar/" + hashedEmail + "?d=mp"; // default avatar when there's no one for that email
 }
 
 function getRandomInteger(min, max) {
@@ -58,7 +63,8 @@ function getRandomInteger(min, max) {
 
 // --------------------------------------------- EXPORTS ----------------------------------------------
 
-export {getGravatarURL,
+export {
+  getGravatarURL,
   regular_role_PT,
   defaultLogoFile,
   defaultIBAN,
