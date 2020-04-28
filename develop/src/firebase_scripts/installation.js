@@ -21,77 +21,98 @@ function checkJSONparamsEntitiesAndTypes(json) {
 
   // check entities
   const entities = Object.keys(json).length;
-  //console.log("entities -> " + Object.keys(json));
+  console.log("entities (" + entities + ") -> " + Object.keys(json));
   const parentParams = json[newParametersEntities.parent[languageCode]];
   const studentParams = json[newParametersEntities.student[languageCode]];
 
+  if(entities === 1 && parentParams==null && studentParams==null){
+    /*
+    * with one entity, just one of them must be null;
+    * if none of them is parent or student: invalid JSON
+    * */
+    console.log("sair no 1");
+    return false;
+  }
   if(entities===2 && ((parentParams==null) || (studentParams==null))){
-    // if there are 2, but one of them is null: invalid JSON
+    // if there are 2, but at least one of them is null: invalid JSON
+    console.log("sair no 2");
     return false;
   }
 
-  //parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
-  //studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
+  parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
+  studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
 
   if(entities === 0){ // allow no parameters, as the input field is required
+    console.log("sair no 3");
     return true;
   }
-  if(entities >=3){
+  else if(entities >=3){
     // only 2 entities, at max (parent and student)
+    console.log("sair no 4");
     return false;
   }
-  else if(entities===1) {
-    // if none of them is parent or student: invalid JSON
-    if((parentParams==null) && (studentParams==null)){
-      return false;
-    }
-    else {
-      // check parameters themselves
+  else if(1<=entities<=2) {
+    console.log("entrei aqui");
+    // check parameters themselves
+    let parentKeys;
+    let studentKeys;
 
-      /* if they exist, but have no parameters: JSON no accepted
-      *   - if the user does not want parameters for either
-      *     parent or student, simply does not write them in the JSON
-      * */
-      if(parentParams){
-        if(Object.keys(parentParams).length === 0)
-          return false;
-      }
-      if(studentParams){
-        if(Object.keys(studentParams).length === 0)
-          return false;
-      }
-      const TEXT = newParametersTypes.TEXT[languageCode];
-      const INT = newParametersTypes.INT[languageCode];
-      const FLOAT = newParametersTypes.FLOAT[languageCode];
-      //  check parent's parameters
-      if(parentParams!=null){
-        const keys = Object.keys(parentParams);
-        if(keys.length>0){
-          for (let i = 0; i< keys.length; i++){
-            const chave = keys[i];
-            // if none of supported parameters: invalid JSON
-            if(parentParams[chave]!==TEXT && parentParams[chave]!==INT && parentParams[chave]!==FLOAT){
-              return false;
-            }
+    if(parentParams)
+      parentKeys = Object.keys(parentParams);
+    if(studentParams)
+      studentKeys = Object.keys(studentParams);
+
+    console.log("parentKeys: " + parentKeys);
+    console.log("studentKeys: " + studentKeys);
+
+    /* if they exist, but have no parameters: JSON no accepted
+    *   - if the user does not want parameters for either
+    *     parent or student, simply does not write them in the JSON
+    * */
+    if(parentParams){
+      if(parentKeys.length === 0)
+        return false;
+    }
+    if(studentParams){
+      if(studentKeys.length === 0)
+        return false;
+    }
+    const TEXT = newParametersTypes.TEXT[languageCode];
+    const INT = newParametersTypes.INT[languageCode];
+    const FLOAT = newParametersTypes.FLOAT[languageCode];
+    //  check parent's parameters
+    if(parentParams){
+      console.log("ENTREI PP");
+      if(parentKeys.length>0){
+        for (let i = 0; i< parentKeys.length; i++){
+          const chave = parentKeys[i];
+          console.log(chave + " : " + parentParams[chave]);
+          // if none of supported parameters: invalid JSON
+          if(parentParams[chave]!==TEXT && parentParams[chave]!==INT && parentParams[chave]!==FLOAT){
+            console.log("sair no 5");
+            return false;
           }
         }
       }
-      //  check student's parameters
-      if(studentParams!=null){
-        const keys = Object.keys(studentParams);
-        if(keys.length>0){
-          for (let i = 0; i< keys.length; i++){
-            const chave = keys[i];
-            // if none of supported parameters: invalid JSON
-            if(studentParams[chave]!==TEXT && studentParams[chave]!==INT && studentParams[chave]!==FLOAT){
-              return false;
-            }
+    }
+    //  check student's parameters
+    if(studentParams){
+      console.log("ENTREI SP");
+      if(studentKeys.length>0){
+        for (let i = 0; i< studentKeys.length; i++){
+          const chave = studentKeys[i];
+          console.log(chave + " : " + studentParams[chave]);
+          // if none of supported parameters: invalid JSON
+          if(studentParams[chave]!==TEXT && studentParams[chave]!==INT && studentParams[chave]!==FLOAT){
+            console.log("sair no 6");
+            return false;
           }
         }
       }
     }
   }
 
+  console.log("vou sair com true");
   return true;
 
 }
@@ -333,6 +354,8 @@ async function sendImportEmailToParent(nome, email) {
     "&" +
     "nome=" +
     nome;
+
+  window.localStorage.setItem("emailForSignIn", tempEmail);
 
   const request = async () => {
     await fetch(uri)
@@ -592,7 +615,7 @@ function continueInstallation(inputsInfo, logoURL) {
   };
 
   const dataDoc = setupDataDoc(); // {"label" : "input value"}
-  notifyAllParents();
+  // send email to all imported parents
   console.log("dataDoc before install -> " + JSON.stringify(dataDoc));
 
   const docRef = firestore.doc("initialConfigs/parameters");
@@ -609,6 +632,7 @@ function continueInstallation(inputsInfo, logoURL) {
         .set(doc)
         .then(function () {
           createDefaultUser();
+          notifyAllParents();
           alert(sucessImportMessage);
           window.location.href = "/";
         })
@@ -620,4 +644,13 @@ function continueInstallation(inputsInfo, logoURL) {
       alert("Erro: " + error);
     });
 }
-export { install, saveRegistToDB, saveCaseToDB, getGravatarURL };
+
+export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
+        // functions reused in installation of a brand new association
+        getAndSaveJSONparamsData,
+        createDefaultUser,
+        sendImportEmailToParent,
+        uploadDefaultLogo,
+        uploadNewLogo,
+        uploadAssocDataFiles,
+        removeAllInvalidFeedbacks};

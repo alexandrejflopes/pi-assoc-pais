@@ -30,6 +30,38 @@ class Login extends CostumForm {
     };
 
     this.googleSignIn = this.googleSignIn.bind(this);
+
+
+    const currentUser = firebase_auth.currentUser;
+
+    if(currentUser!=null){
+      //alert("currentUser email: " + currentUser.email);
+    }
+
+
+    if (firebase_auth.isSignInWithEmailLink(window.location.href)) {
+      //alert("location href -> " + window.location.href);
+      var email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation');
+      }
+      firebase.auth().signInWithEmailLink(email, window.location.href)
+        .then(function(result) {
+          //alert("email: " + email);
+          // Clear email from storage.
+          //alert("result -> " + result);
+          window.localStorage.removeItem('emailForSignIn');
+          //alert("TESTE 2");
+        })
+        .catch(function(error) {
+          // Some error occurred, you can inspect the code: error.code
+          // Common errors could be invalid email and invalid or expired OTPs.
+          alert("Erro: " + error);
+        });
+    }
+
+
+
   }
 
   /*********************************** LIFECYCLE ***********************************/

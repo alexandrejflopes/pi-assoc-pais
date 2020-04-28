@@ -24,12 +24,12 @@ const ConfigFormNew = () => (
         <Form>
           <h5>Sobre si</h5>
           <Row form>
-            <Col md="6" className="form-group">
+            <Col md="4" className="form-group">
               <label htmlFor="configAssocAdminNome">O seu nome</label>
-              <FormInput id="configAssocAdminNome" type="text" required />
+              <FormInput id="configAssocAdminNome" type="text" placeholder="João Oliveira" required />
               <FormFeedback id="configAssocAdminNomeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
             </Col>
-            <Col md="6">
+            <Col md="4">
               <FormGroup>
                 <label htmlFor="configAdminEmail">O seu email</label>
                 <FormInput
@@ -40,6 +40,15 @@ const ConfigFormNew = () => (
                 />
               </FormGroup>
               <FormFeedback id="configAdminEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+            </Col>
+            <Col md="4" className="form-group">
+              <label htmlFor="configAssocAdminCargo">Cargo</label>
+              <FormInput
+                id="configAssocAdminCargo"
+                type="text"
+                placeholder="Cargo a desempenhar na associação"
+                required />
+              <FormFeedback id="configAssocAdminCargoFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
             </Col>
           </Row>
           <hr />
