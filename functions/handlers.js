@@ -621,6 +621,44 @@ exports.getParent = functions.https.onRequest((request, response) =>{
         return response.status(405).send({"error" : err});
     });
 });
+/**
+ * Função que devolve um dicionário a que a cada id de documento de um Encarregado de educação corresponde
+ * uma lista com os seus educandos.
+ * A função não leva nenhum argumento.
+ */
+exports.getEducandos = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let a = [];
+    db.collection('parents').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let encarregado = {};
+            encarregado[doc.id] = doc.get("Educandos")
+            a.push(encarregado);
+        });
+        return response.send(a);
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função que devolve uma lista com todos os números de sócio de todos os Encarregados de educação presentes na base de dados
+ */
+exports.getParentsNumeroSocio = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let a = [];
+    db.collection('parents').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            a.push(doc.get("Número de Sócio"));
+        });
+        return response.send(a);
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
+});
 
 /**
  * Funções relacionadas com as partes das cotas dos enc de educação

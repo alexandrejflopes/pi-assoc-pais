@@ -27,6 +27,8 @@ const {
   getCaso,
   getParents,
   getParent,
+  getEducandos,
+  getParentsNumeroSocio,
   addCota,
   confirmarPaganteCota,
   confirmarRecetorCota,
@@ -63,6 +65,8 @@ app.get('/getUserAvailableCasos',getUserAvailableCasos);
 app.get('/getCaso',getCaso);
 app.get('/getParents',getParents);
 app.get('/getParent',getParent);
+app.get('/getEducandos',getEducandos);
+app.get('/getParentsNumeroSocio',getParentsNumeroSocio);
 app.get('/addCota',addCota);
 app.get('/confirmarPaganteCota',confirmarPaganteCota);
 app.get('/confirmarRecetorCota',confirmarRecetorCota);
