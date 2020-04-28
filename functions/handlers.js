@@ -5,6 +5,9 @@ const nodemailer = require('nodemailer');
 admin.initializeApp();
 
 
+const auth_URL = "http://localhost:3000/login"; // https://www.google.com/
+
+
 // Configure the email transport using the default SMTP transport and a GMail account.
 // For Gmail, enable these:
 // 1. https://www.google.com/settings/security/lesssecureapps
@@ -621,6 +624,7 @@ exports.getParent = functions.https.onRequest((request, response) =>{
         return response.status(405).send({"error" : err});
     });
 });
+
 /**
  * Função que devolve um dicionário a que a cada id de documento de um Encarregado de educação corresponde
  * uma lista com os seus educandos.
@@ -979,7 +983,7 @@ exports.sendApprovedEmail = functions.https.onRequest((request, response) => {
     var actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be whitelisted in the Firebase Console.
-    url: 'https://www.google.com/',
+    url: auth_URL, // https://www.google.com/
     // This must be true.
     handleCodeInApp: true,
     };
@@ -1013,7 +1017,7 @@ exports.sendAuthenticationEmail = functions.https.onRequest((request, response) 
     var actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be whitelisted in the Firebase Console.
-    url: 'https://www.google.com/',
+    url: auth_URL,
     // This must be true.
     handleCodeInApp: true,
     };
@@ -1047,7 +1051,7 @@ exports.sendUserImportEmail = functions.https.onRequest((request, response) => {
     var actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be whitelisted in the Firebase Console.
-    url: 'https://www.google.com/',
+    url: auth_URL,
     // This must be true.
     handleCodeInApp: true,
     };
@@ -1087,7 +1091,7 @@ exports.sendNotificationEmail = functions.https.onRequest((request, response) =>
     var actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be whitelisted in the Firebase Console.
-    url: 'https://www.google.com/',
+    url: auth_URL,
     // This must be true.
     handleCodeInApp: true,
     };
@@ -1124,7 +1128,7 @@ exports.sendPositionEmail = functions.https.onRequest((request, response) => {
     var actionCodeSettings = {
     // URL you want to redirect back to. The domain (www.example.com) for this
     // URL must be whitelisted in the Firebase Console.
-    url: 'https://www.google.com/',
+    url: auth_URL,
     // This must be true.
     handleCodeInApp: true,
     };
