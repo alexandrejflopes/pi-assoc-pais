@@ -37,8 +37,8 @@ function checkJSONparamsEntitiesAndTypes(json) {
     return false;
   }
 
-  parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
-  studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
+  //parentParams ? console.log("parentParams -> " + JSON.stringify(parentParams)) : console.log("parentParams -> " + parentParams);
+  //studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
 
   if(entities === 0){ // allow no parameters, as the input field is required
     return true;
@@ -80,7 +80,7 @@ function checkJSONparamsEntitiesAndTypes(json) {
       if(parentKeys.length>0){
         for (let i = 0; i< parentKeys.length; i++){
           const chave = parentKeys[i];
-          console.log(chave + " : " + parentParams[chave]);
+          //console.log(chave + " : " + parentParams[chave]);
           // if none of supported parameters: invalid JSON
           if(parentParams[chave]!==TEXT && parentParams[chave]!==INT && parentParams[chave]!==FLOAT){
             return false;
@@ -643,4 +643,6 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         uploadDefaultLogo,
         uploadNewLogo,
         uploadAssocDataFiles,
-        removeAllInvalidFeedbacks};
+        removeAllInvalidFeedbacks,
+        // functions used in tests
+        checkJSONparamsEntitiesAndTypes};

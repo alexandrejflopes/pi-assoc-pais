@@ -22,7 +22,7 @@ const ConfigFormNew = () => (
     <ListGroupItem className="p-3">
       <Col>
         <Form>
-          <h5>Sobre si</h5>
+          <h5>Sobre si <span><i className="material-icons">info</i></span></h5>
           <Row form>
             <Col md="4" className="form-group">
               <label htmlFor="configAssocAdminNome">O seu nome</label>
