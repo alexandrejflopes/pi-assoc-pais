@@ -1186,7 +1186,7 @@ exports.exportParentCSV = functions.https.onRequest((request, response) => {
         const csv = json2csv(a);
         response.setHeader(
             "Content-disposition",
-            "attachment; filename=report.csv"
+            "attachment; filename=parents.csv"
         );
         response.set("Content-Type", "text/csv");
         
@@ -1217,7 +1217,7 @@ exports.exportEducandosCSV = functions.https.onRequest((request, response) => {
         const csv = json2csv(a);
         response.setHeader(
             "Content-disposition",
-            "attachment; filename=report.csv"
+            "attachment; filename=educandos.csv"
         );
         response.set("Content-Type", "text/csv");
         return response.status(200).send(csv);
