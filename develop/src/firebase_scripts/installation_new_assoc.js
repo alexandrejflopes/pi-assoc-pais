@@ -1,4 +1,5 @@
 import {
+  firebaseConfig,
   firestore,
   initDoc,
 } from "../firebase-config";
@@ -26,10 +27,11 @@ const requiredFieldsMissingMessage = provideRequiredFieldsMessage[languageCode];
 
 // -------------- person that installs --------------
 
+
 function createInstallerParent(nome, email, cargo) {
   const docRef = firestore.collection("parents");
   let parentDoc = {};
-  const numSocio = getRandomInteger(10000,100000);
+  const numSocio = getRandomInteger(10000,100000).toString();
   parentDoc["Admin"] = true;
   parentDoc["Cargo"] = cargo;
   parentDoc["Cartão Cidadão"] = "";

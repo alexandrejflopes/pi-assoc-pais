@@ -21,7 +21,7 @@ function checkJSONparamsEntitiesAndTypes(json) {
 
   // check entities
   const entities = Object.keys(json).length;
-  console.log("entities (" + entities + ") -> " + Object.keys(json));
+  //console.log("entities (" + entities + ") -> " + Object.keys(json));
   const parentParams = json[newParametersEntities.parent[languageCode]];
   const studentParams = json[newParametersEntities.student[languageCode]];
 
@@ -30,12 +30,10 @@ function checkJSONparamsEntitiesAndTypes(json) {
     * with one entity, just one of them must be null;
     * if none of them is parent or student: invalid JSON
     * */
-    console.log("sair no 1");
     return false;
   }
   if(entities===2 && ((parentParams==null) || (studentParams==null))){
     // if there are 2, but at least one of them is null: invalid JSON
-    console.log("sair no 2");
     return false;
   }
 
@@ -43,16 +41,13 @@ function checkJSONparamsEntitiesAndTypes(json) {
   studentParams ? console.log("studentParams -> " + JSON.stringify(studentParams)) : console.log("studentParams -> " + studentParams);
 
   if(entities === 0){ // allow no parameters, as the input field is required
-    console.log("sair no 3");
     return true;
   }
   else if(entities >=3){
     // only 2 entities, at max (parent and student)
-    console.log("sair no 4");
     return false;
   }
   else if(1<=entities<=2) {
-    console.log("entrei aqui");
     // check parameters themselves
     let parentKeys;
     let studentKeys;
@@ -62,8 +57,8 @@ function checkJSONparamsEntitiesAndTypes(json) {
     if(studentParams)
       studentKeys = Object.keys(studentParams);
 
-    console.log("parentKeys: " + parentKeys);
-    console.log("studentKeys: " + studentKeys);
+    //console.log("parentKeys: " + parentKeys);
+    //console.log("studentKeys: " + studentKeys);
 
     /* if they exist, but have no parameters: JSON no accepted
     *   - if the user does not want parameters for either
@@ -82,14 +77,12 @@ function checkJSONparamsEntitiesAndTypes(json) {
     const FLOAT = newParametersTypes.FLOAT[languageCode];
     //  check parent's parameters
     if(parentParams){
-      console.log("ENTREI PP");
       if(parentKeys.length>0){
         for (let i = 0; i< parentKeys.length; i++){
           const chave = parentKeys[i];
           console.log(chave + " : " + parentParams[chave]);
           // if none of supported parameters: invalid JSON
           if(parentParams[chave]!==TEXT && parentParams[chave]!==INT && parentParams[chave]!==FLOAT){
-            console.log("sair no 5");
             return false;
           }
         }
@@ -97,14 +90,12 @@ function checkJSONparamsEntitiesAndTypes(json) {
     }
     //  check student's parameters
     if(studentParams){
-      console.log("ENTREI SP");
       if(studentKeys.length>0){
         for (let i = 0; i< studentKeys.length; i++){
           const chave = studentKeys[i];
           console.log(chave + " : " + studentParams[chave]);
           // if none of supported parameters: invalid JSON
           if(studentParams[chave]!==TEXT && studentParams[chave]!==INT && studentParams[chave]!==FLOAT){
-            console.log("sair no 6");
             return false;
           }
         }
@@ -112,7 +103,6 @@ function checkJSONparamsEntitiesAndTypes(json) {
     }
   }
 
-  console.log("vou sair com true");
   return true;
 
 }
