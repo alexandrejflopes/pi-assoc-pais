@@ -234,7 +234,7 @@ class Register_Page extends Component {
       parentJson["Cartão Cidadão"] = "Não";
       parentJson.blocked = false;
       parentJson.Cargo = "";
-      parentJson.Admin = true;
+      parentJson.Admin = false;
       parentJson.Cargo = regular_role_PT;
 
       // avatar
