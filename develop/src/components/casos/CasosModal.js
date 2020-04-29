@@ -198,10 +198,13 @@ class CasosModal extends React.Component {
         privateVal +
         "&" +
         "nome_autor=" +
-        encodeURIComponent("por fazer") +
+        encodeURIComponent("Diogo Gomes") +
         "&" +
         "id_autor=" +
-        encodeURIComponent("por fazer");
+        "dgomes@pi-assoc-pais.com";
+
+      //TODO: Get firebase user
+      //console.log("URI novo caso -> " + uri);
 
       const request = async () => {
         await fetch(uri)

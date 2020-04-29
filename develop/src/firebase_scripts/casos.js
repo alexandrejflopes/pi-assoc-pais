@@ -93,7 +93,7 @@ function addCasosExemplo() {
       privado: false,
       membros: [],
       nome_autor: "Diogo Gomes",
-      id_autor: "hdf4684TKF",
+      id_autor: "dgomes@pi-assoc-pais.com",
     },
     {
       titulo: "Material insuficiente na sala 7",
@@ -102,7 +102,7 @@ function addCasosExemplo() {
       privado: false,
       membros: [],
       nome_autor: "Mário Silva",
-      id_autor: "75hfJ4FTE",
+      id_autor: "mario.silva@pi-assoc-pais.com",
     },
     {
       titulo: "Rixa entre o Gonçalo e o João do 1º ano",
@@ -111,12 +111,11 @@ function addCasosExemplo() {
         "sem a sua autorização.",
       privado: true,
       membros: [
-        { nome: "Paula", id: "pljouHGIHpo" },
-        { nome: "José", id: "SIdjisdnDI" },
-        { nome: "Graça", id: "kjFRDLvBed" },
+        { nome: "Olivério Baptista", id: "oliverio@pi-assoc-pais.com" },
+        { nome: "Luísa Santos", id: "luisa.santos@pi-assoc-pais.com" },
       ],
-      nome_autor: "Paula",
-      id_autor: "mKgfGGdg6r4f",
+      nome_autor: "Vera Teixeira", // autor é adicionado automaticamente ao caso
+      id_autor: "vera@pi-assoc-pais.com",
     },
   ];
 
@@ -188,7 +187,7 @@ function initCasosExemplo() {
 async function showAvailableCasos() {
   // utilizador teste
   const nome = "Diogo Gomes";
-  const id = "hdf4684TKF";
+  const id = "dgomes@pi-assoc-pais.com";
 
   let uri =
     "https://us-central1-associacao-pais.cloudfunctions.net/api/getUserAvailableCasos?" +
@@ -265,5 +264,13 @@ async function addNewCaso() {
 
   return request();
 }
+
+// ---------------- NOVAS VERSOES --------------
+
+
+
+
+
+
 
 export { initCasosExemplo, showAvailableCasos };

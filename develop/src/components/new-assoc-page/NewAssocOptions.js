@@ -57,7 +57,7 @@ const NewAssocOptions = () => (
                         Nova Associação
                       </h3>
                       <p>
-                        Associação não formalaziada fisicamente e ainda sem associados para importar para a plataforma
+                        Associação não formalizada fisicamente e ainda sem associados para importar para a plataforma
                       </p>
                     </ListGroup.Item>
                   </ListGroup>

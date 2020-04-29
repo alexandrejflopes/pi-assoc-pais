@@ -16,7 +16,12 @@ import {
   FormTextarea,
   FormCheckbox,
 } from "shards-react";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
 
@@ -211,13 +216,14 @@ class ApprovalModal extends React.Component {
   approve() {
     const { dados } = this.state;
     const this_ = this;
-
+    // TODO: gerar numero de sócio aleatoriamente
     firestore
       .collection("parents")
       .doc(dados.Email)
       .set(
         {
           Validated: true,
+          "Data inscricao": new Date().toJSON().split("T")[0], // obter data no formato 2015-03-25;
         },
         { merge: true }
       )
@@ -225,8 +231,12 @@ class ApprovalModal extends React.Component {
         console.log("Document successfully updated!");
         this_.closeModal();
         this_.state.parentComponent.reload();
+
+        const project_id = firebaseConfig.projectId;
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/sendApprovedEmail?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/sendApprovedEmail?" +
           "email=" +
           dados.Email +
           "&" +

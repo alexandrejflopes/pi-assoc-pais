@@ -9,19 +9,19 @@ import {
   FormGroup,
   FormCheckbox,
   Button,
-  FormTextarea,
   FormFeedback,
 } from "shards-react";
-import { toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Label, Input, FormText } from "reactstrap";
+import { Label, Input } from "reactstrap";
 import { Link, Redirect, Route } from "react-router-dom";
-import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
-import MembersFileUpload from "../config-inicial/MembersFileUpload";
-import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
 import { saveRegistToDB } from "../../firebase_scripts/installation";
-import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import { getGravatarURL, regular_role_PT } from "../../utils/general_utils";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 
 class Register_Page extends Component {
   constructor(props) {
@@ -40,6 +40,7 @@ class Register_Page extends Component {
       zipCodeFeedback: null,
       email: "",
       emailFeedback: null,
+      phone: null,
       nomeAluno: [""], //Store multiple names
       nomeAlunoFeedBack: [null], //Store feedback for multiple names -> not working for students other than the first one
       anoEscolaridade: [""],
@@ -96,6 +97,7 @@ class Register_Page extends Component {
       localidade,
       zipCode,
       email,
+      phone,
       nomeAluno,
       nomeAlunoFeedBack,
       anoEscolaridade,
@@ -207,12 +209,13 @@ class Register_Page extends Component {
       var parentJson = {};
       parentJson.Nome = parentName;
       parentJson.NIF = nif;
-      if (job != "") {
-        parentJson.Emprego = job;
+      if (job !== "") {
+        parentJson["Profissão"] = job;
       }
       parentJson.Localidade = localidade;
-      parentJson.ZIP = zipCode;
+      parentJson["Código Postal"] = zipCode;
       parentJson.Email = email;
+      parentJson["Telemóvel"] = phone;
 
       // Get extra parent values and store in Json -> they are in extraVars[0] along with student extra values and there are extraPai number of parent values
       var extraArray = extraVars[0]; // Dictionary of values
@@ -225,8 +228,17 @@ class Register_Page extends Component {
       parentJson.Validated = false;
       parentJson["Número de Sócio"] = "";
       parentJson["Quotas Pagas"] = "Não";
-      var date = new Date().getSeconds();
+      var date = new Date();
       parentJson["Data inscrição"] = date;
+      parentJson.Cotas = [];
+      parentJson["Cartão Cidadão"] = "Não";
+      parentJson.blocked = false;
+      parentJson.Cargo = "";
+      parentJson.Admin = true;
+      parentJson.Cargo = regular_role_PT;
+
+      // avatar
+      parentJson.photo = getGravatarURL(email);
 
       // Student's part
       var studentArray = [];
@@ -258,8 +270,11 @@ class Register_Page extends Component {
 
       //Save values to database
       saveRegistToDB(parentJson);
+      const project_id = firebaseConfig.projectId;
       let uri =
-        "https://us-central1-associacao-pais.cloudfunctions.net/api/sendRegisterEmail?" +
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/sendRegisterEmail?" +
         "email=" +
         email +
         "&" +
@@ -770,7 +785,17 @@ class Register_Page extends Component {
                     <label htmlFor="phone">
                       Telemóvel / Telefone (opcional)
                     </label>
-                    <FormInput id="phone" type="tel" placeholder="200345678" />
+                    <FormInput
+                      invalid={this.state.phoneFeedback}
+                      onChange={(e) => {
+                        this.setState({
+                          phone: e.target.value,
+                        });
+                      }}
+                      id="phone"
+                      type="tel"
+                      placeholder="200345678"
+                    />
                     <FormFeedback
                       id="phoneFeedback"
                       valid={false}
