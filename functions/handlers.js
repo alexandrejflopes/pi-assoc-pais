@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+const json2csv = require("json2csv").parse;
 
 admin.initializeApp();
 
@@ -1163,4 +1164,68 @@ async function sendEmail(email, subject, message) {
     await mailTransport.sendMail(mailOptions);
     //console.log('New welcome email sent to:', email);
     return null;
-  }
+}
+
+/**
+ * Funções relacionadas com a exportação de dados
+ */
+/**
+ * Função devolve/inicia o download de um ficheiro de extensão CSV com todos os parents presentes na base de dados.
+ * Devolve os dados dos utilizadores não incluindo os seus educandos nem as suas cotas.
+ */
+exports.exportParentCSV = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let a = [];
+    db.collection('parents').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let data = doc.data();
+            delete data["Educandos"]
+            delete data["Cotas"]
+            a.push(data);
+        });
+        const csv = json2csv(a);
+        response.setHeader(
+            "Content-disposition",
+            "attachment; filename=report.csv"
+        );
+        response.set("Content-Type", "text/csv");
+        
+        return response.status(200).send(csv);
+    })
+    .catch((err) => {
+        console.log('Error exporting data', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função devolve/inicia o download de um ficheiro de extensão CSV com todos os educandos de todos os parents presentes na base de dados.
+ * Devolve os dados dos educandos com o email, nome e número de sócio do seu encarregado de educação.
+ */
+exports.exportEducandosCSV = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let a = [];
+    db.collection('parents').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let data = doc.data();
+            doc.get("Educandos").forEach((value, index) => {
+                value["Encarregado de Educação"] = doc.get("Nome");
+                value["Número Sócio Enc de Educação"] = doc.get("Número de Sócio");
+                value["Email de Encarregado de Educação"] = doc.get("Email");
+                a.push(value)
+            });
+        });
+        const csv = json2csv(a);
+        response.setHeader(
+            "Content-disposition",
+            "attachment; filename=report.csv"
+        );
+        response.set("Content-Type", "text/csv");
+        return response.status(200).send(csv);
+    })
+    .catch((err) => {
+        console.log('Error exporting data', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+
+
