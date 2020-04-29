@@ -1,9 +1,9 @@
 import React from "react";
 import { Container, Row, Col, CardHeader, Card } from "shards-react";
 
-import Login_Page from "../components/login-page/LoginPage";
+import Payment_Page from "../components/payment-page/PaymentPage";
 
-const LoginPage = (e) => (
+const PaymentPage = (e) => (
   <Container fluid className="main-content-container px-4 pb-4">
     <Row
       style={{
@@ -17,13 +17,16 @@ const LoginPage = (e) => (
       <Col lg="9" md="12">
         <Card small>
           <CardHeader className="border-bottom">
-            <h6 className="m-0">Login</h6>
+            <h6 className="m-0">Pagamento</h6>
           </CardHeader>
-          <Login_Page
-            msg={
+          <Payment_Page
+            email={
+              e.history.location.state ? e.history.location.state.Email : null
+            }
+            payment={
               e.history.location.state
-                ? e.history.location.state.msg
-                : undefined
+                ? e.history.location.state.payment
+                : false
             }
           />
         </Card>
@@ -32,4 +35,4 @@ const LoginPage = (e) => (
   </Container>
 );
 
-export default LoginPage;
+export default PaymentPage;

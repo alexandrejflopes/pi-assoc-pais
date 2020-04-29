@@ -226,7 +226,7 @@ class ApprovalModal extends React.Component {
         this_.closeModal();
         this_.state.parentComponent.reload();
         let uri =
-          "https://us-central1-mytestproject-ffacc.cloudfunctions.net/sendApprovedEmail?" +
+          "https://us-central1-associacao-pais.cloudfunctions.net/api/sendApprovedEmail?" +
           "email=" +
           dados.Email +
           "&" +
@@ -266,7 +266,7 @@ class ApprovalModal extends React.Component {
         this_.closeModal();
         this_.state.parentComponent.reload();
         let uri =
-          "https://us-central1-mytestproject-ffacc.cloudfunctions.net/sendRejectedEmail?" +
+          "https://us-central1-associacao-pais.cloudfunctions.net/api/sendRejectedEmail?" +
           "email=" +
           dados.Email +
           "&" +

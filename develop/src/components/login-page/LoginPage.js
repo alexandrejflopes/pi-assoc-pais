@@ -8,7 +8,7 @@ import {
   FormFeedback,
   Input,
 } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import BlockUi from "react-block-ui";
 import { Loader } from "react-loaders";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
@@ -20,6 +20,20 @@ import bg1 from "../../assets/mother.png";
 class Login extends CostumForm {
   constructor(props) {
     super(props);
+
+    var msg = this.props.msg;
+    if (msg == undefined) {
+      msg = null;
+    } else {
+      const hStyle = { color: "green" };
+
+      msg = (
+        <div>
+          <p style={hStyle}>{msg}</p>
+        </div>
+      );
+    }
+
     this.state = {
       blocking: false,
       credentials: {
@@ -27,9 +41,78 @@ class Login extends CostumForm {
         password: "",
       },
       errors: {},
+      redirect: null,
+      msg: msg,
     };
 
     this.googleSignIn = this.googleSignIn.bind(this);
+
+    const currentUser = firebase_auth.currentUser;
+    const this_ = this;
+
+    if (currentUser != null) {
+      alert("Redirect para o perfil");
+    } else if (firebase_auth.isSignInWithEmailLink(window.location.href)) {
+      var email = window.localStorage.getItem("emailForSignIn");
+      if (!email) {
+        email = window.prompt("Please provide your email for confirmation");
+      }
+      firebase
+        .auth()
+        .signInWithEmailLink(email, window.location.href)
+        .then(function (result) {
+          // Clear email from storage.
+          window.localStorage.removeItem("emailForSignIn");
+
+          const userDoc = firestore.collection("parents").doc(email);
+          userDoc
+            .get()
+            .then((doc) => {
+              if (doc.exists === false) {
+                alert("Utilizador não registado!");
+              } else {
+                const dataDoc = doc.data();
+                if (email == dataDoc.Email && dataDoc["Validated"] == false) {
+                  var red;
+                  if (dataDoc["Quotas Pagas"] == "Não") {
+                    red = (
+                      <Redirect
+                        to={{
+                          pathname: "/payment",
+                          state: { Email: dataDoc.Email, payment: false },
+                        }}
+                      />
+                    );
+                  } else {
+                    red = (
+                      <Redirect
+                        to={{
+                          pathname: "/payment",
+                          state: { Email: dataDoc.Email, payment: true },
+                        }}
+                      />
+                    );
+                  }
+                  //Redirecionar para página de pagamento
+                  this_.setState({ redirect: red });
+                } else if (
+                  email == dataDoc.Email &&
+                  dataDoc["Validated"] == true
+                ) {
+                  alert("Redirect para o perfil");
+                }
+              }
+            })
+            .catch((err) => {
+              alert(err);
+            });
+        })
+        .catch(function (error) {
+          // Some error occurred, you can inspect the code: error.code
+          // Common errors could be invalid email and invalid or expired OTPs.
+          alert("Erro: " + error);
+        });
+    }
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -69,56 +152,125 @@ class Login extends CostumForm {
     const { credentials } = this.state;
 
     const data = {};
-    //const data = await UsersService.login(credentials);
 
-    firebase
-      .auth()
-      .getRedirectResult()
-      .then(function (result) {
-        if (result.credential) {
-          // This gives you a Google Access Token. You can use it to access the Google API.
-          var token = result.credential.accessToken;
-          // ...
-        }
-        // The signed-in user info.
-        var user = result.user;
-        console.dir("User login: " + JSON.stringify(result));
-      })
-      .catch(function (error) {
-        // Handle Errors here.
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        // The email of the user's account used.
-        var email = error.email;
-        // The firebase.auth.AuthCredential type that was used.
-        var credential = error.credential;
-        // ...
-      });
-
-    //Passar para api_user.js
-    const userDoc = firestore.doc("initialConfigs/defaultUser");
-    userDoc
-      .get()
-      .then((doc) => {
-        console.log("doc -> ", doc);
-
-        if (doc.exists === false) {
-        } else {
-          const dataDoc = doc.data();
-          if (
-            credentials.email == dataDoc.email &&
-            credentials.password == dataDoc.password
-          ) {
-            //Login com sucesso
-            window.location = "user-profile-lite";
-          } else {
-            alert("Falha no login! Valores inseridos estão errados");
+    if (credentials.email == "") {
+      alert("Insira o seu email!");
+    } else {
+      firebase
+        .auth()
+        .getRedirectResult()
+        .then(function (result) {
+          if (result.credential) {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            var token = result.credential.accessToken;
+            // ...
           }
-        }
-      })
-      .catch((err) => {
-        alert(err);
-      });
+          // The signed-in user info.
+          var user = result.user;
+          //console.dir("User login: " + JSON.stringify(result));
+        })
+        .catch(function (error) {
+          // Handle Errors here.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          // The email of the user's account used.
+          var email = error.email;
+          // The firebase.auth.AuthCredential type that was used.
+          var credential = error.credential;
+          // ...
+        });
+
+      //Passar para api_user.js
+      //console.log(credentials.email);
+      const userDoc = firestore.collection("parents").doc(credentials.email);
+      userDoc
+        .get()
+        .then((doc) => {
+          //console.log("doc -> ", doc);
+
+          if (doc.exists === false) {
+            alert("Utilizador não registado!");
+          } else {
+            const dataDoc = doc.data();
+            if (
+              credentials.email == dataDoc.Email &&
+              dataDoc["Validated"] == false
+            ) {
+              let uri =
+                "https://us-central1-associacao-pais.cloudfunctions.net/api/sendAuthenticationEmail?" +
+                "email=" +
+                dataDoc.Email +
+                "&" +
+                "nome=" +
+                dataDoc.Nome;
+              const request = async () => {
+                let resposta;
+                await fetch(uri)
+                  .then((resp) => resp.json()) // Transform the data into json
+                  .then(function (data) {
+                    resposta = data;
+                  })
+                  .catch(function (error) {});
+
+                return resposta;
+              };
+
+              request();
+
+              const hStyle = { color: "green" };
+
+              var mensagem = (
+                <div>
+                  <p style={hStyle}>
+                    Foi-lhe enviado email com link para efetuar o login
+                  </p>
+                </div>
+              );
+              this.setState({ msg: mensagem });
+            } else if (
+              credentials.email == dataDoc.Email &&
+              dataDoc["Validated"] == true
+            ) {
+              let uri =
+                "https://us-central1-associacao-pais.cloudfunctions.net/api/sendAuthenticationEmail?" +
+                "email=" +
+                dataDoc.Email +
+                "&" +
+                "nome=" +
+                dataDoc.Nome;
+              const request = async () => {
+                let resposta;
+                await fetch(uri)
+                  .then((resp) => resp.json()) // Transform the data into json
+                  .then(function (data) {
+                    resposta = data;
+                  })
+                  .catch(function (error) {});
+
+                return resposta;
+              };
+
+              request();
+
+              const hStyle = { color: "green" };
+
+              var mensagem = (
+                <div>
+                  <p style={hStyle}>
+                    Foi-lhe enviado email com link para efetuar o login
+                  </p>
+                </div>
+              );
+              this.setState({ msg: mensagem });
+            } else {
+              alert("Falha no login! Valores inseridos estão errados");
+            }
+          }
+        })
+        .catch((err) => {
+          alert(err);
+        });
+    }
   };
 
   render() {
@@ -156,9 +308,19 @@ class Login extends CostumForm {
                         />
                         <p>Insira os seus dados</p>
                       </div>
+
+                      {this.state.msg}
+
                       <Form onSubmit={this.doSubmit}>
                         <Row form>
-                          <Col md={12}>
+                          <Col
+                            md={12}
+                            style={
+                              this.state.msg
+                                ? { margin: "8px" }
+                                : { margin: "0px" }
+                            }
+                          >
                             {this.renderInput(
                               "email",
                               "email",
@@ -166,16 +328,33 @@ class Login extends CostumForm {
                               "Insira o email"
                             )}
                           </Col>
-                          <Col md={12}>
-                            {this.renderInput(
-                              "password",
-                              "password",
-                              "Password",
-                              "Password"
-                            )}
-                          </Col>
+
                           <Col md={12} style={{ textAlign: "center" }}>
-                            {this.renderButton("Login")}
+                            <Button
+                              style={{
+                                background: "#34b4eb",
+                                color: "#fff",
+                                width: "200px",
+                                textAlign: "center",
+                                margin: "8px",
+                              }}
+                            >
+                              <i /> Sign In with Link
+                            </Button>
+                          </Col>
+
+                          <Col md={12} style={{ textAlign: "center" }}>
+                            <Button
+                              onClick={this.googleSignIn}
+                              style={{
+                                background: "#34b4eb",
+                                color: "#fff",
+                                width: "200px",
+                                textAlign: "center",
+                              }}
+                            >
+                              {"Sign In With Google"}
+                            </Button>
                           </Col>
 
                           <Col md={12} style={{ textAlign: "center" }}>
@@ -191,25 +370,13 @@ class Login extends CostumForm {
                           </Col>
                         </Row>
                       </Form>
-                      <Col md={12} style={{ textAlign: "center" }}>
-                        <Button
-                          onClick={this.googleSignIn}
-                          style={{
-                            background: "#34b4eb",
-                            color: "#fff",
-                            width: "200px",
-                            textAlign: "center",
-                          }}
-                        >
-                          {"Sign In With Google"}
-                        </Button>
-                      </Col>
                     </div>
                   </div>
                 </div>
                 <div className="text-center text-black opacity-8 mt-3">
                   Copyright &copy;
                 </div>
+                {this.state.redirect}
               </Col>
             </div>
           </div>

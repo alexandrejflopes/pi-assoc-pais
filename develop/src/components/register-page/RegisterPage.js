@@ -15,7 +15,7 @@ import {
 import { toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Label, Input, FormText } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, Redirect, Route } from "react-router-dom";
 import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
 import MembersFileUpload from "../config-inicial/MembersFileUpload";
 import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
@@ -52,6 +52,7 @@ class Register_Page extends Component {
       studentNumber: 1, //Counts number of students
       extraVars: [{}],
       extraPai: 0, //Counts number of extra parameters that belong to the parent part -> they are stored in extraVars[0] along with the extra values from the first student
+      redirect: null,
     };
 
     this.renderExtra = this.renderExtra.bind(this);
@@ -221,9 +222,11 @@ class Register_Page extends Component {
         var key = keys[i];
         parentJson[key] = extraArray[key];
       }
-      parentJson.Validated = "false";
+      parentJson.Validated = false;
       parentJson["Número de Sócio"] = "";
       parentJson["Quotas Pagas"] = "Não";
+      var date = new Date().getSeconds();
+      parentJson["Data inscrição"] = date;
 
       // Student's part
       var studentArray = [];
@@ -256,7 +259,7 @@ class Register_Page extends Component {
       //Save values to database
       saveRegistToDB(parentJson);
       let uri =
-        "https://us-central1-mytestproject-ffacc.cloudfunctions.net/sendRegisterEmail?" +
+        "https://us-central1-associacao-pais.cloudfunctions.net/api/sendRegisterEmail?" +
         "email=" +
         email +
         "&" +
@@ -277,7 +280,20 @@ class Register_Page extends Component {
         return resposta;
       };
 
-      return request();
+      request();
+
+      var red = (
+        <Redirect
+          to={{
+            pathname: "/login",
+            state: {
+              msg:
+                "Para concluir o registo, terá de pagar a 1ª prestação, fazer login e confirmar o pagamento e aguardar aprovação!",
+            },
+          }}
+        />
+      );
+      this.setState({ redirect: red });
     }
   }
 
@@ -862,6 +878,7 @@ class Register_Page extends Component {
                     <Button>
                       <span>Cancelar</span>
                     </Button>
+                    {this.state.redirect}
                   </Link>
                 </Col>
               </Row>

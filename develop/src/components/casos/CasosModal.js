@@ -186,22 +186,22 @@ class CasosModal extends React.Component {
       let uri =
         "https://us-central1-associacao-pais.cloudfunctions.net/api/addCaso?" +
         "titulo=" +
-        caseTitle +
+        encodeURIComponent(caseTitle) +
         "&" +
         "descricao=" +
-        descricao +
+        encodeURIComponent(descricao) +
         "&" +
         "membros=" +
-        listaMembros +
+        encodeURIComponent(JSON.stringify(listaMembros)) +
         "&" +
         "privado=" +
         privateVal +
         "&" +
         "nome_autor=" +
-        "por fazer" +
+        encodeURIComponent("por fazer") +
         "&" +
         "id_autor=" +
-        "por fazer";
+        encodeURIComponent("por fazer");
 
       const request = async () => {
         await fetch(uri)

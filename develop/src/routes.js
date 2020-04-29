@@ -15,6 +15,7 @@ import Tables from "./views/Tables";
 import BlogPosts from "./views/BlogPosts";
 import AssocConfiguration from "./views/AssocConfiguration";
 import LoginPage from "./views/Login";
+import PaymentPage from "./views/Payment";
 import Casos from "./views/Casos";
 import RegisterPage from "./views/Register";
 import QuotaPage from "./views/Quotas";
@@ -83,6 +84,11 @@ export default [
     path: "/login",
     layout: DefaultConfigLayout,
     component: LoginPage,
+  },
+  {
+    path: "/payment",
+    layout: DefaultConfigLayout,
+    component: PaymentPage,
   },
   {
     path: "/register",

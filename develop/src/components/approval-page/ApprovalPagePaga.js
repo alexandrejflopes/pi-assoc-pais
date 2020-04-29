@@ -31,7 +31,7 @@ class Approval_Page extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      resgistosPorAprovar: null,
+      resgistosPorAprovarComPagamentoFeito: null,
       dicionarioRegistos: null,
       blocking: false,
       errors: {},
@@ -273,7 +273,7 @@ class Approval_Page extends Component {
         .then((resp) => resp.json()) // Transform the data into json
         .then(function (data) {
           //console.log("ShowEmaildata: ", data);
-          var resgistosPorAprovar = [];
+          var resgistosPorAprovarComPagamentoFeito = [];
           var dicionarioRegistos = {};
           for (var i = 0; i < data.length; i++) {
             if (
@@ -286,7 +286,8 @@ class Approval_Page extends Component {
                 data[i]["Quotas Pagas"] != null &&
                 data[i]["Quotas Pagas"].toString() == "Não"
               ) {
-                resgistosPorAprovar.push(data[i]);
+              } else {
+                resgistosPorAprovarComPagamentoFeito.push(data[i]);
                 var title = data[i]["Email"];
                 dicionarioRegistos[title] = data[i];
               }
@@ -294,7 +295,7 @@ class Approval_Page extends Component {
           }
           this_.setState({
             dicionarioRegistos: dicionarioRegistos,
-            resgistosPorAprovar: resgistosPorAprovar,
+            resgistosPorAprovarComPagamentoFeito: resgistosPorAprovarComPagamentoFeito,
           });
         })
         .catch(function (error) {
@@ -458,42 +459,45 @@ class Approval_Page extends Component {
         <ListGroupItem className="p-3">
           <Col>
             <Row>
-              {this.state.resgistosPorAprovar && this.state.dicionarioRegistos
-                ? this.state.resgistosPorAprovar.map((post, idx) => (
-                    <Col lg="4" key={idx}>
-                      <Card small className="card-post mb-4">
-                        <CardBody>
-                          <h5 className="card-title">{post.Nome}</h5>
-                          <p
-                            className="card-text text-muted"
-                            style={{
-                              whiteSpace: "nowrap",
-                              width: "inherit",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {post.Email}
-                          </p>
-                        </CardBody>
-                        <CardFooter className="border-top d-flex">
-                          <div className="card-post__author d-flex"></div>
-                          <div className="my-auto ml-auto">
-                            <ApprovalModal
-                              dados={
-                                this.state.dicionarioRegistos
-                                  ? this.state.dicionarioRegistos[post.Email]
-                                  : ""
-                              }
-                              parentComponent={this}
-                              componentDidMount={this.componentDidMount}
-                            />
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    </Col>
-                  ))
-                : "A obter pedidos..."}
+              {this.state.resgistosPorAprovarComPagamentoFeito &&
+              this.state.dicionarioRegistos
+                ? this.state.resgistosPorAprovarComPagamentoFeito.map(
+                    (post, idx) => (
+                      <Col lg="4" key={idx}>
+                        <Card small className="card-post mb-4">
+                          <CardBody>
+                            <h5 className="card-title">{post.Nome}</h5>
+                            <p
+                              className="card-text text-muted"
+                              style={{
+                                whiteSpace: "nowrap",
+                                width: "inherit",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {post.Email}
+                            </p>
+                          </CardBody>
+                          <CardFooter className="border-top d-flex">
+                            <div className="card-post__author d-flex"></div>
+                            <div className="my-auto ml-auto">
+                              <ApprovalModal
+                                dados={
+                                  this.state.dicionarioRegistos
+                                    ? this.state.dicionarioRegistos[post.Email]
+                                    : ""
+                                }
+                                parentComponent={this}
+                                componentDidMount={this.componentDidMount}
+                              />
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      </Col>
+                    )
+                  )
+                : null}
             </Row>
           </Col>
         </ListGroupItem>

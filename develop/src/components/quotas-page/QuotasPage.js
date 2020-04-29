@@ -161,7 +161,7 @@ class Quotas_Page extends Component {
                         Recetor
                       </th>
                       <th scope="col" className="border-0">
-                        Pagante
+                        Emissor
                       </th>
                       <th scope="col" className="border-0">
                         Valor
@@ -173,7 +173,7 @@ class Quotas_Page extends Component {
                         Confirmado pelo recetor
                       </th>
                       <th scope="col" className="border-0">
-                        Confirmado pelo pagante
+                        Confirmado pelo Emissor
                       </th>
                     </tr>
                   </thead>
