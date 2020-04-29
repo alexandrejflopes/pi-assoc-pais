@@ -51,7 +51,7 @@ class Login extends CostumForm {
     const this_ = this;
 
     if (currentUser != null) {
-      alert("Redirect para o perfil");
+      console.log("Redirect para o perfil"); // TODO
     } else if (firebase_auth.isSignInWithEmailLink(window.location.href)) {
       var email = window.localStorage.getItem("emailForSignIn");
       if (!email) {
