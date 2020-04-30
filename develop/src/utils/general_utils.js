@@ -84,6 +84,9 @@ const parentsParameters = {
   PAYED_FEE : {
     "pt_PT": "Quotas pagas"
   },
+  NAME : {
+    "pt_PT": "Nome"
+  },
   NIF : {
     "pt_PT" : "NIF"
   },
@@ -172,6 +175,9 @@ export {
   memberNameCSVindex,
   memberEmailCSVindex,
   memberAssocNumCSVindex,
-  studentParentAssocNumCSVindex}
+  studentParentAssocNumCSVindex,
+  parentsParameters,
+  studentsParameters
+}
 
 

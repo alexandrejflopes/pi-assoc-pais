@@ -19,9 +19,6 @@ const updateInitialRoute = () => {
   return initDoc
     .get()
     .then(doc => {
-      //console.log("doc -> ", doc);
-
-      //console.log("doc install ->", doc["install"]);
 
       if (doc.exists === false) {
         console.log("vou devolver /init");
@@ -41,7 +38,6 @@ const updateInitialRoute = () => {
         };
       }
       flag = true;
-      //console.log("primeiro component depois do update: ", routes[0].component);
 
       return true;
     })
@@ -124,8 +120,3 @@ class App extends React.Component {
 
 export default App;
 
-/*export default () => (
-    <Router basename={process.env.REACT_APP_BASENAME || ""}>
-      <InitURLFetcher/>
-    </Router>
-);*/

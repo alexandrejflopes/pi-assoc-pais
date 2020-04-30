@@ -7,7 +7,8 @@ import {
 import firebase from "firebase";
 
 import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities,
-  membersImportFileNewParametersStartIndex, studentsImportFileNewParametersStartIndex, membersCSVparamsIndexes, studentsCSVparamsIndexes
+  membersImportFileNewParametersStartIndex, studentsImportFileNewParametersStartIndex, membersCSVparamsIndexes, studentsCSVparamsIndexes,
+  studentsParameters, parentsParameters
 } from "../utils/general_utils";
 import {jsonParamsErrorMessage, jsonOrCsvParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage} from "../utils/messages_strings";
 const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
@@ -261,6 +262,41 @@ function compareCSVandJsonParameters(jsonParams, csvParams){
 
   return true;
 }
+
+
+/*
+* function for, given a list of parameters from CSV, checks if
+* they are all expected/suported by our platform;
+* the parent argument (boolean) specifies if we are evaluating
+* the parent parameters or not (the students)
+* */
+function areAllParametersSupported(paramsArray, parent) {
+
+    let supportedParams = [];
+    if(parent){
+      for(let x in parentsParameters){
+        supportedParams.push(parentsParameters[x][languageCode]);
+      }
+    }
+    else{
+      for(let x in studentsParameters){
+        supportedParams.push(studentsParameters[x][languageCode]);
+      }
+    }
+
+    console.log("paramsArray -> " + paramsArray);
+    console.log("supportedParams -> " + supportedParams);
+
+    for(let i=0; i<paramsArray.length; i++){
+      if(!supportedParams.includes(paramsArray[i].trim())){
+        return false;
+      }
+    }
+
+    return true;
+}
+
+
 /*
  * function to process CSV with members and students' data:
  *  extract the headers an analyse each line
@@ -283,8 +319,17 @@ function getandSaveCSVdata(parentsFile, childrenFile, callback) {
         childrenFileString = childrenReader.result;
         const childrenList = setupCSVData(childrenFileString, false);
 
+        // check if expected parameters are with the supported name for language
+        // get only the parameters from CSV that we are expecting and check if we support them
+        const parentsExpectedHeaders = membersFileHeaders.slice(0, membersImportFileNewParametersStartIndex);
+        const studentsExpectedHeaders = studentsFileHeaders.slice(0,studentsImportFileNewParametersStartIndex);
 
-        // TODO: check if expected parameters are with the supported name for language
+        if(!areAllParametersSupported(parentsExpectedHeaders, true) || !areAllParametersSupported(studentsExpectedHeaders, false)){
+          filesParamsCorrect = false;
+          callback(filesParamsCorrect);
+          return;
+        }
+
 
         let parentParams = [];
         let studentParams = [];
@@ -442,6 +487,14 @@ function setupCSVData(fileString, parents) {
     let dadosLinha = allLines[i].split(/[,;]+/).filter((item) => item).map(s => s.trim());
 
     //console.log("dadosLinha atual -> ", dadosLinha);
+    //console.log("dadosLinha length -> ", dadosLinha.length);
+    //console.log("headers length -> ", headers.length);
+
+    // if there's more data than corresponding headers; CSV not valid
+    if(dadosLinha.length !== headers.length){
+      // eslint-disable-next-line no-throw-literal
+      throw 'CSV headers and data in a line do not match';
+    }
 
     //console.assert(dadosLinha.length === headers.length);
 

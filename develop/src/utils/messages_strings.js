@@ -15,7 +15,7 @@ const jsonOrCsvParamsErrorMessage = {
   "pt_PT" :
     "Os ficheiros CSV fornecidos são inválidos!\n" +
     "Por favor, verifique que todos os parâmetros fornecidos no JSON estão também presentes " +
-    "nos respetivos CSV ou se os CSV estão com o formato adequado.\n" +
+    "nos respetivos CSV, se os CSV estão com o formato adequado ou se todos os parâmetros são suportados.\n" +
     "Para mais informações, consulte o manual de utilização.\n" +
     "Obrigado."
 };
