@@ -8,7 +8,7 @@ import firebase from "firebase";
 
 import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities,
   membersImportFileNewParametersStartIndex, studentsImportFileNewParametersStartIndex, membersCSVparamsIndexes, studentsCSVparamsIndexes,
-  studentsParameters, parentsParameters
+  studentsParameters, parentsParameters, notAvailableDesignation
 } from "../utils/general_utils";
 import {jsonParamsErrorMessage, jsonOrCsvParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage} from "../utils/messages_strings";
 const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
@@ -18,6 +18,7 @@ const requiredFieldsMissingMessage = provideRequiredFieldsMessage[languageCode];
 
 const parentDesignation = newParametersEntities.parent[languageCode];
 const studentDesignation = newParametersEntities.student[languageCode];
+const NAdesignation = notAvailableDesignation[languageCode];
 
 let membersEmails = {};
 
@@ -284,8 +285,8 @@ function areAllParametersSupported(paramsArray, parent) {
       }
     }
 
-    console.log("paramsArray -> " + paramsArray);
-    console.log("supportedParams -> " + supportedParams);
+    //console.log("paramsArray -> " + paramsArray);
+    //console.log("supportedParams -> " + supportedParams);
 
     for(let i=0; i<paramsArray.length; i++){
       if(!supportedParams.includes(paramsArray[i].trim())){
@@ -294,6 +295,32 @@ function areAllParametersSupported(paramsArray, parent) {
     }
 
     return true;
+}
+
+
+/*
+* function for, given a list of parameters from CSV, checks if
+* they are all really new and are not equal (in their name)
+* to the parameters that our plataform already supports
+* */
+function allNewParametersAreReallyNew(supportedParams, newParams) {
+
+  if(newParams.length===0){
+    return true; // if no new parameters, so this must pass
+  }
+
+  for(let i=0; i<newParams.length; i++){
+    for(let x = 0; x<supportedParams.length; x++){
+      // compare the names in the same conditions
+      const newParamName = newParams[i].trim().toLowerCase();
+      const supportedParamName = supportedParams[x].trim().toLowerCase();
+
+      if(newParamName===supportedParamName)
+        return false;
+    }
+  }
+
+  return true;
 }
 
 
@@ -317,44 +344,61 @@ function getandSaveCSVdata(parentsFile, childrenFile, callback) {
 
       childrenReader.onloadend = function () {
         childrenFileString = childrenReader.result;
-        const childrenList = setupCSVData(childrenFileString, false);
 
-        // check if expected parameters are with the supported name for language
-        // get only the parameters from CSV that we are expecting and check if we support them
-        const parentsExpectedHeaders = membersFileHeaders.slice(0, membersImportFileNewParametersStartIndex);
-        const studentsExpectedHeaders = studentsFileHeaders.slice(0,studentsImportFileNewParametersStartIndex);
+        try{
+          const childrenList = setupCSVData(childrenFileString, false);
 
-        if(!areAllParametersSupported(parentsExpectedHeaders, true) || !areAllParametersSupported(studentsExpectedHeaders, false)){
-          filesParamsCorrect = false;
-          callback(filesParamsCorrect);
-          return;
+          // check if expected parameters are with the supported name for language
+          // get only the parameters from CSV that we are expecting and check if we support them
+          const parentsExpectedHeaders = membersFileHeaders.slice(0, membersImportFileNewParametersStartIndex);
+          const studentsExpectedHeaders = studentsFileHeaders.slice(0,studentsImportFileNewParametersStartIndex);
+
+          if(!areAllParametersSupported(parentsExpectedHeaders, true) || !areAllParametersSupported(studentsExpectedHeaders, false)){
+            filesParamsCorrect = false;
+            callback(filesParamsCorrect);
+            return;
+          }
+
+
+          let parentParams = [];
+          let studentParams = [];
+          if(newParametersData.parent.provided)
+            parentParams = Object.keys(newParametersData.parent.params);
+          if(newParametersData.student.provided)
+            studentParams = Object.keys(newParametersData.student.params);
+
+          //console.log("parentParams: " + parentParams);
+          //console.log("studentParams: " + studentParams);
+
+          // get only the headers with the new parameters
+          const parentsNewHeaders = membersFileHeaders.slice(membersImportFileNewParametersStartIndex);
+          const studentsNewHeaders = studentsFileHeaders.slice(studentsImportFileNewParametersStartIndex);
+
+
+          if( !allNewParametersAreReallyNew(parentsExpectedHeaders, parentsNewHeaders) ||
+              !allNewParametersAreReallyNew(studentsExpectedHeaders, studentsNewHeaders))
+          {
+            filesParamsCorrect = false;
+            callback(filesParamsCorrect);
+            return;
+          }
+
+          //console.log("parentsNewHeaders: " + parentsNewHeaders);
+          //console.log("studentsNewHeaders: " + studentsNewHeaders);
+
+          if(compareCSVandJsonParameters(parentParams, parentsNewHeaders)
+            && compareCSVandJsonParameters(studentParams, studentsNewHeaders)){
+            filesParamsCorrect = true;
+            saveParentsAndChildrenFromFileDatatoDB(parentList, childrenList);
+            callback(filesParamsCorrect);
+          }
+          else{
+            filesParamsCorrect = false;
+            callback(filesParamsCorrect);
+          }
         }
-
-
-        let parentParams = [];
-        let studentParams = [];
-        if(newParametersData.parent.provided)
-          parentParams = Object.keys(newParametersData.parent.params);
-        if(newParametersData.student.provided)
-          studentParams = Object.keys(newParametersData.student.params);
-
-        console.log("parentParams: " + parentParams);
-        console.log("studentParams: " + studentParams);
-
-        // get only the headers with the new parameters
-        const parentsNewHeaders = membersFileHeaders.slice(membersImportFileNewParametersStartIndex);
-        const studentsNewHeaders = studentsFileHeaders.slice(studentsImportFileNewParametersStartIndex);
-
-        console.log("parentsNewHeaders: " + parentsNewHeaders);
-        console.log("studentsNewHeaders: " + studentsNewHeaders);
-
-        if(compareCSVandJsonParameters(parentParams, parentsNewHeaders)
-          && compareCSVandJsonParameters(studentParams, studentsNewHeaders)){
-          filesParamsCorrect = true;
-          saveParentsAndChildrenFromFileDatatoDB(parentList, childrenList);
-          callback(filesParamsCorrect);
-        }
-        else{
+        catch (e) {
+          // catch error if the CSV is improperly formatted, for example
           filesParamsCorrect = false;
           callback(filesParamsCorrect);
         }
@@ -381,10 +425,6 @@ function getandSaveCSVdata(parentsFile, childrenFile, callback) {
  *   -  finally, the parent document (with its children) will be saved
  *      in Firestore
  * */
-/*
-* TODO:
-*   - replace "ND" from CSV for empty strings
-* */
 function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
   // parents and children list ordered by associate number
   const parentDocList = parentsList.sort((a, b) =>
@@ -433,7 +473,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 
     // convert admin boolean from CSV from string to boolean
     parentDoc["Admin"] = parentDoc["Admin"] === "true";
-    // convert dues payment boolean from CSV from string to boolean
+    // convert dues payment boolean from CSV from string to boolean (if not available, it gets false as well)
     parentDoc["Quotas pagas"] = parentDoc["Quotas pagas"] === "true";
 
     // add remaining necessary parameters
@@ -462,7 +502,8 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 /*
 * function to read and format data from CSV in an array of dictionaries;
 * receives the file as a string and a boolean to indicate it's reading
-* the parents' CSV or the students' */
+* the parents' CSV or the students'
+* */
 function setupCSVData(fileString, parents) {
   const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
   //console.log("allLines -> ", allLines);
@@ -495,6 +536,26 @@ function setupCSVData(fileString, parents) {
       // eslint-disable-next-line no-throw-literal
       throw 'CSV headers and data in a line do not match';
     }
+
+    dadosLinha = dadosLinha.map(function (item) { return item.toUpperCase() === NAdesignation ? NAdesignation : item });
+    // convert boolean strings to lower case
+    dadosLinha = dadosLinha.map(function (item) { return item.toLowerCase() === "true" ? "true" : item });
+    dadosLinha = dadosLinha.map(function (item) { return item.toLowerCase() === "false" ? "false" : item });
+
+    // check if boolean params in members csv are really booleans
+    if(parents){
+      if(dadosLinha[membersCSVparamsIndexes.quotas_index]!=="true" && dadosLinha[membersCSVparamsIndexes.quotas_index]!=="false"){
+        //console.log("Expected 'true' or 'false' in quotas column!");
+        throw "Expected 'true' or 'false' in quotas column!";
+      }
+
+      if(dadosLinha[membersCSVparamsIndexes.admin_index]!=="true" && dadosLinha[membersCSVparamsIndexes.admin_index]!=="false"){
+        //console.log("Expected 'true' or 'false' in admin column!");
+        throw "Expected 'true' or 'false' in admin column!";
+      }
+
+    }
+
 
     //console.assert(dadosLinha.length === headers.length);
 
@@ -544,7 +605,7 @@ async function sendImportEmailToParent(nome, email) {
 function notifyAllParents() {
   for (let name in membersEmails) {
     const email = membersEmails[name];
-    console.log(name + " : " + email);
+    //console.log(name + " : " + email);
     sendImportEmailToParent(name, email).then();
   }
 }

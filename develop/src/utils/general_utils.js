@@ -53,6 +53,10 @@ const currentCountry = "Portugal";
 
 const languageCode = countriesAndCodes[currentCountry];
 
+const notAvailableDesignation = {
+  "pt_PT" : "ND" // nao determinado/disponivel
+};
+
 const newParametersTypes = {
   TEXT : {
     "pt_PT" : "texto"
@@ -177,7 +181,8 @@ export {
   memberAssocNumCSVindex,
   studentParentAssocNumCSVindex,
   parentsParameters,
-  studentsParameters
+  studentsParameters,
+  notAvailableDesignation
 }
 
 
