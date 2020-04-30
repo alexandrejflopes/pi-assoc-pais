@@ -14,7 +14,9 @@ import {
   uploadDefaultLogo,
   uploadNewLogo,
   uploadAssocDataFiles,
-  removeAllInvalidFeedbacks
+  removeAllInvalidFeedbacks,
+  validZip,
+  showZipWarning
 } from "./installation";
 
 
@@ -47,7 +49,7 @@ function createInstallerParent(nome, email, cargo) {
   parentDoc["Nome"] = nome;
   parentDoc["Número de Sócio"] = numSocio;
   parentDoc["Profissão"] = "";
-  parentDoc["Quotas pagas"] = "";
+  parentDoc["Quotas pagas"] = null; // TODO: check this (neither true or false)
   parentDoc["Telemóvel"] = "";
   parentDoc["Validated"] = true; // imported parents are validated
   parentDoc["blocked"] = false; // imported parents are not blocked initially
@@ -124,6 +126,14 @@ function install() {
   }
 
   if (requiredFieldsProvided && policyCheckboxChecked) {
+
+    // validate the zip code for the country
+    const zipValue = document.getElementById("configAssocZip").value;
+    if(!validZip(zipValue)){
+      showZipWarning("configAssocZip");
+      return;
+    }
+
     // read files and save their data
     const paramsJSONfile = document.getElementById("configAssocNewParams").files[0];
 

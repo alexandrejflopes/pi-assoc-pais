@@ -8,9 +8,11 @@ import firebase from "firebase";
 
 import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities,
   membersImportFileNewParametersStartIndex, studentsImportFileNewParametersStartIndex, membersCSVparamsIndexes, studentsCSVparamsIndexes,
-  studentsParameters, parentsParameters, notAvailableDesignation
+  studentsParameters, parentsParameters, notAvailableDesignation, zipCodeRegexes
 } from "../utils/general_utils";
-import {jsonParamsErrorMessage, jsonOrCsvParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage} from "../utils/messages_strings";
+import {jsonParamsErrorMessage, jsonOrCsvParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage,
+        invalidZipMessage
+} from "../utils/messages_strings";
 const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
 const csvsErrorMessage = jsonOrCsvParamsErrorMessage[languageCode];
 const sucessImportMessage = importSucessMessage[languageCode];
@@ -40,6 +42,8 @@ let newParametersData = {
 // save parameters (which are the headers) from imported csv
 let membersFileHeaders = [];
 let studentsFileHeaders = [];
+
+let regExp = /\d{4}\-\d{3}/;
 
 
 // ------------------------------------------------------------
@@ -340,12 +344,26 @@ function getandSaveCSVdata(parentsFile, childrenFile, callback) {
   parentReader.onloadend = function () {
     parentFileString = parentReader.result;
     try{
+
+      // if there's no information in the file, it's invalid
+      if(parentFileString.trim().length===0){
+        throw "Too few data in CSV file to process";
+      }
+
       const parentList = setupCSVData(parentFileString, true);
 
       childrenReader.onloadend = function () {
         childrenFileString = childrenReader.result;
 
         try{
+
+          // if there's no information in the file, it's invalid
+          if(childrenFileString.trim().length===0){
+            throw "Too few data in CSV file to process";
+          }
+
+
+
           const childrenList = setupCSVData(childrenFileString, false);
 
           // check if expected parameters are with the supported name for language
@@ -507,6 +525,12 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 function setupCSVData(fileString, parents) {
   const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
   //console.log("allLines -> ", allLines);
+
+  // if there's no information in the file, it's invalid
+  if(allLines.length<=1){
+    console.log("sem dados nas linhas");
+    throw "Too few data in CSV file to process"
+  }
 
   // remove empty strings and trailing spaces
   const headers = allLines[0].split(/[,;]+/).filter((item) => item).map(s => s.trim());
@@ -717,6 +741,27 @@ function removeAllInvalidFeedbacks() {
   }
 }
 
+
+function validZip(zipCodeValue) {
+    const zipRegex = zipCodeRegexes[languageCode].regex;
+    const zipLength = zipCodeRegexes[languageCode].length;
+    if(zipCodeValue.trim().length!==zipLength)
+      return false;
+    const processedZip = zipCodeValue.trim().slice(0,zipLength);
+    return zipRegex.test(processedZip);
+}
+
+function showZipWarning(elementId) {
+  // if there's an error with zip code, not allow to submit the form and show warning
+  const zipInput = document.getElementById(elementId);
+  zipInput.classList.add("is-invalid");
+  document.querySelector("#" + zipInput.id + "Feedback").style.display =
+    "block";
+  //zipInput.value = "";
+  alert(invalidZipMessage[languageCode]);
+}
+
+
 function install() {
   removeAllInvalidFeedbacks();
   let requiredFieldsProvided = true;
@@ -759,6 +804,14 @@ function install() {
   //-------------------------
 
   if (requiredFieldsProvided && policyCheckboxChecked) {
+
+    // validate the zip code for the country
+    const zipValue = document.getElementById("configAssocZip").value;
+    if(!validZip(zipValue)){
+      showZipWarning("configAssocZip");
+      return;
+    }
+
     // read files and save their data
     const paramsJSONfile = document.getElementById("configAssocNewParams")
       .files[0];
@@ -917,6 +970,8 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         uploadNewLogo,
         uploadAssocDataFiles,
         removeAllInvalidFeedbacks,
+        validZip,
+        showZipWarning,
         // functions used in tests
         checkJSONparamsEntitiesAndTypes,
         compareCSVandJsonParameters,

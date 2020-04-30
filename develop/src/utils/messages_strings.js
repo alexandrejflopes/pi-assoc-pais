@@ -30,6 +30,10 @@ const importSucessMessage = {
     "Nota: se não recebeu nenhum email, aguarde ou verifique a pasta de Lixo ou Spam. Obrigado."
 };
 
+const invalidZipMessage = {
+  "pt_PT" : "O Código Postal fornecido é inválido em Portugal.\nPor favor, corrija-o. Obrigado."
+};
+
 const provideRequiredFieldsMessage = {
   "pt_PT" : "Por favor, preencha os campos em falta."
 };
@@ -80,7 +84,8 @@ export {
   assocLogoFormatsTipMessage,
   membersImportFileFormatsTipMessage,
   studentsImportFileFormatsTipMessage,
-  paramsJsonFileTipMessage
+  paramsJsonFileTipMessage,
+  invalidZipMessage
 }
 
 

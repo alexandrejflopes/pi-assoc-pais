@@ -17,10 +17,6 @@ const defaultIBAN = "PT50 1234 4321 12345678901 72";
 * that shall be in new parameters's JSON file*/
 const membersImportFileNewParametersStartIndex = 13;
 const studentsImportFileNewParametersStartIndex = 4;
-const memberNameCSVindex = 3;
-const memberEmailCSVindex = 6;
-const memberAssocNumCSVindex = 0;
-const studentParentAssocNumCSVindex = 0;
 
 const membersCSVparamsIndexes = {
     assoc_num_index : 0,
@@ -49,9 +45,16 @@ const countriesAndCodes = {
   "Portugal": "pt_PT"
 };
 
-const currentCountry = "Portugal";
+let currentCountry = "Portugal";
 
 const languageCode = countriesAndCodes[currentCountry];
+
+const zipCodeRegexes = {
+  "pt_PT" : {
+    length : 8,
+    regex : new RegExp(/\d{4}\-\d{3}/)
+  }
+};
 
 const notAvailableDesignation = {
   "pt_PT" : "ND" // nao determinado/disponivel
@@ -176,13 +179,10 @@ export {
   studentsImportFileNewParametersStartIndex,
   membersCSVparamsIndexes,
   studentsCSVparamsIndexes,
-  memberNameCSVindex,
-  memberEmailCSVindex,
-  memberAssocNumCSVindex,
-  studentParentAssocNumCSVindex,
   parentsParameters,
   studentsParameters,
-  notAvailableDesignation
+  notAvailableDesignation,
+  zipCodeRegexes
 }
 
 
