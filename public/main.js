@@ -21,7 +21,10 @@ function Demo() {
     // Shortcuts to DOM Elements.
     this.signInButton = document.getElementById('demo-sign-in-button');
     this.signInButton2 = document.getElementById('demo-sign-in-button2');
-    this.signInButton3 = document.getElementById('demo-sign-in-button3');
+    //this.signInButton3 = document.getElementById('demo-sign-in-button3');
+    this.signInButtonFb = document.getElementById('demo-sign-in-buttonFb');
+    this.signInButtonFb2 = document.getElementById('demo-sign-in-buttonFb2');
+    this.signInButtonFb3 = document.getElementById('demo-sign-in-buttonFb3');
     this.signOutButton = document.getElementById('demo-sign-out-button');
     this.nameContainer = document.getElementById('demo-name-container');
     this.uidContainer = document.getElementById('demo-uid-container');
@@ -33,7 +36,10 @@ function Demo() {
     // Bind events.
     this.signInButton.addEventListener('click', this.signIn.bind(this));
     this.signInButton2.addEventListener('click', this.signIn2.bind(this));
-    this.signInButton3.addEventListener('click', this.signIn3.bind(this));
+    //this.signInButton3.addEventListener('click', this.signIn3.bind(this));
+    this.signInButtonFb.addEventListener('click', this.signInFb.bind(this));
+    this.signInButtonFb2.addEventListener('click', this.signInFb2.bind(this));
+    this.signInButtonFb3.addEventListener('click', this.signInFb3.bind(this));
     this.signOutButton.addEventListener('click', this.signOut.bind(this));
     this.deleteButton.addEventListener('click', this.deleteAccount.bind(this));
     firebase.auth().onAuthStateChanged(this.onAuthStateChanged.bind(this));
@@ -75,11 +81,46 @@ Demo.prototype.onAuthStateChanged = function(user) {
   }
 };
 
-// Initiates the sign-in flow using Google sign in in a popup.
+// Google login
 Demo.prototype.signIn = function() {
-
   firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
 };
+
+
+// Facebook Link
+Demo.prototype.signInFb = function() {
+  var provider = new firebase.auth.FacebookAuthProvider();
+  var auth = firebase.auth();
+  auth.currentUser.linkWithPopup(provider).then(function(result) {
+  var credential = result.credential;
+  var user = result.user;
+}).catch(function(error) {
+  // Handle Errors here.
+  // ...
+});
+};
+
+
+// Facebook login
+Demo.prototype.signInFb2 = function() {
+  firebase.auth().signInWithPopup(new firebase.auth.FacebookAuthProvider());
+};
+
+// Facebook Unlink
+Demo.prototype.signInFb3 = function() {
+  console.log('test');
+  var user = firebase.auth().currentUser;
+  
+  user.unlink('facebook.com').then(function() {
+  // Auth provider unlinked from account
+  // ...
+  }).catch(function(error) {
+  // An error happened
+  // ...
+  });
+};
+
+
 
 Demo.prototype.signIn2 = function() {
   this.emailToSend = document.getElementById('emailtosend').value;
@@ -105,7 +146,6 @@ Demo.prototype.signIn2 = function() {
 Demo.prototype.signIn3 = function() {
   if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
     var email = window.localStorage.getItem('emailForSignIn');
-    console.log('teste1');
     if (!email) {
       email = window.prompt('Please provide your email for confirmation');
     }
@@ -113,7 +153,6 @@ Demo.prototype.signIn3 = function() {
       .then(function(result) {
         // Clear email from storage.
         window.localStorage.removeItem('emailForSignIn');
-        console.log('teste2');
       })
       .catch(function(error) {
         // Some error occurred, you can inspect the code: error.code

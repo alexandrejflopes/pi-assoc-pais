@@ -17,7 +17,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Demonstrates how to send a welcome email using Firebase Functions.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome email demo</title>
+  <title>Projeto Teste Autenticação</title>
 
   <!-- Material Design Lite -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -33,7 +33,7 @@
   <header class="mdl-layout__header mdl-color-text--white mdl-color--light-blue-700">
     <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
       <div class="mdl-layout__header-row mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--8-col-desktop">
-        <h3>Welcome email demo</h3>
+        <h3>Projeto Teste Autenticação</h3>
       </div>
     </div>
   </header>
@@ -44,12 +44,13 @@
       <div id="demo-signed-out-card" class="mdl-card mdl-shadow--2dp mdl-cell">
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
           <p>
-            This web application demonstrates how you can send a welcome email for new accounts. After signing-in for the first time you will receive a welcome email.
-            <strong>Now sign in!</strong>
+            Projeto teste para autenticação de contas firebase.
+            <strong>Log in!</strong>
           </p>
           <button id="demo-sign-in-button" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i> Sign in with Google</button>
           <input type="text" id="emailtosend" name="fname"> <button id="demo-sign-in-button2" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i> Sign in with Link</button>
-          <button id="demo-sign-in-button3" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i> Check link</button>
+          <button id="demo-sign-in-buttonFb2" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Facebook Login</button>
+          <button id="demo-sign-in-buttonTw2" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Twitter Login</button>
         </div>
       </div>
 
@@ -63,6 +64,8 @@
           </p>
           <button id="demo-sign-out-button" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect">Sign out</button>
           <button id="demo-delete-button" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect">Delete account</button>
+          <button id="demo-sign-in-buttonFb" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Facebook Link</button>
+          <button id="demo-sign-in-buttonFb3" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Facebook Unlink</button>
         </div>
       </div>
     </div>
