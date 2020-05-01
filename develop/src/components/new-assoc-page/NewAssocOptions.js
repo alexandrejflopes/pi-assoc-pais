@@ -1,16 +1,8 @@
 import React, { Component, Fragment } from "react";
 import {
-  Button,
-  Col,
-  Form, FormCheckbox, FormFeedback,
-  FormGroup,
-  FormInput, FormTextarea,
-  //ListGroup,
-  //ListGroupItem,
-  Row
+  Col
 } from "shards-react";
 
-import BlockUi from "react-block-ui";
 import {Loader} from "react-loaders";
 import ListGroup from "react-bootstrap/ListGroup";
 
@@ -36,7 +28,6 @@ function redirecToConfigNew() {
 
 
 const NewAssocOptions = () => (
-
 
   <>
 

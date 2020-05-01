@@ -38,6 +38,11 @@ export default function () {
       to: "/errors",
     },
     {
+      title: "O meu perfil",
+      htmlBefore: '<i class="material-icons">person</i>',
+      to: "/profile",
+    },
+    {
       title: "Os meus educandos",
       htmlBefore: '<i class="material-icons">face</i>',
       to: "/user-profile-lite",

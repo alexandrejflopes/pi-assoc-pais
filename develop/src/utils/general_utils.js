@@ -11,7 +11,7 @@ import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 
 const regular_role_PT = "Associado(a)";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
-
+const defaultAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000";
 /*
 * number (starting at 0) of the column with the first new parameter
 * that shall be in new parameters's JSON file*/
@@ -140,7 +140,7 @@ const studentsParameters = {
 
 
 
-
+// ---------------------------------------------- OBJECTS ---------------------------------------------
 
 
 
@@ -182,7 +182,8 @@ export {
   parentsParameters,
   studentsParameters,
   notAvailableDesignation,
-  zipCodeRegexes
+  zipCodeRegexes,
+  defaultAvatar
 }
 
 

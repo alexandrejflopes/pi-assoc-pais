@@ -103,7 +103,7 @@ class Payment_Page extends CostumForm {
   };
 
   render() {
-    if (this.state.Email == "redirect") {
+    if (this.state.Email === "redirect") {
       return <Redirect to="/login" />;
     } else {
       return (
@@ -163,7 +163,7 @@ class Payment_Page extends CostumForm {
                                   type="text"
                                   placeholder=""
                                   value={
-                                    this.state.payment == false ? "Não" : "Sim"
+                                    this.state.payment === false ? "Não" : "Sim"
                                   }
                                   disabled={true}
                                 />
@@ -179,7 +179,7 @@ class Payment_Page extends CostumForm {
                                   textAlign: "center",
                                 }}
                                 disabled={
-                                  this.state.payment == false ? false : true
+                                  this.state.payment === false ? false : true
                                 }
                               >
                                 {"Confirmo que efetuei o pagamento da 1ª quota"}

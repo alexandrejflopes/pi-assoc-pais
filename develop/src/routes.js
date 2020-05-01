@@ -22,6 +22,7 @@ import QuotaPage from "./views/Quotas";
 import ApprovalPage from "./views/Approval";
 import NewAssocChoicePage from "./views/NewAssocChoicePage";
 import AssocConfigurationNew from "./views/AssocConfigurationNew";
+import Profile from "./views/Profile";
 
 export default [
   {
@@ -110,4 +111,9 @@ export default [
     layout: DefaultConfigLayout,
     component: NewAssocChoicePage,
   },
+  {
+    path: "/profile",
+    layout: DefaultLayout,
+    component: Profile,
+  }
 ];

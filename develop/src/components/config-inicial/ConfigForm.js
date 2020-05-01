@@ -95,8 +95,8 @@ class ConfigForm extends Component {
                       placeholder="associacao@exemplo.pt"
                       required
                     />
+                    <FormFeedback id="configAssocEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                   </FormGroup>
-                  <FormFeedback id="configAssocEmailFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
                 <Col md="6">
                   <FormGroup>
