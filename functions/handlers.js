@@ -1181,6 +1181,8 @@ exports.exportParentCSV = functions.https.onRequest((request, response) => {
             let data = doc.data();
             delete data["Educandos"]
             delete data["Cotas"]
+            delete data["Data inscrição"]
+            delete data["photo"]
             a.push(data);
         });
         const csv = json2csv(a);
@@ -1207,12 +1209,14 @@ exports.exportEducandosCSV = functions.https.onRequest((request, response) => {
     db.collection('parents').get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
-            doc.get("Educandos").forEach((value, index) => {
-                value["Encarregado de Educação"] = doc.get("Nome");
-                value["Número Sócio Enc de Educação"] = doc.get("Número de Sócio");
-                value["Email de Encarregado de Educação"] = doc.get("Email");
-                a.push(value)
-            });
+            if (doc.get("Educandos")){
+                doc.get("Educandos").forEach((value, index) => {
+                    value["Encarregado de Educação"] = doc.get("Nome");
+                    value["Número Sócio Enc de Educação"] = doc.get("Número de Sócio");
+                    value["Email de Encarregado de Educação"] = doc.get("Email");
+                    a.push(value)
+                });
+            }
         });
         const csv = json2csv(a);
         response.setHeader(
