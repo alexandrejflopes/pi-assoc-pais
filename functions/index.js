@@ -44,7 +44,9 @@ const {
   sendNotificationEmail,
   sendPositionEmail,
   exportParentCSV,
-  exportEducandosCSV
+  exportEducandosCSV,
+  getParentsNewParams,
+  getEducandosNewParams
 } = require('./handlers');
 
 
@@ -85,6 +87,8 @@ app.get('/sendNotificationEmail',sendNotificationEmail);
 app.get('/sendPositionEmail',sendPositionEmail);
 app.get('/exportParentCSV',exportParentCSV);
 app.get('/exportEducandosCSV',exportEducandosCSV);
+app.get('/getParentsNewParams',getParentsNewParams);
+app.get('/getEducandosNewParams',getEducandosNewParams);
 
 // URL de base para os requests: https://us-central1-associacao-pais.cloudfunctions.net/api
 exports.api = functions.https.onRequest(app);

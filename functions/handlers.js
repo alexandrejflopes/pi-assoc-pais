@@ -1208,7 +1208,6 @@ exports.exportEducandosCSV = functions.https.onRequest((request, response) => {
     let a = [];
     db.collection('parents').get().then((snapshot) => {
         snapshot.forEach((doc) => {
-            let data = doc.data();
             if (doc.get("Educandos")){
                 doc.get("Educandos").forEach((value, index) => {
                     value["Encarregado de Educação"] = doc.get("Nome");
@@ -1232,4 +1231,45 @@ exports.exportEducandosCSV = functions.https.onRequest((request, response) => {
     });
 });
 
+/**
+ * Retorna os parametros adicionados pelo administrador do sistema á entidade "parents"/encarregados de educação
+ */
+exports.getParentsNewParams = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
 
+    db.collection("initialConfigs").doc("newParameters").get().then(doc => {
+        if (!doc.exists) {
+            console.log('New parameters not defined on the database.');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            let data = doc.get("EE");
+            return response.send(data);
+        }
+    })
+    .catch(err => {
+        console.log('Query error:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Retorna os parametros adicionados pelo administrador do sistema á entidade educandos/alunos
+ */
+exports.getEducandosNewParams = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    db.collection("initialConfigs").doc("newParameters").get().then(doc => {
+        if (!doc.exists) {
+            console.log('New parameters not defined on the database.');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            let data = doc.get("aluno");
+            return response.send(data);
+        }
+    })
+    .catch(err => {
+        console.log('Query error:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
