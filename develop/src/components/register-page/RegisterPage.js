@@ -14,8 +14,12 @@ import {
 import "react-toastify/dist/ReactToastify.css";
 import { Label, Input } from "reactstrap";
 import { Link, Redirect, Route } from "react-router-dom";
-import { saveRegistToDB } from "../../firebase_scripts/installation";
-import { getGravatarURL, regular_role_PT } from "../../utils/general_utils";
+import {saveRegistToDB, validZip} from "../../firebase_scripts/installation";
+import {
+  getGravatarURL,
+  languageCode, parentsParameters,
+  regular_role_PT
+} from "../../utils/general_utils";
 import {
   firestore,
   firebase_auth,
@@ -33,7 +37,11 @@ class Register_Page extends Component {
       parentNameFeedback: null,
       nif: "",
       job: "",
+      cc : "",
+      ccFeedback : null,
       nifFeedback: null,
+      morada : "",
+      moradaFeedback : null,
       localidade: "",
       localidadeFeedback: null,
       zipCode: "",
@@ -74,6 +82,7 @@ class Register_Page extends Component {
     this._isMounted = false;
   }
 
+
   handleChangeCheckBox() {
     var { checkBoxStatus } = this.state;
 
@@ -93,7 +102,10 @@ class Register_Page extends Component {
     var {
       parentName,
       nif,
+      cc,
       job,
+      morada,
+      zipCode,
       localidade,
       zipCode,
       email,
@@ -122,6 +134,8 @@ class Register_Page extends Component {
 
     this.setState({
       parentNameFeedback: false,
+      ccFeedback : false,
+      moradaFeedback : false,
       nifFeedback: false,
       localidadeFeedback: false,
       zipCodeFeedback: false,
@@ -132,28 +146,32 @@ class Register_Page extends Component {
 
     //Verify values were inserted and show feedback if not
     var allRequiredDataFilled = true;
-    if (parentName == "") {
+    if (parentName === "") {
       allRequiredDataFilled = false;
       this.setState({ parentNameFeedback: true });
     }
-    if (nif == "") {
+    if (nif === "") {
       allRequiredDataFilled = false;
       this.setState({ nifFeedback: true });
     }
-    if (localidade == "") {
+    if (morada === "") {
+      allRequiredDataFilled = false;
+      this.setState({ moradaFeedback: true });
+    }
+    if (localidade === "") {
       allRequiredDataFilled = false;
       this.setState({ localidadeFeedback: true });
     }
-    if (zipCode == "") {
+    if (zipCode === "" || !validZip(zipCode)) {
       allRequiredDataFilled = false;
       this.setState({ zipCodeFeedback: true });
     }
-    if (email == "" || !email.match(/.+@.+/)) {
+    if (email === "" || !email.match(/.+@.+/)) {
       allRequiredDataFilled = false;
       this.setState({ emailFeedback: true });
     }
     for (var x = 0; x < nomeAluno.length; x++) {
-      if (nomeAluno[x] == "") {
+      if (nomeAluno[x] === "") {
         allRequiredDataFilled = false;
         nomeAlunoFeedBackArray[x] = true; //not working, using alert method
         if (x != 0) {
@@ -163,10 +181,10 @@ class Register_Page extends Component {
       }
     }
     for (var a = 0; a < anoEscolaridade.length; a++) {
-      if (anoEscolaridade[a] == "") {
+      if (anoEscolaridade[a] === "") {
         allRequiredDataFilled = false;
         anoEscolaridadeFeedBackArray[a] = true;
-        if (a != 0) {
+        if (a !== 0) {
           var n = a + 1;
           alert(
             "Por favor preencha o ano de escolaridade do " + n + "º aluno!"
@@ -187,7 +205,7 @@ class Register_Page extends Component {
       if (breakVar) break;
 
       keys.forEach((key) => {
-        if (currentArray[key] == "" && !breakVar) {
+        if (currentArray[key] === "" && !breakVar) {
           var message = "Por favor, preencha " + key.split("-")[0];
           allRequiredDataFilled = false;
           alert(message);
@@ -196,7 +214,7 @@ class Register_Page extends Component {
       });
     }
 
-    if (checkBoxStatus == false) {
+    if (!checkBoxStatus) {
       alert("Por favor, indique que leu a política de privacidade.");
       allRequiredDataFilled = false;
     }
@@ -207,15 +225,15 @@ class Register_Page extends Component {
 
       //Parent Json
       var parentJson = {};
-      parentJson.Nome = parentName;
-      parentJson.NIF = nif;
+      parentJson[parentsParameters.NAME[languageCode]] = parentName;
+      parentJson[parentsParameters.NIF[languageCode]] = nif;
       if (job !== "") {
-        parentJson["Profissão"] = job;
+        parentJson[parentsParameters.JOB[languageCode]] = job;
       }
-      parentJson.Localidade = localidade;
-      parentJson["Código Postal"] = zipCode;
-      parentJson.Email = email;
-      parentJson["Telemóvel"] = phone;
+      parentJson[parentsParameters.CITY[languageCode]] = localidade;
+      parentJson[parentsParameters.ZIPCODE[languageCode]] = zipCode;
+      parentJson[parentsParameters.EMAIL[languageCode]] = email;
+      parentJson[parentsParameters.PHONE[languageCode]] = phone;
 
       // Get extra parent values and store in Json -> they are in extraVars[0] along with student extra values and there are extraPai number of parent values
       var extraArray = extraVars[0]; // Dictionary of values
@@ -226,19 +244,19 @@ class Register_Page extends Component {
         parentJson[key] = extraArray[key];
       }
       parentJson.Validated = false;
-      parentJson["Número de Sócio"] = "";
-      parentJson["Quotas Pagas"] = "Não";
+      parentJson[parentsParameters.ASSOC_NUMBER[languageCode]] = ""; // TODO generate a new number
+      parentJson[parentsParameters.PAYED_FEE[languageCode]] = false;
       var date = new Date();
-      parentJson["Data inscrição"] = date;
-      parentJson.Cotas = [];
-      parentJson["Cartão Cidadão"] = "Não";
+      parentJson[parentsParameters.REGISTER_DATE[languageCode]] = date;
+      parentJson[parentsParameters.FEES[languageCode]] = [];
+      parentJson[parentsParameters.CC[languageCode]] = cc;
       parentJson.blocked = false;
-      parentJson.Cargo = "";
-      parentJson.Admin = false;
-      parentJson.Cargo = regular_role_PT;
+      parentJson[parentsParameters.ADMIN[languageCode]] = false;
+      parentJson[parentsParameters.ROLE[languageCode]] = regular_role_PT;
+      parentJson[parentsParameters.STREET[languageCode]] = morada;
 
       // avatar
-      parentJson.photo = getGravatarURL(email);
+      parentJson[parentsParameters.PHOTO[languageCode]] = getGravatarURL(email);
 
       // Student's part
       var studentArray = [];
@@ -266,7 +284,7 @@ class Register_Page extends Component {
         });
         studentArray.push(studentJson);
       }
-      parentJson.Educandos = studentArray;
+      parentJson[parentsParameters.CHILDREN[languageCode]] = studentArray;
 
       //Save values to database
       saveRegistToDB(parentJson);
@@ -678,29 +696,55 @@ class Register_Page extends Component {
                 </FormFeedback>
               </FormGroup>
 
-              {/* Descricao Textarea */}
-              <FormGroup>
-                <label htmlFor="nif">NIF</label>
-                <FormInput
-                  invalid={this.state.nifFeedback}
-                  id="nif"
-                  type="text"
-                  placeholder="NIF"
-                  required
-                  onChange={(e) => {
-                    this.setState({
-                      nif: e.target.value,
-                    });
-                  }}
-                />
-                <FormFeedback
-                  id="nifFeedback"
-                  valid={false}
-                  style={{ display: "d-block" }}
-                >
-                  Por favor, preencha este campo
-                </FormFeedback>
-              </FormGroup>
+
+              <Row form>
+                <Col md="6" className="form-group">
+                  <label htmlFor="nif">NIF</label>
+                  <FormInput
+                    invalid={this.state.nifFeedback}
+                    id="nif"
+                    type="text"
+                    placeholder="NIF"
+                    required
+                    onChange={(e) => {
+                      this.setState({
+                        nif: e.target.value,
+                      });
+                    }}
+                  />
+                  <FormFeedback
+                    id="nifFeedback"
+                    valid={false}
+                    style={{ display: "d-block" }}
+                  >
+                    Por favor, preencha este campo
+                  </FormFeedback>
+                </Col>
+
+                <Col md="6" className="form-group">
+                  <label htmlFor="cc">Cartão de Cidadão (opcional)</label>
+                  <FormInput
+                    invalid={this.state.ccFeedback}
+                    id="cc"
+                    type="text"
+                    placeholder="Número do Cartão de Cidadão"
+                    /*required*/
+                    onChange={(e) => {
+                      this.setState({
+                        cc: e.target.value,
+                      });
+                    }}
+                  />
+                  <FormFeedback
+                    id="ccFeedback"
+                    valid={false}
+                    style={{ display: "d-block" }}
+                  >
+                    Por favor, preencha este campo
+                  </FormFeedback>
+                </Col>
+
+              </Row>
 
               <FormGroup>
                 <label htmlFor="job">Profissão (opcional)</label>
@@ -715,10 +759,27 @@ class Register_Page extends Component {
                 />
               </FormGroup>
 
+              <FormGroup>
+                <label htmlFor="morada">Morada</label>
+                <FormInput
+                  invalid={this.state.moradaFeedback}
+                  required
+                  id="morada"
+                  placeholder="Rua Dr. Ricardo Silva, 276 R/C Dto"
+                  onChange={(e) => {
+                    this.setState({
+                      morada: e.target.value,
+                    });
+                  }}
+                />
+                <FormFeedback id="moradaFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+              </FormGroup>
+
               <Row form>
                 <Col md="6" className="form-group">
                   <label htmlFor="localidade">Localidade</label>
                   <FormInput
+                    required
                     invalid={this.state.localidadeFeedback}
                     id="localidade"
                     onChange={(e) => {
@@ -738,6 +799,7 @@ class Register_Page extends Component {
                 <Col md="6" className="form-group">
                   <label htmlFor="zipCode">Código Postal</label>
                   <FormInput
+                    required
                     invalid={this.state.zipCodeFeedback}
                     id="zipCode"
                     onChange={(e) => {

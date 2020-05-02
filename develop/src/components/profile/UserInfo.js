@@ -21,19 +21,33 @@ class UserInfo extends React.Component {
   constructor(props) {
     super(props);
 
+    let name, email, phone, job, nif, cc, street, city, zipcode = null;
+
+    if(this.props.userD!=null){
+      name = this.props.userD[parentsParameters.NAME[languageCode]];
+      email = this.props.userD[parentsParameters.EMAIL[languageCode]];
+      phone = this.props.userD[parentsParameters.PHONE[languageCode]];
+      job = this.props.userD[parentsParameters.JOB[languageCode]];
+      nif = this.props.userD[parentsParameters.NIF[languageCode]];
+      cc = this.props.userD[parentsParameters.CC[languageCode]];
+      street = this.props.userD[parentsParameters.STREET[languageCode]];
+      city = this.props.userD[parentsParameters.CITY[languageCode]];
+      zipcode = this.props.userD[parentsParameters.ZIPCODE[languageCode]];
+    }
+
     //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
     this.state = {
       title: "A minha informação",
       editing : false,
-      userName : this.props.user!=null ? (this.props.user.name != null ? this.props.user.name : "") : "",
-      userEmail : this.props.user!=null ? (this.props.user.email != null ? this.props.user.email : "") : "",
-      userPhone : this.props.user!=null ? (this.props.user.phone != null ? this.props.user.phone : "") : "",
-      userJob : this.props.user!=null ? (this.props.user.job != null ? this.props.user.job : "") : "",
-      userNif : this.props.user!=null ? (this.props.user.nif != null ? this.props.user.nif : "") : "",
-      userCc : this.props.user!=null ? (this.props.user.cc != null ? this.props.user.cc : "") : "",
-      userStreet : this.props.user!=null ? (this.props.user.street != null ? this.props.user.street : "") : "",
-      userCity : this.props.user!=null ? (this.props.user.city != null ? this.props.user.city : "") : "",
-      userZipCode : this.props.user!=null ? (this.props.user.zipcode != null ? this.props.user.zipcode : "") : "",
+      userName : name!=null ? name : "",
+      userEmail : email!=null ? email : "",
+      userPhone : phone!=null ? phone : "",
+      userJob : job!=null ? job : "",
+      userNif : nif!=null ? nif : "",
+      userCc : cc!=null ? cc : "",
+      userStreet : street!=null ? street : "",
+      userCity : city!=null ? city : "",
+      userZipCode : zipcode!=null ? zipcode : "",
       editabledInputsIdsSuffixes : [
         "Name", "Email", "Phone", "Job", "Street", "City", "ZipCode"
       ],

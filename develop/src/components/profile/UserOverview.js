@@ -10,7 +10,11 @@ import {
 } from "shards-react";
 
 import ListGroupReact from "react-bootstrap/ListGroup";
-import {defaultAvatar, languageCode} from "../../utils/general_utils";
+import {
+  defaultAvatar,
+  languageCode,
+  parentsParameters, studentsParameters
+} from "../../utils/general_utils";
 import {saveChanges} from "../../utils/common_strings";
 
 class UserOverview extends React.Component {
@@ -18,16 +22,30 @@ class UserOverview extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      userName : this.props.user!=null ? (this.props.user.name != null ? this.props.user.name : "") : "Diogo Gomes",
-      userPhoto : this.props.user!=null ? (this.props.user.photo != null ? this.props.user.role.photo : "") : defaultAvatar,
-      userAssocNumber : this.props.user!=null ? (this.props.user.assocNumber != null ? this.props.user.assocNumber : "") : "00000",
-      userEmail : this.props.user!=null ? (this.props.user.email != null ? this.props.user.email : "") : "dgomes@assocpais.pt",
-      userPhone : this.props.user!=null ? (this.props.user.phone != null ? this.props.user.phone : "") : "123456789",
-      userRole : this.props.user!=null ? (this.props.user.role != null ? this.props.user.role : "") : "Presidente",
-      userEducandos : this.props.user!=null ? (this.props.user.educandos != null ? this.props.user.educandos : []) : [],
+    //console.log("overview props: " + JSON.stringify(props));
 
-      educandosTeste : [
+    let name, photo, assocNumber, email, phone, role, children = null;
+
+    if(this.props.user!=null){
+      name = this.props.user[parentsParameters.NAME[languageCode]];
+      photo = this.props.user[parentsParameters.PHOTO[languageCode]];
+      assocNumber = this.props.user[parentsParameters.ASSOC_NUMBER[languageCode]];
+      email = this.props.user[parentsParameters.EMAIL[languageCode]];
+      phone = this.props.user[parentsParameters.PHONE[languageCode]];
+      role = this.props.user[parentsParameters.ROLE[languageCode]];
+      children = this.props.user[parentsParameters.CHILDREN[languageCode]];
+    }
+
+    this.state = {
+      userName : name!=null ? name : "",
+      userPhoto : photo!=null ? photo : "",
+      userAssocNumber : assocNumber!=null ? assocNumber : "",
+      userEmail : email!=null ? email : "",
+      userPhone : phone!=null ? phone : "",
+      userRole : role!=null ? role : "",
+      userEducandos : children!=null ? children : [],
+
+      /*educandosTeste : [
         {
           id: 0,
           name: "João Gomes",
@@ -40,18 +58,7 @@ class UserOverview extends React.Component {
           photo: defaultAvatar,
           schoolYear: "8"
         }
-      ],
-
-      userDetails: {
-        name: "Sierra Brooks",
-        avatar: require("./../../images/avatars/0.jpg"),
-        jobTitle: "Project Manager",
-        performanceReportTitle: "Workload",
-        performanceReportValue: 74,
-        metaTitle: "Description",
-        metaValue:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Odio eaque, quidem, commodi soluta qui quae minima obcaecati quod dolorum sint alias, possimus illum assumenda eligendi cumque?"
-      }
+      ]*/
     }
   }
 
@@ -69,7 +76,10 @@ class UserOverview extends React.Component {
 
 
   render() {
-    const { educandosTeste } = this.state;
+    const { educandosTeste, userEducandos } = this.state;
+
+    //console.log("userEducandos: " + JSON.stringify(userEducandos));
+
     return (
       <Card small className="mb-4 pt-3">
         <CardHeader className="border-bottom text-center">
@@ -98,7 +108,26 @@ class UserOverview extends React.Component {
           </ListGroupItem>
           <ListGroupItem>
             <Row>
-              {educandosTeste.map((student,idx) => (
+              {userEducandos.length === 0 ? <Col/> :
+                userEducandos.map((student,idx) => (
+                  <Col sm="12" lg="6" md="12">
+                    <ListGroupReact flush style={{ textAlign: "center" }}>
+                      <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>
+                        <div className="mb-3 mx-auto">
+                          <img
+                            className="rounded-circle"
+                            src={defaultAvatar}
+                            alt={student[studentsParameters.NAME[languageCode]]}
+                            width="50"
+                          />
+                        </div>
+                        <h6 className="mb-0">{student[studentsParameters.NAME[languageCode]]}</h6>
+                      </ListGroupReact.Item>
+                    </ListGroupReact>
+                  </Col>
+                ))
+              }
+              {/*educandosTeste.map((student,idx) => (
                 <Col sm="12" lg="6" md="12">
                   <ListGroupReact flush style={{ textAlign: "center" }}>
                     <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>
@@ -114,7 +143,7 @@ class UserOverview extends React.Component {
                     </ListGroupReact.Item>
                   </ListGroupReact>
                 </Col>
-              ))}
+              ))*/}
             </Row>
           </ListGroupItem>
 

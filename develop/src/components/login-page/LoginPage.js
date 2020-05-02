@@ -16,6 +16,7 @@ import { firestore, firebase_auth, firebase } from "../../firebase-config";
 //import * as UsersService from "../../services/users/api_user";
 import CostumForm from "../../common/Form/form";
 import bg1 from "../../assets/mother.png";
+import {languageCode, parentsParameters} from "../../utils/general_utils";
 
 class Login extends CostumForm {
   constructor(props) {
@@ -47,15 +48,40 @@ class Login extends CostumForm {
 
     this.googleSignIn = this.googleSignIn.bind(this);
 
-    const currentUser = firebase_auth.currentUser;
+
+
+
+
+  }
+
+  /*********************************** LIFECYCLE ***********************************/
+  componentDidMount() {
+    this._isMounted = true;
+    // const user = UsersService.getCurrentUser();
+
     const this_ = this;
 
+    const currentUser = firebase_auth.currentUser;
+
+
     if (currentUser != null) {
-      console.log("Redirect para o perfil"); // TODO
+      console.log("Redirect para o perfil com user já autenticado");
+      console.log("currentUser: " + JSON.stringify(currentUser));
+      console.log("currentUser email " + currentUser.email);
+      // redirect to profile page
+      const red = (
+        <Redirect
+          to={{
+            pathname: "/profile",
+            state: { userEmail: currentUser.email, userProvided : true },
+          }}
+        />
+      );
+      this_.setState({ redirect: red });
     } else if (firebase_auth.isSignInWithEmailLink(window.location.href)) {
       var email = window.localStorage.getItem("emailForSignIn");
       if (!email) {
-        email = window.prompt("Please provide your email for confirmation");
+        email = window.prompt("Por favor, forneça o seu email para confirmação.");
       }
       firebase
         .auth()
@@ -72,9 +98,10 @@ class Login extends CostumForm {
                 alert("Utilizador não registado!");
               } else {
                 const dataDoc = doc.data();
-                if (email == dataDoc.Email && dataDoc["Validated"] == false) {
+                console.log("dataDoc: " + JSON.stringify(dataDoc));
+                if (email === dataDoc.Email && dataDoc["Validated"] === false) {
                   var red;
-                  if (dataDoc["Quotas Pagas"] == "Não") {
+                  if (dataDoc[parentsParameters.PAYED_FEE[languageCode]] === false) {
                     red = (
                       <Redirect
                         to={{
@@ -96,10 +123,20 @@ class Login extends CostumForm {
                   //Redirecionar para página de pagamento
                   this_.setState({ redirect: red });
                 } else if (
-                  email == dataDoc.Email &&
-                  dataDoc["Validated"] == true
+                  email === dataDoc.Email &&
+                  dataDoc["Validated"] === true
                 ) {
-                  alert("Redirect para o perfil");
+                  console.log("Redirect para o perfil com user validado");
+                  // redirect to profile page
+                  const red = (
+                    <Redirect
+                      to={{
+                        pathname: "/profile",
+                        state: { userEmail: email, userProvided : true },
+                      }}
+                    />
+                  );
+                  this_.setState({ redirect: red });
                 }
               }
             })
@@ -115,13 +152,6 @@ class Login extends CostumForm {
     }
   }
 
-  /*********************************** LIFECYCLE ***********************************/
-  componentDidMount() {
-    this._isMounted = true;
-
-    // const user = UsersService.getCurrentUser();
-  }
-
   componentWillUnmount() {
     this._isMounted = false;
   }
@@ -135,7 +165,7 @@ class Login extends CostumForm {
       .auth()
       .signInWithPopup(provider)
       .then(function (result) {
-        console.log(result);
+        console.log("auth result: " + result);
         /*
          * TODO: verificar se o este email já existe
          *  - se não existe, apagar o registo feito (apagar o user)
@@ -157,7 +187,7 @@ class Login extends CostumForm {
 
     const data = {};
 
-    if (credentials.email == "") {
+    if (credentials.email === "") {
       alert("Insira o seu email!");
     } else {
       firebase
@@ -197,8 +227,8 @@ class Login extends CostumForm {
           } else {
             const dataDoc = doc.data();
             if (
-              credentials.email == dataDoc.Email &&
-              dataDoc["Validated"] == false
+              credentials.email === dataDoc.Email &&
+              dataDoc["Validated"] === false
             ) {
               let uri =
                 "https://us-central1-associacao-pais.cloudfunctions.net/api/sendAuthenticationEmail?" +
@@ -232,8 +262,8 @@ class Login extends CostumForm {
               );
               this.setState({ msg: mensagem });
             } else if (
-              credentials.email == dataDoc.Email &&
-              dataDoc["Validated"] == true
+              credentials.email === dataDoc.Email &&
+              dataDoc["Validated"] === true
             ) {
               let uri =
                 "https://us-central1-associacao-pais.cloudfunctions.net/api/sendAuthenticationEmail?" +

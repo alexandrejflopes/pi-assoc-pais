@@ -120,6 +120,19 @@ const parentsParameters = {
   },
   ADMIN : {
     "pt_PT" : "Admin"
+  },
+  // other fields (not in the CSVs)
+  CHILDREN : {
+    "pt_PT" : "Educandos"
+  },
+  PHOTO : {
+    "pt_PT" : "photo"
+  },
+  REGISTER_DATE : {
+    "pt_PT" : "Data inscricao"
+  },
+  FEES : {
+    "pt_PT" : "Cotas"
   }
 };
 

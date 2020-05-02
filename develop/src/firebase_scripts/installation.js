@@ -43,7 +43,18 @@ let newParametersData = {
 let membersFileHeaders = [];
 let studentsFileHeaders = [];
 
-let regExp = /\d{4}\-\d{3}/;
+/*
+* function to get a new associate number randomly
+* */
+function getNewAssocNumber() {
+  /*
+  * - get existing assoc numbers
+  * - see their length
+  * - generate a new (not repeated) number with that length
+  * */
+
+
+}
 
 
 // ------------------------------------------------------------
