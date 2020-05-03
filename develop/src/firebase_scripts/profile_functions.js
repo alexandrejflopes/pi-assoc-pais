@@ -38,5 +38,12 @@ async function fetchUserDoc(email) {
   return request();
 }
 
+function userLogOut() {
+    return firebase_auth.signOut();
+}
 
-export {fetchUserDoc}
+function getCurrentUserPhoto() {
+
+}
+
+export {fetchUserDoc, userLogOut}

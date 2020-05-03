@@ -2,6 +2,12 @@
 *  file to save messages strings that might be reused along the app
 * */
 
+// ------------------ STRINGS RELATED TO LOADING PAGES ------------------
+
+const loadingInfo = {
+  "pt_PT" : "A carregar informações..."
+};
+
 // ------------------ STRINGS RELATED TO FORMS ------------------
 
 const jsonParamsErrorMessage = {
@@ -76,6 +82,8 @@ const paramsJsonFileTipMessage = {
 
 
 export {
+  loadingInfo,
+  // forms
   jsonParamsErrorMessage,
   jsonOrCsvParamsErrorMessage,
   importSucessMessage,

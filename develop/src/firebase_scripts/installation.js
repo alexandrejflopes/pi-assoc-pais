@@ -44,15 +44,46 @@ let membersFileHeaders = [];
 let studentsFileHeaders = [];
 
 /*
-* function to get a new associate number randomly
+* function to fetch existing associate numbers
 * */
-function getNewAssocNumber() {
-  /*
-  * - get existing assoc numbers
-  * - see their length
-  * - generate a new (not repeated) number with that length
-  * */
+function fetchAssocNumbers() {
 
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/getParentsNumeroSocio";
+
+  //console.log("profile uri: " + uri);
+
+  const request = async () => {
+    let assocNumbers;
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into json
+      .then(function (data) {
+        console.log("assoc numbers recebidos -> ", JSON.stringify(data));
+        assocNumbers = data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    return assocNumbers;
+  };
+
+  return request();
+
+}
+
+/*
+* function to get a new associate number (the associate numbers are incremental)
+* */
+function generateNewAssocNumber(numbersArray) {
+
+  // remove empty strings, nulls and undefined and convert number strings to actual numbers
+  const numbers = numbersArray.filter(el=>el).map(x=>+x);
+
+  return Math.max(...numbers) + 1;
 
 }
 
@@ -983,6 +1014,8 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         removeAllInvalidFeedbacks,
         validZip,
         showZipWarning,
+        generateNewAssocNumber,
+        fetchAssocNumbers,
         // functions used in tests
         checkJSONparamsEntitiesAndTypes,
         compareCSVandJsonParameters,

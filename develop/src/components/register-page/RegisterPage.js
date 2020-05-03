@@ -14,7 +14,11 @@ import {
 import "react-toastify/dist/ReactToastify.css";
 import { Label, Input } from "reactstrap";
 import { Link, Redirect, Route } from "react-router-dom";
-import {saveRegistToDB, validZip} from "../../firebase_scripts/installation";
+import {
+  fetchAssocNumbers, generateNewAssocNumber,
+  saveRegistToDB,
+  validZip
+} from "../../firebase_scripts/installation";
 import {
   getGravatarURL,
   languageCode, parentsParameters,
@@ -244,7 +248,6 @@ class Register_Page extends Component {
         parentJson[key] = extraArray[key];
       }
       parentJson.Validated = false;
-      parentJson[parentsParameters.ASSOC_NUMBER[languageCode]] = ""; // TODO generate a new number
       parentJson[parentsParameters.PAYED_FEE[languageCode]] = false;
       var date = new Date();
       parentJson[parentsParameters.REGISTER_DATE[languageCode]] = date;
@@ -286,47 +289,56 @@ class Register_Page extends Component {
       }
       parentJson[parentsParameters.CHILDREN[languageCode]] = studentArray;
 
-      //Save values to database
-      saveRegistToDB(parentJson);
-      const project_id = firebaseConfig.projectId;
-      let uri =
-        "https://us-central1-" +
-        project_id +
-        ".cloudfunctions.net/api/sendRegisterEmail?" +
-        "email=" +
-        email +
-        "&" +
-        "nome=" +
-        parentName;
-      const request = async () => {
-        let resposta;
-        await fetch(uri)
-          .then((resp) => resp.json()) // Transform the data into json
-          .then(function (data) {
-            console.log("ShowEmaildata: ", data);
-            resposta = data;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+      // generate a new associate number
+      fetchAssocNumbers()
+        .then((array) => {
+          const newAssocNumber = generateNewAssocNumber(array);
+          parentJson[parentsParameters.ASSOC_NUMBER[languageCode]] = newAssocNumber.toString();
 
-        return resposta;
-      };
+          //Save values to database
+          saveRegistToDB(parentJson);
+          const project_id = firebaseConfig.projectId;
+          let uri =
+            "https://us-central1-" +
+            project_id +
+            ".cloudfunctions.net/api/sendRegisterEmail?" +
+            "email=" +
+            email +
+            "&" +
+            "nome=" +
+            parentName;
+          const request = async () => {
+            let resposta;
+            await fetch(uri)
+              .then((resp) => resp.json()) // Transform the data into json
+              .then(function (data) {
+                console.log("ShowEmaildata: ", data);
+                resposta = data;
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
 
-      request();
+            return resposta;
+          };
 
-      var red = (
-        <Redirect
-          to={{
-            pathname: "/login",
-            state: {
-              msg:
-                "Para concluir o registo, terá de pagar a 1ª prestação, fazer login e confirmar o pagamento e aguardar aprovação!",
-            },
-          }}
-        />
-      );
-      this.setState({ redirect: red });
+          request();
+
+          var red = (
+            <Redirect
+              to={{
+                pathname: "/login",
+                state: {
+                  msg:
+                    "Para concluir o registo, terá de pagar a 1ª prestação, fazer login e confirmar o pagamento e aguardar aprovação!",
+                },
+              }}
+            />
+          );
+          this.setState({ redirect: red });
+        })
+        .catch((error) => console.log(error));
+
     }
   }
 

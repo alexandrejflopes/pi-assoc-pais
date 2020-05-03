@@ -16,6 +16,7 @@ import {
   parentsParameters, studentsParameters
 } from "../../utils/general_utils";
 import {saveChanges} from "../../utils/common_strings";
+import {profileMyChildren} from "../../utils/page_titles_strings";
 
 class UserOverview extends React.Component {
 
@@ -99,7 +100,7 @@ class UserOverview extends React.Component {
           <ListGroupItem className="px-4">
             <Row>
               <Col lg="10" md="10" sm="10">
-                <h5 className="mb-0 float-left">Os meus educandos</h5>
+                <h5 className="mb-0 float-left">{profileMyChildren[languageCode]}</h5>
               </Col>
               <Col lg="2" md="2" sm="2">
                 <Button size="sm" className="float-right" onClick={() => {}}><span className="material-icons" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>person_add</span></Button>

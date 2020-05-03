@@ -13,8 +13,13 @@ import {
   ListGroupItem,
   Row
 } from "shards-react";
-import {languageCode, parentsParameters} from "../../utils/general_utils";
+import {
+  languageCode,
+  notAvailableDesignation,
+  parentsParameters
+} from "../../utils/general_utils";
 import {saveChanges, cancel, updateProfile} from "../../utils/common_strings";
+import {profileInfoFormTitle} from "../../utils/page_titles_strings";
 
 
 class UserInfo extends React.Component {
@@ -22,6 +27,8 @@ class UserInfo extends React.Component {
     super(props);
 
     let name, email, phone, job, nif, cc, street, city, zipcode = null;
+    const noValueString = notAvailableDesignation[languageCode];
+    const infoFormTitle = profileInfoFormTitle[languageCode];
 
     if(this.props.userD!=null){
       name = this.props.userD[parentsParameters.NAME[languageCode]];
@@ -37,19 +44,27 @@ class UserInfo extends React.Component {
 
     //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
     this.state = {
-      title: "A minha informação",
+      title: infoFormTitle,
       editing : false,
-      userName : name!=null ? name : "",
-      userEmail : email!=null ? email : "",
-      userPhone : phone!=null ? phone : "",
-      userJob : job!=null ? job : "",
-      userNif : nif!=null ? nif : "",
-      userCc : cc!=null ? cc : "",
-      userStreet : street!=null ? street : "",
-      userCity : city!=null ? city : "",
-      userZipCode : zipcode!=null ? zipcode : "",
+      userName : name!=null ? name : noValueString,
+      userEmail : email!=null ? email : noValueString,
+      userPhone : phone!=null ? phone : noValueString,
+      userJob : job!=null ? job : noValueString,
+      userNif : nif!=null ? nif : noValueString,
+      userCc : cc!=null ? cc : noValueString,
+      userStreet : street!=null ? street : noValueString,
+      userCity : city!=null ? city : noValueString,
+      userZipCode : zipcode!=null ? zipcode : noValueString,
+      // feedbacks
+      nameFeedback : null,
+      emailFeedback : null,
+      phoneFeedback : null,
+      nifFeedback : null,
+      streetFeedback : null,
+      cityFeedback : null,
+      zipcodeFeedback : null,
       editabledInputsIdsSuffixes : [
-        "Name", "Email", "Phone", "Job", "Street", "City", "ZipCode"
+        "Name", "Email", "Phone", "Job", "Street", "City", "ZipCode", "NIF", "CC"
       ],
       oldValues : {
         Name : "",
@@ -58,7 +73,9 @@ class UserInfo extends React.Component {
         Job : "",
         Street : "",
         City : "",
-        ZipCode : ""
+        ZipCode : "",
+        Nif : "",
+        Cc : ""
       }
     };
 
@@ -145,6 +162,7 @@ class UserInfo extends React.Component {
                     <Col md="6" className="form-group">
                       <label htmlFor="feName">{parentsParameters.NAME[languageCode]}</label>
                       <FormInput
+                        required
                         id="feName"
                         placeholder={parentsParameters.NAME[languageCode]}
                         value={this.state.userName}
@@ -156,6 +174,7 @@ class UserInfo extends React.Component {
                     <Col md="6" className="form-group">
                       <label htmlFor="feEmail">{parentsParameters.EMAIL[languageCode]}</label>
                       <FormInput
+                        required
                         type="email"
                         id="feEmail"
                         placeholder={parentsParameters.EMAIL[languageCode]}
@@ -170,6 +189,7 @@ class UserInfo extends React.Component {
                     <Col md="6" className="form-group">
                       <label htmlFor="fePhone">{parentsParameters.PHONE[languageCode]}</label>
                       <FormInput
+                        required
                         type="tel"
                         id="fePhone"
                         placeholder={parentsParameters.PHONE[languageCode]}
@@ -196,6 +216,7 @@ class UserInfo extends React.Component {
                     <Col md="6" className="form-group">
                       <label htmlFor="feStreet">{parentsParameters.STREET[languageCode]}</label>
                       <FormInput
+                        required
                         id="feStreet"
                         placeholder={parentsParameters.STREET[languageCode]}
                         value={this.state.userStreet}
@@ -207,6 +228,7 @@ class UserInfo extends React.Component {
                     <Col md="4" className="form-group">
                       <label htmlFor="feCity">{parentsParameters.CITY[languageCode]}</label>
                       <FormInput
+                        required
                         id="feCity"
                         placeholder={parentsParameters.CITY[languageCode]}
                         value={this.state.userCity}
@@ -218,6 +240,7 @@ class UserInfo extends React.Component {
                     <Col md="2" className="form-group">
                       <label htmlFor="feZipCode">{parentsParameters.ZIPCODE[languageCode]}</label>
                       <FormInput
+                        required
                         id="feZipCode"
                         placeholder={parentsParameters.ZIPCODE[languageCode]}
                         value={this.state.userZipCode}
@@ -231,6 +254,7 @@ class UserInfo extends React.Component {
                     <Col md="6" className="form-group">
                       <label htmlFor="feNIF">{parentsParameters.NIF[languageCode]}</label>
                       <FormInput
+                        required
                         id="feNIF"
                         placeholder={parentsParameters.NIF[languageCode]}
                         value={this.state.userNif}

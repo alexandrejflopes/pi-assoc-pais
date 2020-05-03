@@ -126,6 +126,7 @@ class Login extends CostumForm {
                   email === dataDoc.Email &&
                   dataDoc["Validated"] === true
                 ) {
+                  // aqui o current user é null
                   console.log("Redirect para o perfil com user validado");
                   // redirect to profile page
                   const red = (
