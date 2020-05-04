@@ -1273,3 +1273,26 @@ exports.getEducandosNewParams = functions.https.onRequest((request, response) =>
         return response.status(405).send({"error" : err});
     });
 });
+
+/**
+ * Retorna todos os parametros adicionados pelo administrador do sistema
+ */
+exports.getAllNewParams = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    db.collection("initialConfigs").doc("newParameters").get().then(doc => {
+        if (!doc.exists) {
+            console.log('New parameters not defined on the database.');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+        	let data = doc.data();
+            return response.send(data);
+        }
+    })
+    .catch(err => {
+        console.log('Query error:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+
