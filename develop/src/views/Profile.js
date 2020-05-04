@@ -5,7 +5,10 @@ import PageTitle from "../components/common/PageTitle";
 import UserOverview from "../components/profile/UserOverview";
 import UserInfo from "../components/profile/UserInfo";
 import {Redirect} from "react-router-dom";
-import {fetchUserDoc} from "../firebase_scripts/profile_functions";
+import {
+  fetchUserDoc,
+  getNewParams, mapParamsToInputType
+} from "../firebase_scripts/profile_functions";
 import {firebase_auth} from "../firebase-config";
 import {languageCode, parentsParameters} from "../utils/general_utils";
 import {profilePageTitle} from "../utils/page_titles_strings";
@@ -27,32 +30,71 @@ class Profile extends React.Component {
       userEmail : userEmail,
       userProvided : userProvided != null ? userProvided : false,
       userDoc : null,
-      editingProfile : false
-    }
+      editingProfile : false,
+      newParamsInputTypes : null
+    };
 
     //this.componentDidMount = this.componentDidMount.bind(this);
+    this.saveNewParams = this.saveNewParams.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount() {
     this._isMounted = true;
+    console.log("DID MOUNT!");
 
-    const userPromise = fetchUserDoc(this.state.userEmail);
+    if(firebase_auth.currentUser!=null){
+      console.log("currentUser: " + JSON.stringify(firebase_auth.currentUser));
+      console.log("localUser: " + JSON.stringify(JSON.parse(window.localStorage.getItem("userDoc"))));
+      if(window.localStorage.getItem("userDoc")!=null){
+        let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
-    userPromise
-      .then((result) => {
-      //console.log("Result userDoc: " + JSON.stringify(result));
-      if(result.error == null){ // no error
-        //console.log("atualizar state com user doc recebido");
-        this.setState({ userDoc: result });
-        window.localStorage.setItem("userDoc", JSON.stringify(result));
-        UserActions.componentDidMount();
+        if(localUser[parentsParameters.EMAIL[languageCode]]!==firebase_auth.currentUser.email){
+          const userPromise = fetchUserDoc(this.state.userEmail);
+
+          userPromise
+            .then((result) => {
+              console.log("Result userDoc: " + JSON.stringify(result));
+              if(result.error == null){ // no error
+                console.log("atualizar state com user doc recebido");
+                this.setState({ userDoc: result });
+                window.localStorage.setItem("userDoc", JSON.stringify(result));
+                UserActions.componentDidMount();
+                this.saveNewParams();
+              }
+
+            })
+            .catch((error) => {
+              console.log("error userDoc: " + JSON.stringify(error));
+            });
+        }
+        else{
+          console.log("atualizar state com localUser");
+          this.saveNewParams();
+          this.setState({ userDoc: localUser });
+        }
       }
+      else{
+        console.log("não há user no LS, buscar novo");
+        const userPromise = fetchUserDoc(this.state.userEmail);
 
-    })
-      .catch((error) => {
-        console.log("error userDoc: " + JSON.stringify(error));
-      });
+        userPromise
+          .then((result) => {
+            console.log("Result userDoc: " + JSON.stringify(result));
+            if(result.error == null){ // no error
+              console.log("atualizar state com user doc recebido");
+              this.setState({ userDoc: result });
+              window.localStorage.setItem("userDoc", JSON.stringify(result));
+              UserActions.componentDidMount();
+              this.saveNewParams();
+            }
+
+          })
+          .catch((error) => {
+            console.log("error userDoc: " + JSON.stringify(error));
+          });
+      }
+    }
 
   }
 
@@ -63,67 +105,39 @@ class Profile extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
+  saveNewParams(){
+    console.log("entrei nos newParamsTypes");
+    if(window.localStorage.getItem("newParamsInputTypes")!=null){
+      const newParamsInputTypes = JSON.parse(window.localStorage.getItem("newParamsInputTypes"));
+      console.log("recebi newParamsTypes: " + JSON.stringify(newParamsInputTypes));
+      this.setState({ newParamsInputTypes: newParamsInputTypes });
+    }
+    else{
+      const paramsPromise = getNewParams(this.state.userEmail);
 
+      paramsPromise
+        .then((result) => {
+          console.log("Result paramsDoc: " + JSON.stringify(result));
+          if(result.error == null){ // no error
+            const newParamsInputTypes = mapParamsToInputType(result);
+            this.setState({ newParamsInputTypes: newParamsInputTypes });
+
+            console.log("newParamsTypes do LocalStorage: " + JSON.stringify(newParamsInputTypes));
+            window.localStorage.setItem("newParamsInputTypes", JSON.stringify(newParamsInputTypes));
+          }
+        })
+        .catch((error) => {
+          console.log("error paramsDoc: " + JSON.stringify(error));
+        });
+    }
+  }
 
 
   render(){
     if(this.state.userEmail == null || !this.state.userProvided || firebase_auth.currentUser == null){
       return <Redirect to="/login" />;
     }
-    else if(window.localStorage.getItem("userDoc")!=null){
-      // optimize loading time
-      let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
-
-      //console.log("localUser profile: " + JSON.stringify(localUser));
-      //console.log("currentUser profile: " + JSON.stringify(firebase_auth.currentUser));
-
-      // TODO: test this
-      if(localUser[parentsParameters.EMAIL[languageCode]]!==firebase_auth.currentUser.email){
-        this.componentDidMount();
-        return(
-          <Container fluid className="main-content-container px-4">
-            <Row noGutters className="page-header py-4">
-              <PageTitle title={profilePageTitle[languageCode]} md="12" className="ml-sm-auto mr-sm-auto" />
-            </Row>
-            <Row
-              fluid
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignContent: "center",
-                alignItems: "center",
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              <h2>{loadingInfo[languageCode]}</h2>
-            </Row>
-          </Container>
-        );
-      }
-      else{
-        return(
-          <Container fluid className="main-content-container px-4">
-            <Row noGutters className="page-header py-4">
-              <PageTitle title={profilePageTitle[languageCode]} md="12" className="ml-sm-auto mr-sm-auto" />
-            </Row>
-            <Row>
-              <Col lg="4">
-                <UserOverview user = {localUser} />
-              </Col>
-              <Col lg="8">
-                <UserInfo userD = {localUser} />
-              </Col>
-            </Row>
-          </Container>
-        );
-      }
-
-
-    }
-    else if(this.state.userDoc == null || Object.keys(this.state.userDoc).length===0){
+    else if(this.state.userDoc == null || Object.keys(this.state.userDoc).length===0 || this.state.newParamsInputTypes == null){
       return(
         <Container fluid className="main-content-container px-4">
           <Row noGutters className="page-header py-4">
@@ -155,10 +169,10 @@ class Profile extends React.Component {
           </Row>
           <Row>
             <Col lg="4">
-              <UserOverview user = {this.state.userDoc} />
+              <UserOverview user = {this.state.userDoc} newParamsTypes = {this.state.newParamsInputTypes} />
             </Col>
             <Col lg="8">
-              <UserInfo userD = {this.state.userDoc} />
+              <UserInfo userD = {this.state.userDoc} newParamsTypesD = {this.state.newParamsInputTypes} />
             </Col>
           </Row>
         </Container>

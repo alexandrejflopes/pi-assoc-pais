@@ -20,4 +20,8 @@ export const close = {
 };
 
 
+export const updateInfo = {
+  "pt_PT" : "Atualizar informações"
+};
+
 

@@ -72,6 +72,21 @@ const newParametersTypes = {
   }
 };
 
+const newParametersInputTypes = {
+  TEXT : {
+    type : "text",
+    step : null
+  },
+  INT : {
+    type : "number",
+    step : "1"
+  },
+  FLOAT : {
+    type : "number",
+    step : "0.1"
+  },
+};
+
 const newParametersEntities = {
   parent : {
     "pt_PT": "EE"
@@ -136,6 +151,7 @@ const parentsParameters = {
   }
 };
 
+
 const studentsParameters = {
   PARENT_ASSOC_NUMBER : {
     "pt_PT": "Número de Sócio EE"
@@ -147,7 +163,11 @@ const studentsParameters = {
     "pt_PT": "Nome"
   },
   SCHOOL_YEAR : {
-    "pt_PT" : "Ano (ensino regular)"
+    "pt_PT" : "Ano" // (ensino regular)
+  },
+  // others
+  PHOTO : {
+    "pt_PT" : "Foto" // (ensino regular)
   }
 };
 
@@ -197,7 +217,8 @@ export {
   studentsParameters,
   notAvailableDesignation,
   zipCodeRegexes,
-  defaultAvatar
+  defaultAvatar,
+  newParametersInputTypes
 }
 
 

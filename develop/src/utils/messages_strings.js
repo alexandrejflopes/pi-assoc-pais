@@ -76,6 +76,9 @@ const paramsJsonFileTipMessage = {
 
 
 
+const fillRequiredFieldMessage = {
+  "pt_PT" : "Por favor, preencha este campo"
+};
 
 
 
@@ -93,7 +96,8 @@ export {
   membersImportFileFormatsTipMessage,
   studentsImportFileFormatsTipMessage,
   paramsJsonFileTipMessage,
-  invalidZipMessage
+  invalidZipMessage,
+  fillRequiredFieldMessage
 }
 
 

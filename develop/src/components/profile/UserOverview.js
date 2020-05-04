@@ -17,6 +17,7 @@ import {
 } from "../../utils/general_utils";
 import {saveChanges} from "../../utils/common_strings";
 import {profileMyChildren} from "../../utils/page_titles_strings";
+import EducandosModal from "./EducandosModal";
 
 class UserOverview extends React.Component {
 
@@ -25,7 +26,7 @@ class UserOverview extends React.Component {
 
     //console.log("overview props: " + JSON.stringify(props));
 
-    let name, photo, assocNumber, email, phone, role, children = null;
+    let name, photo, assocNumber, email, phone, role, children, newParamsTypes = null;
 
     if(this.props.user!=null){
       name = this.props.user[parentsParameters.NAME[languageCode]];
@@ -35,6 +36,7 @@ class UserOverview extends React.Component {
       phone = this.props.user[parentsParameters.PHONE[languageCode]];
       role = this.props.user[parentsParameters.ROLE[languageCode]];
       children = this.props.user[parentsParameters.CHILDREN[languageCode]];
+      newParamsTypes = this.props.newParamsTypes;
     }
 
     this.state = {
@@ -45,6 +47,7 @@ class UserOverview extends React.Component {
       userPhone : phone!=null ? phone : "",
       userRole : role!=null ? role : "",
       userEducandos : children!=null ? children : [],
+      newParamsTypes : newParamsTypes
 
       /*educandosTeste : [
         {
@@ -111,7 +114,8 @@ class UserOverview extends React.Component {
             <Row>
               {userEducandos.length === 0 ? <Col/> :
                 userEducandos.map((student,idx) => (
-                  <Col sm="12" lg="6" md="12">
+                  <EducandosModal educando={userEducandos[idx]} indice={idx} newParamsTypes={this.state.newParamsTypes}/>
+                  /*<Col sm="12" lg="6" md="12">
                     <ListGroupReact flush style={{ textAlign: "center" }}>
                       <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>
                         <div className="mb-3 mx-auto">
@@ -125,26 +129,9 @@ class UserOverview extends React.Component {
                         <h6 className="mb-0">{student[studentsParameters.NAME[languageCode]]}</h6>
                       </ListGroupReact.Item>
                     </ListGroupReact>
-                  </Col>
+                  </Col>*/
                 ))
               }
-              {/*educandosTeste.map((student,idx) => (
-                <Col sm="12" lg="6" md="12">
-                  <ListGroupReact flush style={{ textAlign: "center" }}>
-                    <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>
-                      <div className="mb-3 mx-auto">
-                        <img
-                          className="rounded-circle"
-                          src={student.photo}
-                          alt={student.name}
-                          width="50"
-                        />
-                      </div>
-                      <h6 className="mb-0">{student.name}</h6>
-                    </ListGroupReact.Item>
-                  </ListGroupReact>
-                </Col>
-              ))*/}
             </Row>
           </ListGroupItem>
 

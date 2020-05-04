@@ -6,9 +6,21 @@ import {
 } from "../firebase-config";
 import firebase from "firebase";
 
-import {getGravatarURL, defaultLogoFile, newParametersTypes, languageCode, newParametersEntities,
-  membersImportFileNewParametersStartIndex, studentsImportFileNewParametersStartIndex, membersCSVparamsIndexes, studentsCSVparamsIndexes,
-  studentsParameters, parentsParameters, notAvailableDesignation, zipCodeRegexes
+import {
+  getGravatarURL,
+  defaultLogoFile,
+  newParametersTypes,
+  languageCode,
+  newParametersEntities,
+  membersImportFileNewParametersStartIndex,
+  studentsImportFileNewParametersStartIndex,
+  membersCSVparamsIndexes,
+  studentsCSVparamsIndexes,
+  studentsParameters,
+  parentsParameters,
+  notAvailableDesignation,
+  zipCodeRegexes,
+  defaultAvatar
 } from "../utils/general_utils";
 import {jsonParamsErrorMessage, jsonOrCsvParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage,
         invalidZipMessage
@@ -520,10 +532,13 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 
       let childDoc = child;
 
+
       // remove associate number and parent's name from child's document, as
       // it will be inside its parent documento
       delete childDoc[Object.keys(childDoc)[0]];// TODO: check this index
       delete childDoc[Object.keys(childDoc)[0]]; // remove 0 because the element at 1 shifted to 0 in the line above
+
+      childDoc[studentsParameters.PHOTO[languageCode]] = defaultAvatar;
 
       parentChildren.push(childDoc);
     }

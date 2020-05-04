@@ -26,7 +26,7 @@ class UserInfo extends React.Component {
   constructor(props) {
     super(props);
 
-    let name, email, phone, job, nif, cc, street, city, zipcode = null;
+    let name, email, phone, job, nif, cc, street, city, zipcode, newParamsTypesD = null;
     const noValueString = notAvailableDesignation[languageCode];
     const infoFormTitle = profileInfoFormTitle[languageCode];
 
@@ -40,6 +40,7 @@ class UserInfo extends React.Component {
       street = this.props.userD[parentsParameters.STREET[languageCode]];
       city = this.props.userD[parentsParameters.CITY[languageCode]];
       zipcode = this.props.userD[parentsParameters.ZIPCODE[languageCode]];
+      newParamsTypesD = this.props.newParamsTypesD;
     }
 
     //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
@@ -55,6 +56,7 @@ class UserInfo extends React.Component {
       userStreet : street!=null ? street : noValueString,
       userCity : city!=null ? city : noValueString,
       userZipCode : zipcode!=null ? zipcode : noValueString,
+      newParamsTypesD : newParamsTypesD,
       // feedbacks
       nameFeedback : null,
       emailFeedback : null,

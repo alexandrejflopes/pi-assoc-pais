@@ -495,8 +495,8 @@ class Register_Page extends Component {
                       });
                     }}
                     id={newYear}
-                    type="text"
-                    placeholder="5º"
+                    type="number"
+                    placeholder="5"
                     required
                   />
                   <FormFeedback
