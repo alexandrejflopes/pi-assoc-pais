@@ -59,6 +59,8 @@ class Login extends CostumForm {
     window.localStorage.removeItem("admin");
     window.localStorage.removeItem("email");
 
+    const currentUser = firebase_auth.currentUser;
+
     if (currentUser != null) {
       alert(currentUser.email);
       var email = currentUser.email;

@@ -124,7 +124,9 @@ export default [
   },
   {
     path: "/profile",
-    layout: DefaultLayout,
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
     component: Profile,
-  }
+  },
 ];

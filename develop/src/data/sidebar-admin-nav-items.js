@@ -1,9 +1,9 @@
 export default function () {
   return [
     {
-      title: "User Profile",
+      title: "O meu perfil",
       htmlBefore: '<i class="material-icons">person</i>',
-      to: "/user-profile-lite",
+      to: "/profile",
     },
     {
       title: "Casos",
