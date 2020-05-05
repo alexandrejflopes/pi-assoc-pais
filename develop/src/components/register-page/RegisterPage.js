@@ -21,10 +21,11 @@ import {
   validZip,
 } from "../../firebase_scripts/installation";
 import {
+  defaultAvatar,
   getGravatarURL,
   languageCode,
   parentsParameters,
-  regular_role_PT,
+  regular_role_PT, studentsParameters,
 } from "../../utils/general_utils";
 import {
   firestore,
@@ -289,6 +290,8 @@ class Register_Page extends Component {
         studentJson.Nome = nomeAluno[i];
         //Ano de escolaridade
         studentJson.Ano = anoEscolaridade[i];
+        // foto
+        studentJson[studentsParameters.PHOTO[languageCode]] = defaultAvatar;
 
         var x = 0;
         keys.forEach((key) => {

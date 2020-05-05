@@ -79,8 +79,8 @@ export default class UserActions extends React.Component {
     let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
     let firebaseUser = firebase_auth.currentUser;
 
-    //console.log("localUser barra: " + JSON.stringify(localUser));
-    //console.log("currentUser: barra" + JSON.stringify(firebase_auth.currentUser));
+    console.log("localUser barra: " + JSON.stringify(localUser));
+    console.log("currentUser: barra" + JSON.stringify(firebaseUser));
 
     if(localUser!=null && firebaseUser!=null){
       const localEmail = localUser[parentsParameters.EMAIL[languageCode]];
@@ -89,7 +89,7 @@ export default class UserActions extends React.Component {
         //console.log("fetch na barra");
         fetchUserDoc(firebaseUser.email)
           .then((result) => {
-            //console.log("Result userDoc: " + JSON.stringify(result));
+            console.log("Result userDoc: " + JSON.stringify(result));
             if(result.error == null){ // no error
               const displayName = result[parentsParameters.NAME[languageCode]];
               const photoURL = result[parentsParameters.PHOTO[languageCode]];
@@ -97,6 +97,7 @@ export default class UserActions extends React.Component {
             }
           })
           .catch((error) => {
+            console.log("error no fetch da barra: " + JSON.stringify(error));
           });
       }
       else{

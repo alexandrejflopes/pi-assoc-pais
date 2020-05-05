@@ -67,7 +67,7 @@ function getNewParams() {
         paramsDoc = data;
       })
       .catch(function (error) {
-        console.log(error);
+        console.log("erro no fetch de params: " + error);
       });
 
     return paramsDoc;
@@ -82,24 +82,29 @@ function mapParamsToInputType(paramsDoc){
   let parentParams = paramsDoc[newParametersEntities.parent[languageCode]];
   let childParams = paramsDoc[newParametersEntities.student[languageCode]];
 
+  let parentParamsTypes = {};
+  let childParamsTypes = {};
+
   if(parentParams!=null){
     for(let p in parentParams){
       if(parentParams[p]===newParametersTypes.TEXT[languageCode]){
         const inputType = newParametersInputTypes.TEXT.type;
         const inputStep = newParametersInputTypes.TEXT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep};
+        parentParamsTypes[p] = {type : inputType, step : inputStep};
       }
       else if(parentParams[p]===newParametersTypes.INT[languageCode]){
         const inputType = newParametersInputTypes.INT.type;
         const inputStep = newParametersInputTypes.INT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
+        parentParamsTypes[p] = {type : inputType, step : inputStep}
       }
       else if(parentParams[p]===newParametersTypes.FLOAT[languageCode]){
         const inputType = newParametersInputTypes.FLOAT.type;
         const inputStep = newParametersInputTypes.FLOAT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
+        parentParamsTypes[p] = {type : inputType, step : inputStep}
       }
     }
+
+    inputTypesDoc[newParametersEntities.parent[languageCode]] = parentParamsTypes;
   }
 
   if(childParams!=null){
@@ -107,21 +112,24 @@ function mapParamsToInputType(paramsDoc){
       if(childParams[p]===newParametersTypes.TEXT[languageCode]){
         const inputType = newParametersInputTypes.TEXT.type;
         const inputStep = newParametersInputTypes.TEXT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep};
+        childParamsTypes[p] = {type : inputType, step : inputStep};
       }
       else if(childParams[p]===newParametersTypes.INT[languageCode]){
         const inputType = newParametersInputTypes.INT.type;
         const inputStep = newParametersInputTypes.INT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
+        childParamsTypes[p] = {type : inputType, step : inputStep}
       }
       else if(childParams[p]===newParametersTypes.FLOAT[languageCode]){
         const inputType = newParametersInputTypes.FLOAT.type;
         const inputStep = newParametersInputTypes.FLOAT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
+        childParamsTypes[p] = {type : inputType, step : inputStep}
       }
     }
+
+    inputTypesDoc[newParametersEntities.student[languageCode]] = childParamsTypes;
   }
 
+  // like:  {"um parametro":{"type":"text","step":null},"Pólo":{"type":"text","step":null},"Modalidade":{"type":"text","step":null},"Regime":{"type":"text","step":null},"Grau":{"type":"number","step":"1"}}
   return inputTypesDoc;
 }
 

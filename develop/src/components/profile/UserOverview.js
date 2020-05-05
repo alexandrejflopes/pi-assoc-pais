@@ -18,6 +18,7 @@ import {
 import {saveChanges} from "../../utils/common_strings";
 import {profileMyChildren} from "../../utils/page_titles_strings";
 import EducandosModal from "./EducandosModal";
+import NewEducandoModal from "./NewEducandoModal";
 
 class UserOverview extends React.Component {
 
@@ -106,7 +107,11 @@ class UserOverview extends React.Component {
                 <h5 className="mb-0 float-left">{profileMyChildren[languageCode]}</h5>
               </Col>
               <Col lg="2" md="2" sm="2">
+                {/* TODO: substituir pelo modal */}
+                <NewEducandoModal newParamsTypesN={this.state.newParamsTypes}/>
+                {/*
                 <Button size="sm" className="float-right" onClick={() => {}}><span className="material-icons" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>person_add</span></Button>
+                */}
               </Col>
             </Row>
           </ListGroupItem>

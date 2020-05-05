@@ -165,7 +165,7 @@ class CasosModal extends React.Component {
     const { checkBoxStatus, caseTitle, descricao } = this.state;
 
     console.log(caseTitle);
-    if (caseTitle == "") {
+    if (caseTitle === "") {
       var message = "Título do caso em falta!";
       toast.configure();
       toast(message, {

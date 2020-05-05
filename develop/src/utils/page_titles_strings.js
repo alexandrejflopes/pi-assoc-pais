@@ -5,25 +5,33 @@
 
 // -----------------------------------  PROFILE  -----------------------------------
 
-const profilePageTitle = {
+export const profilePageTitle = {
   "pt_PT": "O meu perfil"
 };
 
-const profileInfoFormTitle = {
+export const profileInfoFormTitle = {
   "pt_PT": "A minha informação"
 };
 
-const profileMyChildren = {
+export const profileMyChildren = {
   "pt_PT" : "Os meus educandos"
 };
 
-const profileSettings = {
+export const profileSettings = {
   "pt_PT" : "Definições de conta"
 };
 
-const profileLogout = {
+export const profileLogout = {
   "pt_PT" : "Sair"
 };
 
+export const newChild = {
+  "pt_PT" : "Adicionar educando"
+};
 
-export {profileInfoFormTitle, profilePageTitle, profileMyChildren, profileSettings, profileLogout}
+export const submitChild = {
+  "pt_PT" : "Criar educando"
+};
+
+
+

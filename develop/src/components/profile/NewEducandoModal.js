@@ -1,5 +1,3 @@
-/* eslint jsx-a11y/anchor-is-valid: 0 */
-
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 import {
@@ -9,51 +7,44 @@ import {
   FormFeedback,
   FormGroup,
   FormInput,
-  FormTextarea,
   ListGroup,
   ListGroupItem,
   Row,
 } from "shards-react";
-import ListGroupReact from "react-bootstrap/ListGroup";
 import {
   defaultAvatar,
   languageCode, newParametersEntities,
   studentsParameters,
 } from "../../utils/general_utils";
 import { fillRequiredFieldMessage } from "../../utils/messages_strings";
-import {
-  cancel,
-  saveChanges,
-  updateInfo,
-  updateProfile,
-} from "../../utils/common_strings";
+import {newChild, submitChild} from "../../utils/page_titles_strings";
+import EducandosModal from "./EducandosModal";
 
-class EducandosModal extends React.Component {
+
+
+class NewEducandoModal extends React.Component{
   constructor(props) {
     super(props);
 
     this.state = {
-      educando: this.props.educando,
-      indice: this.props.indice,
+      educando: {},
       show: false,
-      editing: false,
       nameFeedback: null,
       anoFeedback: null,
-      oldEducando: null,
-      disabled: true,
-      newParamsTypes: this.props.newParamsTypes,
+      newParamsTypesN: this.props.newParamsTypesN,
     };
 
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.handleChangeParam = this.handleChangeParam.bind(this);
 
-    this.enableEditableInputs = this.enableEditableInputs.bind(this);
-    this.disableEditableInputs = this.disableEditableInputs.bind(this);
-    this.editForm = this.editForm.bind(this);
-    this.cancelEditing = this.cancelEditing.bind(this);
-
+    this.submitEducando = this.submitEducando.bind(this);
+    this.addEducando = this.addEducando.bind(this);
     this.renderExtra = this.renderExtra.bind(this);
+  }
+
+  addEducando(){
+    this.closeModal();
   }
 
   handleChangeParam(e) {
@@ -71,60 +62,25 @@ class EducandosModal extends React.Component {
   }
 
   closeModal() {
+    this.setState({ educando: {} });
     this.setState({ show: false });
   }
 
-  savePreviousChildData() {
-    const educando = {...this.state.educando};
-    this.setState({ oldEducando: educando });
-    //console.log("educando saved: " + JSON.stringify(educando));
-  }
 
-  restorePreviousChildData() {
-    const oldEducando = {...this.state.oldEducando};
-    this.setState({ educando: oldEducando });
-    //console.log("educando restored: " + JSON.stringify(oldEducando));
-  }
 
-  enableEditableInputs() {
-    this.setState({ disabled: false });
-  }
+  submitEducando(){
 
-  disableEditableInputs() {
-    this.setState({ disabled: true });
-  }
-
-  editForm() {
-    this.savePreviousChildData();
-    this.setState({ editing: true });
-    this.enableEditableInputs();
-  }
-
-  cancelEditing() {
-    this.restorePreviousChildData();
-    this.setState({ editing: false });
-    this.disableEditableInputs();
   }
 
   renderExtra() {
     let extraInputs = [];
-    const isName = (e) => {
-      return e === studentsParameters.NAME[languageCode];
-    };
-    const isSchoolYear = (e) => {
-      return e === studentsParameters.SCHOOL_YEAR[languageCode];
-    };
 
-    const childParamsTypes = this.state.newParamsTypes[newParametersEntities.student[languageCode]];
+    console.log("newParamsTypesN -> " + JSON.stringify(this.state.newParamsTypesN));
 
-    if(childParamsTypes!=null){ // is null when there are no child parameters
+    const childParamsTypes = this.state.newParamsTypesN[newParametersEntities.student[languageCode]];
+
+    if(childParamsTypes!=null) { // is null when there are no child parameters
       for (let param in childParamsTypes) {
-        if (
-          isName(param) ||
-          isSchoolYear(param) ||
-          this.state.educando[param] == null /*in case of a parent param*/
-        )
-          continue;
 
         const idx = "child" + param;
         const type = childParamsTypes[param].type;
@@ -142,13 +98,14 @@ class EducandosModal extends React.Component {
               value={this.state.educando[param]}
               onChange={this.handleChangeParam}
               required
-              disabled={this.state.disabled ? "disabled" : ""}
             />
           </FormGroup>
         );
         extraInputs.push(newInput);
       }
     }
+
+
 
     return extraInputs;
   }
@@ -157,38 +114,12 @@ class EducandosModal extends React.Component {
     //console.log("state a render -> " + JSON.stringify(this.state));
     return (
       <>
-        <Col sm="12" lg="6" md="12">
-          <ListGroupReact flush style={{ textAlign: "center" }}>
-            <ListGroupReact.Item
-              id={this.state.indice}
-              className="p-3"
-              action
-              onClick={this.showModal}
-              style={{ border: "1px solid", borderColor: "#DFE2E4" }}
-            >
-              <div className="mb-3 mx-auto">
-                <img
-                  className="rounded-circle"
-                  src={
-                    this.state.educando[studentsParameters.PHOTO[languageCode]]
-                  }
-                  alt={
-                    this.state.educando[studentsParameters.NAME[languageCode]]
-                  }
-                  width="50"
-                />
-              </div>
-              <h6 className="mb-0">
-                {this.state.educando[studentsParameters.NAME[languageCode]]}
-              </h6>
-            </ListGroupReact.Item>
-          </ListGroupReact>
-        </Col>
+        <Button size="sm" className="float-right" onClick={this.showModal}><span className="material-icons" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>person_add</span></Button>
 
         <Modal show={this.state.show} onHide={this.closeModal}>
           <Modal.Header closeButton>
             <Modal.Title>
-              {this.state.educando[studentsParameters.NAME[languageCode]]}
+              {newChild[languageCode]}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -204,16 +135,8 @@ class EducandosModal extends React.Component {
                   >
                     <img
                       className="rounded-circle"
-                      src={
-                        this.state.educando[
-                          studentsParameters.PHOTO[languageCode]
-                        ]
-                      }
-                      alt={
-                        this.state.educando[
-                          studentsParameters.NAME[languageCode]
-                        ]
-                      }
+                      src={defaultAvatar}
+                      alt={newChild[languageCode]}
                       width="110"
                     />
                   </Row>
@@ -245,14 +168,9 @@ class EducandosModal extends React.Component {
                         type="text"
                         name={studentsParameters.NAME[languageCode]}
                         placeholder=""
-                        value={
-                          this.state.educando[
-                            studentsParameters.NAME[languageCode]
-                          ]
-                        }
+                        value={this.state.educando[studentsParameters.NAME[languageCode]]}
                         onChange={this.handleChangeParam}
                         required
-                        disabled={this.state.disabled ? "disabled" : ""}
                       />
                       <FormFeedback
                         id="childNameFeedback"
@@ -272,14 +190,9 @@ class EducandosModal extends React.Component {
                         type="number"
                         name={studentsParameters.SCHOOL_YEAR[languageCode]}
                         placeholder=""
-                        value={
-                          this.state.educando[
-                            studentsParameters.SCHOOL_YEAR[languageCode]
-                          ]
-                        }
+                        value={this.state.educando[studentsParameters.SCHOOL_YEAR[languageCode]]}
                         onChange={this.handleChangeParam}
                         required
-                        disabled={this.state.disabled ? "disabled" : ""}
                       />
                       <FormFeedback
                         id="childSchoolYearFeedback"
@@ -300,35 +213,9 @@ class EducandosModal extends React.Component {
           <Modal.Footer
             style={{ justifyContent: "left", flexDirection: "column" }}
           >
-            {this.state.editing ? (
-              <Row>
-                <Button style={{marginRight:"40px"}} theme="danger" onClick={this.cancelEditing}>
-                  {cancel[languageCode]}
-                </Button>
-                <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.cancelEditing}>
-                  {saveChanges[languageCode]}
-                </Button>
-                {/*<div>
-                <div>
-                  <Button theme="danger" onClick={this.cancelEditing}>
-                    {cancel[languageCode]}
-                  </Button>
-                </div>{" "}
-                <div>
-                  <Button theme="success" onClick={this.cancelEditing}>
-                    {saveChanges[languageCode]}
-                  </Button>
-                </div>{" "}
-              </div>*/}
-              </Row>
-
-            ) : (
-              <div>
-                <Button theme="accent" onClick={this.editForm}>
-                  {updateInfo[languageCode]}
-                </Button>
-              </div>
-            )}
+            <Button variant="primary" onClick={this.addEducando}>
+              {submitChild[languageCode]}
+            </Button>
           </Modal.Footer>
         </Modal>
       </>
@@ -336,4 +223,5 @@ class EducandosModal extends React.Component {
   }
 }
 
-export default EducandosModal;
+
+export default NewEducandoModal;
