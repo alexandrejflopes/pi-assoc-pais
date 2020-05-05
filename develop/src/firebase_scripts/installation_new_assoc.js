@@ -5,7 +5,12 @@ import {
 } from "../firebase-config";
 import firebase from "firebase";
 
-import {getRandomInteger, getGravatarURL, languageCode} from "../utils/general_utils";
+import {
+  getRandomInteger,
+  getGravatarURL,
+  languageCode,
+  parentsParameters
+} from "../utils/general_utils";
 import {jsonParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage} from "../utils/messages_strings";
 import {
   getAndSaveJSONparamsData,
@@ -14,7 +19,9 @@ import {
   uploadDefaultLogo,
   uploadNewLogo,
   uploadAssocDataFiles,
-  removeAllInvalidFeedbacks
+  removeAllInvalidFeedbacks,
+  validZip,
+  showZipWarning
 } from "./installation";
 
 
@@ -31,28 +38,27 @@ const requiredFieldsMissingMessage = provideRequiredFieldsMessage[languageCode];
 function createInstallerParent(nome, email, cargo) {
   const docRef = firestore.collection("parents");
   let parentDoc = {};
-  const numSocio = getRandomInteger(10000,100000).toString();
-  parentDoc["Admin"] = true;
-  parentDoc["Cargo"] = cargo;
-  parentDoc["Cartão Cidadão"] = "";
-  parentDoc["Cotas"] = [];
-  parentDoc["Código Postal"] = "";
-  parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
+  parentDoc[parentsParameters.ADMIN[languageCode]] = true;
+  parentDoc[parentsParameters.ROLE[languageCode]] = cargo;
+  parentDoc[parentsParameters.CC[languageCode]] = "";
+  parentDoc[parentsParameters.FEES[languageCode]] = [];
+  parentDoc[parentsParameters.ZIPCODE[languageCode]] = "";
+  parentDoc[parentsParameters.REGISTER_DATE[languageCode]] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
   // adicionar array para educandos
-  parentDoc["Educandos"] = [];
-  parentDoc["Email"] = email;
-  parentDoc["Localidade"] = "";
-  parentDoc["Morada"] = "";
-  parentDoc["NIF"] = "";
-  parentDoc["Nome"] = nome;
-  parentDoc["Número de Sócio"] = numSocio;
-  parentDoc["Profissão"] = "";
-  parentDoc["Quotas pagas"] = "";
-  parentDoc["Telemóvel"] = "";
+  parentDoc[parentsParameters.CHILDREN[languageCode]] = [];
+  parentDoc[parentsParameters.EMAIL[languageCode]] = email;
+  parentDoc[parentsParameters.CITY[languageCode]] = "";
+  parentDoc[parentsParameters.STREET[languageCode]] = "";
+  parentDoc[parentsParameters.NIF[languageCode]] = "";
+  parentDoc[parentsParameters.NAME[languageCode]] = nome;
+  parentDoc[parentsParameters.ASSOC_NUMBER[languageCode]] = "1"; // first member
+  parentDoc[parentsParameters.JOB[languageCode]] = "";
+  parentDoc[parentsParameters.PAYED_FEE[languageCode]] = true; // TODO: check this
+  parentDoc[parentsParameters.PHONE[languageCode]] = "";
   parentDoc["Validated"] = true; // imported parents are validated
   parentDoc["blocked"] = false; // imported parents are not blocked initially
   // avatar
-  parentDoc["photo"] = getGravatarURL(email);
+  parentDoc[parentsParameters.PHOTO[languageCode]] = getGravatarURL(email);
 
   const parentRef = docRef.doc(email); // email as document id
 
@@ -124,6 +130,14 @@ function install() {
   }
 
   if (requiredFieldsProvided && policyCheckboxChecked) {
+
+    // validate the zip code for the country
+    const zipValue = document.getElementById("configAssocZip").value;
+    if(!validZip(zipValue)){
+      showZipWarning("configAssocZip");
+      return;
+    }
+
     // read files and save their data
     const paramsJSONfile = document.getElementById("configAssocNewParams").files[0];
 

@@ -17,6 +17,7 @@ import { firestore, firebase_auth, firebase } from "../../firebase-config";
 //import * as UsersService from "../../services/users/api_user";
 import CostumForm from "../../common/Form/form";
 import bg1 from "../../assets/mother.png";
+import {languageCode, parentsParameters} from "../../utils/general_utils";
 
 class Payment_Page extends CostumForm {
   constructor(props) {
@@ -79,10 +80,11 @@ class Payment_Page extends CostumForm {
     //Escrever na base de dados no doc parents/<email> que firstPayment=true;
     var ref = firestore.collection("parents").doc(Email);
 
+    let docPart = {};
+    docPart[parentsParameters.PAYED_FEE[languageCode]] = true;
+
     return ref
-      .update({
-        "Quotas Pagas": "Sim",
-      })
+      .update(docPart)
       .then(function () {
         console.log("Document successfully updated!");
         var refresh = (
@@ -103,7 +105,7 @@ class Payment_Page extends CostumForm {
   };
 
   render() {
-    if (this.state.Email == "redirect") {
+    if (this.state.Email === "redirect") {
       return <Redirect to="/login" />;
     } else {
       return (
@@ -163,7 +165,7 @@ class Payment_Page extends CostumForm {
                                   type="text"
                                   placeholder=""
                                   value={
-                                    this.state.payment == false ? "Não" : "Sim"
+                                    this.state.payment === false ? "Não" : "Sim"
                                   }
                                   disabled={true}
                                 />
@@ -179,7 +181,7 @@ class Payment_Page extends CostumForm {
                                   textAlign: "center",
                                 }}
                                 disabled={
-                                  this.state.payment == false ? false : true
+                                  this.state.payment === false ? false : true
                                 }
                               >
                                 {"Confirmo que efetuei o pagamento da 1ª quota"}

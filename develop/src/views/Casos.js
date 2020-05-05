@@ -86,7 +86,6 @@ class Casos extends React.Component {
   }
 
   componentDidMount() {
-    // <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     initCasosExemplo();
     const self = this;
 

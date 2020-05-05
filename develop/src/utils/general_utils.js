@@ -11,12 +11,58 @@ import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 
 const regular_role_PT = "Associado(a)";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
+const defaultAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000";
+/*
+* number (starting at 0) of the column with the first new parameter
+* that shall be in new parameters's JSON file*/
+const membersImportFileNewParametersStartIndex = 13;
+const studentsImportFileNewParametersStartIndex = 4;
 
-const languageCode = "pt_PT";
+const membersCSVparamsIndexes = {
+    assoc_num_index : 0,
+    role_index : 1,
+    quotas_index : 2,
+    name_index : 3,
+    NIF_index : 4,
+    citizen_card_index : 5,
+    email_index : 6,
+    phone_index : 7,
+    job_index : 8,
+    address_index : 9,
+    zip_code_index : 10,
+    city_index : 11,
+    admin_index : 12
+};
+
+const studentsCSVparamsIndexes = {
+  parent_assoc_num_index : 0,
+  parent_name_index : 1,
+  name_index : 2,
+  school_year_index : 3
+};
+
+const countriesAndCodes = {
+  "Portugal": "pt_PT"
+};
+
+let currentCountry = "Portugal";
+
+const languageCode = countriesAndCodes[currentCountry];
+
+const zipCodeRegexes = {
+  "pt_PT" : {
+    length : 8,
+    regex : new RegExp(/\d{4}\-\d{3}/)
+  }
+};
+
+const notAvailableDesignation = {
+  "pt_PT" : "ND" // nao determinado/disponivel
+};
 
 const newParametersTypes = {
   TEXT : {
-    "pt_PT": "texto"
+    "pt_PT" : "texto"
   },
   INT : {
     "pt_PT": "inteiro"
@@ -24,6 +70,21 @@ const newParametersTypes = {
   FLOAT : {
     "pt_PT": "decimal"
   }
+};
+
+const newParametersInputTypes = {
+  TEXT : {
+    type : "text",
+    step : null
+  },
+  INT : {
+    type : "number",
+    step : "1"
+  },
+  FLOAT : {
+    type : "number",
+    step : "0.1"
+  },
 };
 
 const newParametersEntities = {
@@ -35,9 +96,85 @@ const newParametersEntities = {
   }
 };
 
+const parentsParameters = {
+  ASSOC_NUMBER : {
+    "pt_PT": "Número de Sócio"
+  },
+  ROLE : {
+    "pt_PT": "Cargo"
+  },
+  PAYED_FEE : {
+    "pt_PT": "Quotas pagas"
+  },
+  NAME : {
+    "pt_PT": "Nome"
+  },
+  NIF : {
+    "pt_PT" : "NIF"
+  },
+  CC : {
+    "pt_PT" : "Cartão Cidadão"
+  },
+  EMAIL : {
+    "pt_PT" : "Email"
+  },
+  PHONE : {
+    "pt_PT" : "Telemóvel"
+  },
+  JOB : {
+    "pt_PT" : "Profissão"
+  },
+  STREET : {
+    "pt_PT" : "Morada"
+  },
+  ZIPCODE : {
+    "pt_PT" : "Código Postal"
+  },
+  CITY : {
+    "pt_PT" : "Localidade"
+  },
+  ADMIN : {
+    "pt_PT" : "Admin"
+  },
+  // other fields (not in the CSVs)
+  CHILDREN : {
+    "pt_PT" : "Educandos"
+  },
+  PHOTO : {
+    "pt_PT" : "photo"
+  },
+  REGISTER_DATE : {
+    "pt_PT" : "Data inscricao"
+  },
+  FEES : {
+    "pt_PT" : "Cotas"
+  }
+};
+
+
+const studentsParameters = {
+  PARENT_ASSOC_NUMBER : {
+    "pt_PT": "Número de Sócio EE"
+  },
+  PARENT_NAME : {
+    "pt_PT": "Encarregado de Educação"
+  },
+  NAME : {
+    "pt_PT": "Nome"
+  },
+  SCHOOL_YEAR : {
+    "pt_PT" : "Ano" // (ensino regular)
+  },
+  // others
+  PHOTO : {
+    "pt_PT" : "Foto" // (ensino regular)
+  }
+};
 
 
 
+
+// ---------------------------------------------- OBJECTS ---------------------------------------------
 
 
 
@@ -71,6 +208,17 @@ export {
   getRandomInteger,
   languageCode,
   newParametersTypes,
-  newParametersEntities}
+  newParametersEntities,
+  membersImportFileNewParametersStartIndex,
+  studentsImportFileNewParametersStartIndex,
+  membersCSVparamsIndexes,
+  studentsCSVparamsIndexes,
+  parentsParameters,
+  studentsParameters,
+  notAvailableDesignation,
+  zipCodeRegexes,
+  defaultAvatar,
+  newParametersInputTypes
+}
 
 
