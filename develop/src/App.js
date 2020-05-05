@@ -7,29 +7,23 @@ import withTracker from "./withTracker";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./shards-dashboard/styles/shards-dashboards.1.1.0.min.css";
 
-
-import {initDoc} from "./firebase-config";
-import {DefaultLayout} from "./layouts";
-import {Container} from "shards-react";
-
+import { initDoc } from "./firebase-config";
+import { DefaultLayout } from "./layouts";
+import { Container } from "shards-react";
 
 const updateInitialRoute = () => {
   var flag = false;
 
   return initDoc
     .get()
-    .then(doc => {
-      //console.log("doc -> ", doc);
-
-      //console.log("doc install ->", doc["install"]);
-
+    .then((doc) => {
       if (doc.exists === false) {
         console.log("vou devolver /init");
         routes[0] = {
           path: "/",
           exact: true,
           layout: DefaultLayout,
-          component: () => <Redirect to={"/init"} />
+          component: () => <Redirect to={"/init"} />,
         };
       } else {
         console.log("vou devolver /login");
@@ -37,7 +31,7 @@ const updateInitialRoute = () => {
           path: "/",
           exact: true,
           layout: DefaultLayout,
-          component: () => <Redirect to={"/login"} />
+          component: () => <Redirect to={"/login"} />,
         };
       }
       flag = true;
@@ -45,7 +39,7 @@ const updateInitialRoute = () => {
 
       return true;
     })
-    .catch(err => {
+    .catch((err) => {
       alert(err);
     });
 };
@@ -60,7 +54,7 @@ class App extends React.Component {
     const self = this;
     const promise = updateInitialRoute();
 
-    promise.then(result => {
+    promise.then((result) => {
       /*
        * atualizar para o resultado para o resultado da verificacao
        * neste caso, o resultado é sempre true, já que a verificacao atualizada
@@ -85,7 +79,7 @@ class App extends React.Component {
                   key={index}
                   path={route.path}
                   exact={route.exact}
-                  component={withTracker(props => {
+                  component={withTracker((props) => {
                     return (
                       <route.layout {...props}>
                         <route.component {...props} />
@@ -111,7 +105,7 @@ class App extends React.Component {
             position: "absolute",
             left: "50%",
             top: "50%",
-            transform: "translate(-50%, -50%)"
+            transform: "translate(-50%, -50%)",
           }}
         >
           {" "}

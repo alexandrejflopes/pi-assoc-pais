@@ -60,6 +60,7 @@ class Register_Page extends Component {
     this.sendForm = this.sendForm.bind(this);
     this.addStudent = this.addStudent.bind(this);
     this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
+    this.cancel = this.cancel.bind(this);
     this.renderExtra();
   }
 
@@ -84,6 +85,20 @@ class Register_Page extends Component {
     }
 
     this.setState({ checkBoxStatus: checkBoxStatus });
+  }
+
+  cancel() {
+    var red = (
+      <Redirect
+        to={{
+          pathname: "/login",
+          state: {
+            msg: null,
+          },
+        }}
+      />
+    );
+    this.setState({ redirect: red });
   }
 
   /**
@@ -234,7 +249,7 @@ class Register_Page extends Component {
       parentJson["Cartão Cidadão"] = "Não";
       parentJson.blocked = false;
       parentJson.Cargo = "";
-      parentJson.Admin = true;
+      parentJson.Admin = false;
       parentJson.Cargo = regular_role_PT;
 
       // avatar
@@ -654,7 +669,7 @@ class Register_Page extends Component {
       <ListGroup flush>
         <ListGroupItem className="p-3">
           <Col>
-            <Form>
+            <Form style={{ maxHeight: "500px", overflowY: "scroll" }}>
               <FormGroup>
                 <label htmlFor="parentName">Nome</label>
                 <FormInput
@@ -891,20 +906,26 @@ class Register_Page extends Component {
                       de Privacidade
                     </FormFeedback>
                   </FormGroup>
-                  <Button onClick={this.sendForm}>Enviar</Button>{" "}
-                  <Button onClick={this.addStudent}>
-                    Adicionar mais um aluno
-                  </Button>
-                  <Link
-                    to="/login"
-                    style={{ float: "right" }}
-                    className="text-primary"
-                  >
-                    <Button>
-                      <span>Cancelar</span>
-                    </Button>
-                    {this.state.redirect}
-                  </Link>
+                  <Row form>
+                    <Col md="6" className="form-group">
+                      <Button theme="success" onClick={this.sendForm}>
+                        Enviar
+                      </Button>{" "}
+                      <Button onClick={this.addStudent}>
+                        Adicionar mais um aluno
+                      </Button>
+                    </Col>
+                    <Col md="6" className="form-group">
+                      <Button
+                        theme="danger"
+                        style={{ float: "right" }}
+                        onClick={this.cancel}
+                      >
+                        <span>Cancelar</span>
+                      </Button>
+                      {this.state.redirect}
+                    </Col>
+                  </Row>
                 </Col>
               </Row>
             </Form>

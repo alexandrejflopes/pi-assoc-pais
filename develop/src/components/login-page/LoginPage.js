@@ -50,8 +50,68 @@ class Login extends CostumForm {
     const currentUser = firebase_auth.currentUser;
     const this_ = this;
 
+    window.localStorage.removeItem("admin");
+    window.localStorage.removeItem("email");
+
     if (currentUser != null) {
-      alert("Redirect para o perfil");
+      alert(currentUser.email);
+      var email = currentUser.email;
+      const userDoc = firestore.collection("parents").doc(currentUser.email);
+      userDoc
+        .get()
+        .then((doc) => {
+          if (doc.exists === false) {
+            alert("Utilizador não registado!");
+          } else {
+            const dataDoc = doc.data();
+            if (email == dataDoc.Email && dataDoc["Validated"] == false) {
+              var red;
+              if (dataDoc["Quotas Pagas"] == "Não") {
+                red = (
+                  <Redirect
+                    to={{
+                      pathname: "/payment",
+                      state: { Email: dataDoc.Email, payment: false },
+                    }}
+                  />
+                );
+              } else {
+                red = (
+                  <Redirect
+                    to={{
+                      pathname: "/payment",
+                      state: { Email: dataDoc.Email, payment: true },
+                    }}
+                  />
+                );
+              }
+              //Redirecionar para página de pagamento
+              this_.setState({ redirect: red });
+            } else if (email == dataDoc.Email && dataDoc["Validated"] == true) {
+              if (
+                dataDoc.Admin != undefined &&
+                dataDoc.Admin != null &&
+                dataDoc.Admin === true
+              ) {
+                window.localStorage.setItem("admin", dataDoc.Admin.toString());
+              }
+              window.localStorage.setItem("email", dataDoc.Email);
+
+              var red = (
+                <Redirect
+                  to={{
+                    pathname: "/quotas",
+                    state: { Email: currentUser.email },
+                  }}
+                />
+              );
+              this_.setState({ redirect: red });
+            }
+          }
+        })
+        .catch((err) => {
+          alert(err);
+        });
     } else if (firebase_auth.isSignInWithEmailLink(window.location.href)) {
       var email = window.localStorage.getItem("emailForSignIn");
       if (!email) {
@@ -99,7 +159,27 @@ class Login extends CostumForm {
                   email == dataDoc.Email &&
                   dataDoc["Validated"] == true
                 ) {
-                  alert("Redirect para o perfil");
+                  if (
+                    dataDoc.Admin != undefined &&
+                    dataDoc.Admin != null &&
+                    dataDoc.Admin === true
+                  ) {
+                    window.localStorage.setItem(
+                      "admin",
+                      dataDoc.Admin.toString()
+                    );
+                  }
+                  window.localStorage.setItem("email", dataDoc.Email);
+
+                  var red = (
+                    <Redirect
+                      to={{
+                        pathname: "/quotas",
+                        state: { Email: currentUser.email },
+                      }}
+                    />
+                  );
+                  this_.setState({ redirect: red });
                 }
               }
             })

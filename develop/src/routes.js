@@ -4,6 +4,7 @@ import { Redirect } from "react-router-dom";
 // Layout Types
 import { DefaultLayout } from "./layouts";
 import { DefaultConfigLayout } from "./layouts";
+import { DefaultAdminLayout } from "./layouts";
 
 // Route Views
 import BlogOverview from "./views/BlogOverview";
@@ -37,7 +38,9 @@ export default [
   },
   {
     path: "/user-profile-lite",
-    layout: DefaultLayout,
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
     component: UserProfileLite,
   },
   {
@@ -67,7 +70,9 @@ export default [
   },
   {
     path: "/casos",
-    layout: DefaultLayout,
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
     component: Casos,
   },
   {
@@ -87,7 +92,9 @@ export default [
   },
   {
     path: "/payment",
-    layout: DefaultConfigLayout,
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
     component: PaymentPage,
   },
   {
@@ -97,12 +104,16 @@ export default [
   },
   {
     path: "/quotas",
-    layout: DefaultLayout,
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
     component: QuotaPage,
   },
   {
     path: "/approval",
-    layout: DefaultLayout,
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
     component: ApprovalPage,
   },
   {

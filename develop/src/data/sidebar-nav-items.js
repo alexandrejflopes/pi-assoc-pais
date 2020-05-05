@@ -46,12 +46,12 @@ export default function () {
       title: "Casos",
       htmlBefore: '<i class="material-icons">description</i>',
       to: "/casos",
-    },
+    } /*
     {
-      title: "Ver Approval Page",
+      title: "Pedidos por Aprovar",
       htmlBefore: '<i class="material-icons">description</i>',
       to: "/approval",
-    },
+    }, 
     {
       title: "Ver Config Form",
       htmlBefore: '<i class="material-icons">settings</i>',
@@ -66,10 +66,11 @@ export default function () {
       title: "Ver Login Page",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/login",
-    },
+    },*/,
+    ,
     {
-      title: "Ver Quotas Page",
-      htmlBefore: '<i class="material-icons">table_chart</i>',
+      title: "Quotas",
+      htmlBefore: '<i class="material-icons">euro</i>',
       to: "/quotas",
     },
   ];
