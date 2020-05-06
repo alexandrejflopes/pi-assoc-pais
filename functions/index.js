@@ -29,11 +29,19 @@ const {
   getParent,
   getEducandos,
   getParentsNumeroSocio,
+  addEducando,
+  removeEducando,
+  updateParent,
+  deleteParent,
+  approveParent,
+  addFirstPayment,
   addCota,
+  updateCota,
   confirmarPaganteCota,
   confirmarRecetorCota,
   pagoCota,
   getCotas,
+  getCotasByAno,
   addCotasAllUsers,
   checkPagamento,
   sendRegisterEmail,
@@ -46,7 +54,8 @@ const {
   exportParentCSV,
   exportEducandosCSV,
   getParentsNewParams,
-  getEducandosNewParams
+  getEducandosNewParams,
+  getStudentParameters
 } = require('./handlers');
 
 
@@ -71,11 +80,19 @@ app.get('/getParents',getParents);
 app.get('/getParent',getParent);
 app.get('/getEducandos',getEducandos);
 app.get('/getParentsNumeroSocio',getParentsNumeroSocio);
+app.get('/addEducando',addEducando);
+app.get('/removeEducando',removeEducando);
+app.get('/updateParent',updateParent);
+app.get('/deleteParent',deleteParent);
+app.get('/approveParent',approveParent);
+app.get('/addFirstPayment',addFirstPayment);
 app.get('/addCota',addCota);
+app.get('/updateCota',updateCota);
 app.get('/confirmarPaganteCota',confirmarPaganteCota);
 app.get('/confirmarRecetorCota',confirmarRecetorCota);
 app.get('/pagoCota',pagoCota);
 app.get('/getCotas',getCotas);
+app.get('/getCotasByAno',getCotasByAno);
 app.get('/addCotasAllUsers',addCotasAllUsers);
 app.get('/checkPagamento',checkPagamento);
 app.get('/sendRegisterEmail',sendRegisterEmail);
@@ -89,6 +106,7 @@ app.get('/exportParentCSV',exportParentCSV);
 app.get('/exportEducandosCSV',exportEducandosCSV);
 app.get('/getParentsNewParams',getParentsNewParams);
 app.get('/getEducandosNewParams',getEducandosNewParams);
+app.get('/getStudentParameters',getStudentParameters);
 
 // URL de base para os requests: https://us-central1-associacao-pais.cloudfunctions.net/api
 exports.api = functions.https.onRequest(app);

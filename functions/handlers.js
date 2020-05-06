@@ -664,6 +664,164 @@ exports.getParentsNumeroSocio = functions.https.onRequest((request, response) =>
         return response.status(405).send({"error" : err});
     });
 });
+/**
+ * Função utlizada para adicionar um educando a um ficheiro de um parent
+ * Leva como argumento o id do documento do parent e um educando (JSON com o educando a adicionar)
+ * Devolve o ficheiro na integra do parent ao qual foi adicionado o educando.
+ */
+exports.addEducando = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.id;
+    let educando = JSON.parse(request.query.educando);
+    let docRef = db.collection('parents').doc(id);
+
+    let transaction = db.runTransaction(t => {
+        let educandos = []
+        return t.get(docRef).then(doc => {
+            let data = doc.data();
+            educandos = data["Educandos"];
+            //educandos = doc.get("Educandos");
+            educandos.push(educando);
+            data["Educandos"] = educandos;
+            response.send(data);
+            return (t.update(docRef,{"Educandos":educandos}));
+        })
+        .catch(err => {
+            console.log("Failed to add educando -> ", err);
+            return response.status(405).send({"error" : err});
+        });
+    })
+    .then(result => {
+        console.log('Transaction success! -> ',result);
+        return result;
+    }).catch(err => {
+        console.log('Transaction failure:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função utilizada para eliminar um educando do ficheiro de um parent
+ * Leva como argumentos o id do documento do parent e o nome do educando.
+ * Retorna o documento na integra do parent correspondente após a alteração
+ */
+exports.removeEducando = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.id;
+    let nome_educando = request.query.nome_educando;
+
+    let docRef = db.collection('parents').doc(id);
+
+    let transaction = db.runTransaction(t => {
+        let educandos = [];
+        return t.get(docRef).then(doc => {
+            let data = doc.data();
+            educandos = data["Educandos"];
+            for (i = 0; i < educandos.length; i++){
+                if(educandos[i]["Nome"] === nome_educando){
+                    educandos.splice(i,1);
+                }
+            }
+            data["Educandos"] = educandos;
+            response.send(data);
+            return (t.update(docRef,{"Educandos":educandos}));
+        }).catch(err => {
+            console.log("Failed to remove educando -> ", err);
+            return response.status(405).send({"error" : err});
+        });
+    }).then(result => {
+        console.log('Transaction success! -> ',result);
+        return result;
+    }).catch(err => {
+        console.log('Transaction failure:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função serve para alterar um número arbitrário de atributos de um ficheiro de parent
+ * Isto significa que permite um Overwrite completo de um documento
+ * Leva como argumento o id do documento a alterar e um doc que corresponde a um ficheiro na forma JSON.
+ * Esse doc vai ser utilizado para fazer update aos atributos do documento.
+ * Todos os atributos presentes nesse doc vão ser atualizados para o valor lá presente. No caso de existirem
+ * atributos do documento parent da base de dados que não estão no doc, eles vão se manter inalterados.
+ * Ou seja, os atributos que vão ser atualizados são os do doc enviado como argumento.
+ * Warning : Os nomes dos atributos enviados no doc têm de ser os mesmos que têm na base de dados, se não vão ser criados atributos
+ * novos com esses nomes no documento do parent.
+ * Devolve o write time do update
+ */
+exports.updateParent = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.id;
+    let doc = JSON.parse(request.query.doc);
+
+    db.collection('parents').doc(id).update(doc).then((parent)=>{
+        return response.send(parent);
+    }).catch(err => {
+        console.log("Failed to update -> ", err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função que elimina um parent
+ * Leva como argumento o email do parent
+ * Return write time
+ */
+exports.deleteParent = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    let id = request.query.email;
+    
+    db.collection('parents').doc(id).delete().then((parent)=>{
+        return response.send(parent);
+    }).catch(err => {
+        console.log("Failed to delete -> ", err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função que altera o estado de Validated de um parent para true
+ * Leva como argumento o email do parent
+ * Retorna o documento completo do parent após a alteração
+ */
+exports.approveParent = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.email;
+    let data = request.query.data;
+   
+    let docRef = db.collection('parents').doc(id);
+
+    let transaction = db.runTransaction(t => {
+        return t.get(docRef).then(doc => {
+            let parent = doc.data();
+            parent["Validated"] = true;
+            parent["Data inscricao"] = data;
+            response.send(parent);
+            return (t.update(docRef,{"Validated":true,"Data inscricao":data}));
+        });
+    })
+    .then(result => {
+        console.log('Transaction success! -> ',result);
+        return result;
+    }).catch(err => {
+        console.log('Transaction failure:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função que altera o valor do parametro Quotas Pagas para true em um documento parent
+ * Leva como argumento o email do parent
+ * Return write time
+ */
+exports.addFirstPayment = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.email;
+
+    db.collection('parents').doc(id).update({"Quotas Pagas":true}).then((parent)=>{
+        return response.send(parent);
+    }).catch(err => {
+        console.log("Failed to update -> ", err);
+        return response.status(405).send({"error" : err});
+    });
+});
 
 /**
  * Funções relacionadas com as partes das cotas dos enc de educação
@@ -672,19 +830,32 @@ exports.getParentsNumeroSocio = functions.https.onRequest((request, response) =>
 /**
  * Função que adiciona um cota á coleção de cotas
  * Leva como argumentos: id (do utilizador ao qual se vai adicionar a cota/pagante), nome (do utilizador ao qual se vai adicionar a cota),
- * ano (letivo da cota), valor (a pagar pela cota), nome (do pagante)
- * A cota criada vai ter os atributos de confirmação e pagamento negativos e o recetor também vai ser um campo vazio
+ * ano (letivo da cota), valor (a pagar pela cota), recetor_id, recetor_nome, confirmado_recetor, confirmado_emissor
+ * A cota vai ter um campo Notas com uma string vazia.
+ * Os argumentos confirmado_recetor, confirmado_emissor, recetor_id e recetor_nome se não forem dados, os seus valores vão ser
+ * automáticamente falso ou null, por default dependendo do tipo do atributo.
  */
 exports.addCota = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let user_id = request.query.id;
+    let user_nome = request.query.nome;
     let ano_letivo = request.query.ano;
     let valor = parseFloat(request.query.valor);
-    let user_nome = request.query.nome;
+    let recetor_id = request.query.recetor_id;
+    let recetor_nome = request.query.recetor_nome;
+    let confirmado_recetor = (request.query.confirmado_recetor === "true");
+    let confirmado_emissor = (request.query.confirmado_emissor === "true");
 
-    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id}, "Recetor":null, "Confirmado_Pagante":false, "Confirmado_Recetor":false,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo}
+    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":""};
 
-    db.collection('cotas').add(cota).then(ref => {
+    if (recetor_id){
+        cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
+    }
+    else {
+        cota["Recetor"] = null;
+    }
+
+    db.collection('quotas').add(cota).then(ref => {
         console.log("Added cota");
         return response.send(cota);
     })
@@ -692,6 +863,45 @@ exports.addCota = functions.https.onRequest((request, response) => {
         console.log("Error -> ,", err);
         return response.status(405).send({"error" : err});
     });
+});
+/**
+ * Função que altera alguns parametros de um documento de Cota
+ * Leva como argumentos: id (do documento da cota), recetor_id (id do recetor), recetor_nome (nome do recetor), confirmado_recetor
+ * (novo valor da confirmação do recetor), confirmado_emissor (novo valor da confirmação do emissor), notas (novo valor de notas)
+ * Os parametros de recetor id e nome são opcionais, sendo que o valor de recetor vai se manter se o recetor id nãp for apresentado
+ */
+exports.updateCota = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.id;
+    let recetor_id = request.query.recetor_id;
+    let recetor_nome = request.query.recetor_nome;
+    let confirmado_recetor = (request.query.confirmado_recetor === "true");
+    let confirmado_emissor = (request.query.confirmado_emissor === "true");
+    let notas = request.query.notas;
+
+    let docRef = db.collection('quotas').doc(id);
+
+    let transaction = db.runTransaction(t => {
+        return t.get(docRef).then(doc => {
+            let cota = doc.data();
+            if (recetor_id){
+                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
+            }
+            cota["Confirmado_Pagante"] = confirmado_emissor;
+            cota["Confirmado_Recetor"] = confirmado_recetor;
+            cota["Notas"] = notas;
+            response.send(cota);
+            return (t.update(docRef,{"Confirmado_Pagante":confirmado_emissor,"Confirmado_Recetor":confirmado_recetor, "Recetor":cota["Recetor"], "Notas":notas}));
+        });
+    })
+    .then(result => {
+        console.log('Transaction success! -> ',result);
+        return result;
+    }).catch(err => {
+        console.log('Transaction failure:', err);
+        return response.status(405).send({"error" : err});
+    });
+
 });
 /**
  * Função utilizada para alterar para qualquer valor booleano o atributo Confirmado_Pagante quando este confirma ou "desconfirma"
@@ -706,7 +916,7 @@ exports.confirmarPaganteCota = functions.https.onRequest((request, response) => 
     let id = request.query.id;
     let confirmar = (request.query.confirmado === "true");
 
-    let docRef = db.collection('cotas').doc(id);
+    let docRef = db.collection('quotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         let cotas = [];
@@ -750,7 +960,7 @@ exports.confirmarRecetorCota = functions.https.onRequest((request, response) => 
     let recetor_id = request.query.recetor_id;
     let recetor_nome = request.query.recetor_nome;
 
-    let docRef = db.collection('cotas').doc(id);
+    let docRef = db.collection('quotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
@@ -799,7 +1009,7 @@ exports.pagoCota = functions.https.onRequest((request, response) => {
     let recetor_id = request.query.recetor_id;
     let recetor_nome = request.query.recetor_nome;
 
-    let docRef = db.collection('cotas').doc(id);
+    let docRef = db.collection('quotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
@@ -830,19 +1040,17 @@ exports.pagoCota = functions.https.onRequest((request, response) => {
     });
 });
 /**
- * Funcão utilizada para obter uma lista de cotas de um dado ano (independentemente do utilizador).
- * Leva como argumento: o ano (letivo das cotas).
+ * Funcão utilizada para obter uma lista com todas as cotas.
  * Devolve uma lista com os atributos da entidade cota.
  */
 exports.getCotas = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
-    let ano_letivo = request.query.ano;
     let cota_table = [];
 
-    db.collection('cotas').where('Ano_Letivo','==',ano_letivo).get().then((snapshot) => {
+    db.collection('quotas').get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
-            data["id"] = doc.id;
+            data["id"] = doc.id; 
             cota_table.push(data);
         });
         if (cota_table.length === 0){
@@ -850,8 +1058,36 @@ exports.getCotas = functions.https.onRequest((request, response) => {
         }
         else {
             return response.send(cota_table);
-        }
+        }   
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
 
+});
+/**
+ * Funcão utilizada para obter uma lista de cotas de um dado ano (independentemente do utilizador).
+ * Leva como argumento: o ano (letivo das cotas).
+ * Devolve uma lista com os atributos da entidade cota.
+ */
+exports.getCotasByAno = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let ano_letivo = request.query.ano;
+    let cota_table = [];
+
+    db.collection('quotas').where('Ano_Letivo','==',ano_letivo).get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let data = doc.data();
+            data["id"] = doc.id; 
+            cota_table.push(data);
+        });
+        if (cota_table.length === 0){
+            return response.status(204).send('');
+        }
+        else {
+            return response.send(cota_table);
+        }   
     })
     .catch((err) => {
         console.log('Error getting documents', err);
@@ -873,7 +1109,7 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
     let valor = parseFloat(request.query.valor);
 
     let docRefsParents = db.collection('parents').get();
-    let docRefsCotas = db.collection('cotas').where('Ano_Letivo','==',ano_letivo).get();
+    let docRefsCotas = db.collection('quotas').where('Ano_Letivo','==',ano_letivo).get();
 
     Promise.all([docRefsParents, docRefsCotas]).then((query_snapshots) => {
         let parent_ids = [];
@@ -890,7 +1126,7 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
             if (!cota_ids.includes(id)){
                 cota = {"Pagante":{"Nome":nome, "Id":id}, "Recetor":null, "Confirmado_Pagante":false, "Confirmado_Recetor":false,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo}
                 cotas_adicionadas.push(cota);
-                db.collection('cotas').add(cota)
+                db.collection('quotas').add(cota)
                 .catch(err => {
                     console.log("Error -> ,", err);
                     return response.status(405).send({"error" : err});
@@ -914,7 +1150,7 @@ exports.checkPagamento = functions.https.onRequest((request, response) => {
     let parent_id = request.query.id;
     let ano_letivo = request.query.ano;
 
-    let docRefsCotas = db.collection('cotas').where('Ano_Letivo','==',ano_letivo).get()
+    let docRefsCotas = db.collection('quotas').where('Ano_Letivo','==',ano_letivo).get()
     .then(snapshot => {
         let c = null;
         snapshot.forEach((doc) => {
@@ -1265,6 +1501,28 @@ exports.getEducandosNewParams = functions.https.onRequest((request, response) =>
         }
         else {
             let data = doc.get("aluno");
+            return response.send(data);
+        }
+    })
+    .catch(err => {
+        console.log('Query error:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Retorna o documento da base de dados completo relativo aos StudentParameters que contém todos os parametros adicionais
+ * dos parents e educandos 
+ */
+exports.getStudentParameters = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    db.collection("initialConfigs").doc("newParameters").get().then(doc => {
+        if (!doc.exists) {
+            console.log('New parameters not defined on the database.');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            let data = doc.data();
             return response.send(data);
         }
     })
