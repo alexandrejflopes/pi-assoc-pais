@@ -24,4 +24,8 @@ export const updateInfo = {
   "pt_PT" : "Atualizar informações"
 };
 
+export const deleteChild = {
+  "pt_PT" : "Eliminar educando"
+};
+
 

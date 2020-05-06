@@ -18,7 +18,9 @@ import {
 } from "../../utils/general_utils";
 import { fillRequiredFieldMessage } from "../../utils/messages_strings";
 import {newChild, submitChild} from "../../utils/page_titles_strings";
-import EducandosModal from "./EducandosModal";
+import {addEducandoToParent} from "../../firebase_scripts/profile_functions";
+import {firebase_auth} from "../../firebase-config";
+import Profile from "../../views/Profile";
 
 
 
@@ -32,25 +34,47 @@ class NewEducandoModal extends React.Component{
       nameFeedback: null,
       anoFeedback: null,
       newParamsTypesN: this.props.newParamsTypesN,
+      educandoFoto : defaultAvatar
+    };
+
+    this.initialState = {
+      educando: {},
+      show: false,
+      nameFeedback: null,
+      anoFeedback: null,
+      newParamsTypesN: this.props.newParamsTypesN,
+      educandoFoto : defaultAvatar
     };
 
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
+    this.resetState = this.resetState.bind(this);
     this.handleChangeParam = this.handleChangeParam.bind(this);
 
-    this.submitEducando = this.submitEducando.bind(this);
     this.addEducando = this.addEducando.bind(this);
     this.renderExtra = this.renderExtra.bind(this);
+
+    console.log("state no incio: " + JSON.stringify(this.state));
   }
 
+
+
   addEducando(){
-    this.closeModal();
+    addEducandoToParent(firebase_auth.currentUser.email, this.state.educando, this.state.educandoFoto)
+      .then((updatedParent) => {
+        const upParentString = JSON.stringify(updatedParent);
+        console.log("updatedParent recebido depois do update -> " + upParentString);
+        // update user data in localstorage
+        window.localStorage.setItem("userDoc", upParentString);
+        this.closeModal();
+        this.props.componentDidMount(true);
+      });
   }
 
   handleChangeParam(e) {
     let educando = this.state.educando;
     let paramName = e.target.name;
-    //console.log("paramName to change: " + paramName);
+    console.log("paramName to change: " + paramName);
     // update the param with the new value
     educando[paramName] = e.target.value;
     //console.log("educando with new values: " + JSON.stringify(educando));
@@ -62,15 +86,16 @@ class NewEducandoModal extends React.Component{
   }
 
   closeModal() {
-    this.setState({ educando: {} });
+    this.resetState();
     this.setState({ show: false });
   }
 
-
-
-  submitEducando(){
-
+  resetState(){
+    this.setState(this.initialState);
+    console.log("state inicial antes do reset -> " + JSON.stringify(this.initialState));
+    console.log("state depois do reset -> " + JSON.stringify(this.state));
   }
+
 
   renderExtra() {
     let extraInputs = [];
@@ -135,7 +160,7 @@ class NewEducandoModal extends React.Component{
                   >
                     <img
                       className="rounded-circle"
-                      src={defaultAvatar}
+                      src={this.state.educandoFoto}
                       alt={newChild[languageCode]}
                       width="110"
                     />

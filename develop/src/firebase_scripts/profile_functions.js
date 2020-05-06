@@ -7,7 +7,7 @@ import {
 import {
   languageCode,
   newParametersEntities, newParametersInputTypes,
-  newParametersTypes
+  newParametersTypes, parentsParameters, studentsParameters
 } from "../utils/general_utils";
 
 
@@ -133,4 +133,146 @@ function mapParamsToInputType(paramsDoc){
   return inputTypesDoc;
 }
 
-export {fetchUserDoc, userLogOut, mapParamsToInputType, getNewParams}
+
+/*
+* function to add
+* */
+function addEducandoToParent(parentEmail, newChild, photo){
+
+  console.log("newChild received -> " + JSON.stringify(newChild));
+
+  let childJson = newChild;
+  childJson[studentsParameters.PHOTO[languageCode]] = photo;
+
+  console.log("childJson with photo -> " + JSON.stringify(childJson));
+
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/addEducando?" +
+    "id=" + parentEmail +
+    "&educando=" + encodeURIComponent(JSON.stringify(childJson));
+
+  const request = async () => {
+    let updatedParent = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into json
+      .then(function (data) {
+        console.log("parentUpdated no request add child -> ", JSON.stringify(data));
+        updatedParent = data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    return updatedParent;
+  };
+
+  return request();
+
+  /*
+  let parentRef = firestore.collection('parents').doc(parentEmail);
+  const childrenDesignation = parentsParameters.CHILDREN[languageCode];
+
+  return parentRef.get()
+    .then((doc) => {
+      if (!doc.exists) {
+        console.log('No such document for parent <' + parentEmail + '> !');
+      }
+      else {
+        let parent = doc.data();
+
+        let children = parent[childrenDesignation];
+        console.log("children array -> " + JSON.stringify(children));
+        children.push(childJson);
+        console.log("children novo -> " + JSON.stringify(childJson));
+        parent[childrenDesignation] = children;
+        console.log("parent final -> " + JSON.stringify(parent));
+
+        return parent;
+      }
+    })
+    .then((parent) => {
+      return parentRef.update({[childrenDesignation] : parent[childrenDesignation]})
+        .then(() => {return parent});
+    })
+    .catch((err) => {
+      console.log('Error getting parent <' + parentEmail + '> : ' + err);
+    });*/
+
+}
+
+function deleteEducandoFromParent(parentEmail, childName){
+
+  console.log("childName to erase received -> " + childName);
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/removeEducando?" +
+    "id=" + encodeURIComponent(parentEmail) +
+    "&nome_educando=" + encodeURIComponent(childName);
+
+  const request = async () => {
+    let updatedParent = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into json
+      .then(function (data) {
+        //console.log("parentUpdated no request delete child -> ", JSON.stringify(data));
+        updatedParent = data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    return updatedParent;
+  };
+
+  return request();
+
+  /*let parentRef = firestore.collection('parents').doc(parentEmail);
+  const childrenDesignation = parentsParameters.CHILDREN[languageCode];
+
+  return parentRef.get()
+    .then((doc) => {
+      if (!doc.exists) {
+        console.log('No such document for parent <' + parentEmail + '> !');
+      }
+      else {
+        let parent = doc.data();
+
+        let children = parent[childrenDesignation];
+
+        for(let i in children){
+          const currentName = children[i][studentsParameters.NAME[languageCode]];
+          console.log("currentName -> " + currentName);
+          if(currentName===childName){
+            console.log("SPLICE!");
+            children.splice(i,1);
+            break;
+          }
+        }
+
+        console.log("children array novo -> " + JSON.stringify(children));
+        parent[childrenDesignation] = children;
+        console.log("parent final -> " + JSON.stringify(parent));
+
+        return parent;
+      }
+    })
+    .then((parent) => {
+      return parentRef.update({[childrenDesignation] : parent[childrenDesignation]})
+        .then(() => {return parent});
+    })
+    .catch((err) => {
+      console.log('Error getting parent <' + parentEmail + '> : ' + err);
+    });*/
+
+}
+
+
+export {fetchUserDoc, userLogOut, mapParamsToInputType, getNewParams,
+  addEducandoToParent, deleteEducandoFromParent}

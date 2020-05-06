@@ -46,6 +46,7 @@ class Profile extends React.Component {
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount() {
     this._isMounted = true;
+
     console.log("DID MOUNT!");
 
     const currentUser = firebase_auth.currentUser;

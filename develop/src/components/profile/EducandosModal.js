@@ -22,11 +22,13 @@ import {
 } from "../../utils/general_utils";
 import { fillRequiredFieldMessage } from "../../utils/messages_strings";
 import {
-  cancel,
+  cancel, deleteChild,
   saveChanges,
   updateInfo,
   updateProfile,
 } from "../../utils/common_strings";
+import {deleteEducandoFromParent} from "../../firebase_scripts/profile_functions";
+import {firebase_auth} from "../../firebase-config";
 
 class EducandosModal extends React.Component {
   constructor(props) {
@@ -52,6 +54,7 @@ class EducandosModal extends React.Component {
     this.disableEditableInputs = this.disableEditableInputs.bind(this);
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
+    this.deleteEducando = this.deleteEducando.bind(this);
 
     this.renderExtra = this.renderExtra.bind(this);
   }
@@ -59,11 +62,23 @@ class EducandosModal extends React.Component {
   handleChangeParam(e) {
     let educando = this.state.educando;
     let paramName = e.target.name;
-    //console.log("paramName to change: " + paramName);
+    console.log("paramName to change: " + paramName);
     // update the param with the new value
     educando[paramName] = e.target.value;
     //console.log("educando with new values: " + JSON.stringify(educando));
     this.setState({ educando: educando });
+  }
+
+  deleteEducando(){
+    deleteEducandoFromParent(firebase_auth.currentUser.email, this.state.educando[studentsParameters.NAME[languageCode]])
+      .then((updatedParent) => {
+        const upParentString = JSON.stringify(updatedParent);
+        console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+        // update user data in localstorage
+        window.localStorage.setItem("userDoc", upParentString);
+        this.closeModal();
+        this.props.componentDidMount(true);
+      });
   }
 
   showModal() {
@@ -157,7 +172,7 @@ class EducandosModal extends React.Component {
     //console.log("state a render -> " + JSON.stringify(this.state));
     return (
       <>
-        <Col sm="12" lg="6" md="12">
+        <Col sm="12" lg="6" md="12" style={{marginBottom: "20px"}}>
           <ListGroupReact flush style={{ textAlign: "center" }}>
             <ListGroupReact.Item
               id={this.state.indice}
@@ -323,11 +338,14 @@ class EducandosModal extends React.Component {
               </Row>
 
             ) : (
-              <div>
-                <Button theme="accent" onClick={this.editForm}>
+              <Row>
+                <Button style={{marginRight:"40px"}} theme="accent" onClick={this.editForm}>
                   {updateInfo[languageCode]}
                 </Button>
-              </div>
+                <Button style={{marginLeft:"40px"}} theme="danger" onClick={this.deleteEducando}>
+                  <i className="fa fa-trash mr-1" /> {deleteChild[languageCode]}
+                </Button>
+              </Row>
             )}
           </Modal.Footer>
         </Modal>
