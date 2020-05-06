@@ -1509,11 +1509,11 @@ exports.getEducandosNewParams = functions.https.onRequest((request, response) =>
         return response.status(405).send({"error" : err});
     });
 });
+
 /**
- * Retorna o documento da base de dados completo relativo aos StudentParameters que contém todos os parametros adicionais
- * dos parents e educandos 
+ * Retorna todos os parametros adicionados pelo administrador do sistema
  */
-exports.getStudentParameters = functions.https.onRequest((request, response) => {
+exports.getAllNewParams = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
 
     db.collection("initialConfigs").doc("newParameters").get().then(doc => {
@@ -1522,7 +1522,7 @@ exports.getStudentParameters = functions.https.onRequest((request, response) => 
             return response.status(404).send({"error":"No such document"});
         }
         else {
-            let data = doc.data();
+        	let data = doc.data();
             return response.send(data);
         }
     })
