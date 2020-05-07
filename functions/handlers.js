@@ -746,15 +746,33 @@ exports.removeEducando = functions.https.onRequest((request, response) => {
  * Ou seja, os atributos que vão ser atualizados são os do doc enviado como argumento.
  * Warning : Os nomes dos atributos enviados no doc têm de ser os mesmos que têm na base de dados, se não vão ser criados atributos
  * novos com esses nomes no documento do parent.
- * Devolve o write time do update
+ * Devolve o documento inteiro do parent depois do update
  */
 exports.updateParent = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let id = request.query.id;
     let doc = JSON.parse(request.query.doc);
 
-    db.collection('parents').doc(id).update(doc).then((parent)=>{
-        return response.send(parent);
+    let docRef = db.collection('parents').doc(id);
+
+    docRef.update(doc).then((parent)=>{
+        docRef.get().then(doc => {
+            if (!doc.exists) {
+                console.log('No such document!');
+                return response.status(404).send({"error":"No such document"});
+            }
+            else {
+                //console.log('Document data:', doc.data());
+                let data = doc.data();
+                data["id"] = doc.id;
+                return response.send(data);
+            }
+        })
+        .catch(err => {
+            console.log("Failed to get doc -> ", err);
+            return response.status(405).send({"error" : err});
+        });
+        return parent;
     }).catch(err => {
         console.log("Failed to update -> ", err);
         return response.status(405).send({"error" : err});
@@ -763,17 +781,33 @@ exports.updateParent = functions.https.onRequest((request, response) => {
 /**
  * Função que elimina um parent
  * Leva como argumento o email do parent
- * Return write time
+ * Return o documento removido
  */
 exports.deleteParent = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
-
     let id = request.query.email;
-    
-    db.collection('parents').doc(id).delete().then((parent)=>{
-        return response.send(parent);
-    }).catch(err => {
-        console.log("Failed to delete -> ", err);
+    let docRef = db.collection('parents').doc(id);
+
+    docRef.get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            //console.log('Document data:', doc.data());
+            let data = doc.data();
+            data["id"] = doc.id;
+            db.collection('parents').doc(id).delete().then((parent)=>{
+                return response.send(data);
+            }).catch(err => {
+                console.log("Failed to delete -> ", err);
+                return response.status(405).send({"error" : err});
+            });
+            return data;
+        }
+    })
+    .catch(err => {
+        console.log("Failed to get doc -> ", err);
         return response.status(405).send({"error" : err});
     });
 });
@@ -809,14 +843,31 @@ exports.approveParent = functions.https.onRequest((request, response) => {
 /**
  * Função que altera o valor do parametro Quotas Pagas para true em um documento parent
  * Leva como argumento o email do parent
- * Return write time
+ * Devolve o documento inteiro do parent depois do update
  */
 exports.addFirstPayment = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let id = request.query.email;
+    let docRef = db.collection('parents').doc(id);
 
-    db.collection('parents').doc(id).update({"Quotas Pagas":true}).then((parent)=>{
-        return response.send(parent);
+    docRef.update({"Quotas Pagas":true}).then((parent)=>{
+        docRef.get().then(doc => {
+            if (!doc.exists) {
+                console.log('No such document!');
+                return response.status(404).send({"error":"No such document"});
+            }
+            else {
+                //console.log('Document data:', doc.data());
+                let data = doc.data();
+                data["id"] = doc.id;
+                return response.send(data);
+            }
+        })
+        .catch(err => {
+            console.log("Failed to get doc -> ", err);
+            return response.status(405).send({"error" : err});
+        });
+        return parent;
     }).catch(err => {
         console.log("Failed to update -> ", err);
         return response.status(405).send({"error" : err});
