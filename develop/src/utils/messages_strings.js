@@ -75,12 +75,26 @@ const paramsJsonFileTipMessage = {
 };
 
 
-
 const fillRequiredFieldMessage = {
   "pt_PT" : "Por favor, preencha este campo"
 };
 
 
+// -------------------------------------- OTHERS --------------------------------------
+
+// ------- SUCCESS
+
+export const childAddedSuccess = {
+  "pt_PT" : "Educando adicionado!"
+};
+
+export const changesCommitSuccess = {
+  "pt_PT" : "Alterações efetuadas com sucesso!"
+};
+
+export const sameChildNameError = {
+  "pt_PT" : "Não é possível ter educandos com o mesmo nome!"
+};
 
 
 

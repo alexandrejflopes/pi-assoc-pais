@@ -17,17 +17,22 @@ import {
 import ListGroupReact from "react-bootstrap/ListGroup";
 import {
   defaultAvatar,
-  languageCode, newParametersEntities,
+  languageCode, newParametersEntities, parentsParameters, showToast,
   studentsParameters,
 } from "../../utils/general_utils";
-import { fillRequiredFieldMessage } from "../../utils/messages_strings";
+import {
+  changesCommitSuccess,
+  fillRequiredFieldMessage,
+  provideRequiredFieldsMessage, sameChildNameError
+} from "../../utils/messages_strings";
 import {
   cancel, deleteChild,
   saveChanges,
   updateInfo,
-  updateProfile,
 } from "../../utils/common_strings";
-import {deleteEducandoFromParent} from "../../firebase_scripts/profile_functions";
+import {
+  deleteEducandoFromParent
+} from "../../firebase_scripts/profile_functions";
 import {firebase_auth} from "../../firebase-config";
 
 class EducandosModal extends React.Component {
@@ -44,6 +49,10 @@ class EducandosModal extends React.Component {
       oldEducando: null,
       disabled: true,
       newParamsTypes: this.props.newParamsTypes,
+      feedbacks : {
+        [studentsParameters.NAME[languageCode]] : false,
+        [studentsParameters.SCHOOL_YEAR[languageCode]] : false
+      }
     };
 
     this.showModal = this.showModal.bind(this);
@@ -55,14 +64,98 @@ class EducandosModal extends React.Component {
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
     this.deleteEducando = this.deleteEducando.bind(this);
+    this.updateEducando = this.updateEducando.bind(this);
 
     this.renderExtra = this.renderExtra.bind(this);
+  }
+
+  updateEducando(){
+    const validResult = this.validForm();
+    if(!validResult){
+      showToast(provideRequiredFieldsMessage[languageCode], 5000, "error");
+    }
+    else{
+      const uniqueChildName = this.checkUniqueChildName();
+      if(!uniqueChildName){
+        showToast(sameChildNameError[languageCode], 5000, "error");
+      }
+      else{
+        this.cancelEditing();
+        showToast(changesCommitSuccess[languageCode], 5000, "success");
+      }
+
+    }
+  }
+
+
+  checkUniqueChildName(){
+    const nameToAdd = this.state.educando[studentsParameters.NAME[languageCode]];
+    const initialName = this.state.oldEducando[studentsParameters.NAME[languageCode]];
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const nameDesignation = studentsParameters.NAME[languageCode];
+    const educandos = localUser[parentsParameters.CHILDREN[languageCode]];
+
+    const names = [];
+    for (let i in educandos){
+      const educando = educandos[i];
+      const currentName = educando[nameDesignation];
+      if(currentName===initialName)
+        continue;
+      names.push(currentName);
+    }
+
+    if(names.includes(nameToAdd)){
+      this.showInvalidNameFeedback();
+      return false;
+    }
+
+    this.hideInvalidNameFeedback();
+    return true;
+  }
+
+  validForm(){
+    // remove all feedbacks at the beginning
+    this.resetFeedbacks();
+
+    // check if all inputs are filled
+    let changedFeedbacks = {...this.state.feedbacks};
+    let allFilled = true;
+
+    for(let field in this.state.feedbacks){
+      const value = this.state.educando[field];
+      if(value==null || value.trim()===""){
+        changedFeedbacks[field] = true;
+        allFilled = false;
+      }
+    }
+    this.state.feedbacks = changedFeedbacks;
+    this.forceUpdate();
+    return allFilled;
+  }
+
+  showInvalidNameFeedback(){
+    this.state.feedbacks[studentsParameters.NAME[languageCode]] = true;
+    this.forceUpdate();
+  }
+
+  hideInvalidNameFeedback(){
+    this.state.feedbacks[studentsParameters.NAME[languageCode]] = false;
+    this.forceUpdate();
+  }
+
+  resetFeedbacks(){
+    let changedFeedbacks = {...this.state.feedbacks};
+    for(let field in changedFeedbacks){
+      changedFeedbacks[field] = false;
+    }
+    this.state.feedbacks = changedFeedbacks;
+    this.forceUpdate();
   }
 
   handleChangeParam(e) {
     let educando = this.state.educando;
     let paramName = e.target.name;
-    console.log("paramName to change: " + paramName);
+    //console.log("paramName to change: " + paramName);
     // update the param with the new value
     educando[paramName] = e.target.value;
     //console.log("educando with new values: " + JSON.stringify(educando));
@@ -116,6 +209,7 @@ class EducandosModal extends React.Component {
   }
 
   cancelEditing() {
+    this.resetFeedbacks();
     this.restorePreviousChildData();
     this.setState({ editing: false });
     this.disableEditableInputs();
@@ -145,6 +239,12 @@ class EducandosModal extends React.Component {
         const type = childParamsTypes[param].type;
         const step = childParamsTypes[param].step;
 
+        // add feedback control variable
+        let updatedFeedbacks = {...this.state.feedbacks};
+        updatedFeedbacks[param] = false;
+        this.state.feedbacks = updatedFeedbacks;
+        const feedbackIdx = "child" + param + "Feedback";
+
         const newInput = (
           <FormGroup>
             <label htmlFor={idx}>{param}</label>
@@ -158,7 +258,15 @@ class EducandosModal extends React.Component {
               onChange={this.handleChangeParam}
               required
               disabled={this.state.disabled ? "disabled" : ""}
+              invalid={this.state.feedbacks[param]}
             />
+            <FormFeedback
+              id={feedbackIdx}
+              valid={false}
+              style={{ display: "none" }}
+            >
+              {fillRequiredFieldMessage[languageCode]}
+            </FormFeedback>
           </FormGroup>
         );
         extraInputs.push(newInput);
@@ -266,6 +374,7 @@ class EducandosModal extends React.Component {
                           ]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[studentsParameters.NAME[languageCode]]}
                         required
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
@@ -293,6 +402,7 @@ class EducandosModal extends React.Component {
                           ]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[studentsParameters.SCHOOL_YEAR[languageCode]]}
                         required
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
@@ -320,7 +430,7 @@ class EducandosModal extends React.Component {
                 <Button style={{marginRight:"40px"}} theme="danger" onClick={this.cancelEditing}>
                   {cancel[languageCode]}
                 </Button>
-                <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.cancelEditing}>
+                <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.updateEducando}>
                   {saveChanges[languageCode]}
                 </Button>
                 {/*<div>

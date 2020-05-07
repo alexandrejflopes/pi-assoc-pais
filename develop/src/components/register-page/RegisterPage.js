@@ -143,7 +143,7 @@ class Register_Page extends Component {
       checkBoxStatus,
     } = this.state;
 
-    //Remove all warnings at the beggining
+    //Remove all warnings at the beginning
     var nomeAlunoFeedBackArray = nomeAlunoFeedBack;
     for (var i = 0; i < nomeAlunoFeedBackArray.length; i++) {
       nomeAlunoFeedBackArray[i] = false;

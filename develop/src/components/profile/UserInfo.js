@@ -16,10 +16,14 @@ import {
 import {
   languageCode, newParametersEntities,
   notAvailableDesignation,
-  parentsParameters, studentsParameters
+  parentsParameters, showToast, studentsParameters
 } from "../../utils/general_utils";
 import {saveChanges, cancel, updateProfile} from "../../utils/common_strings";
 import {profileInfoFormTitle} from "../../utils/page_titles_strings";
+import {
+  changesCommitSuccess, fillRequiredFieldMessage,
+  provideRequiredFieldsMessage
+} from "../../utils/messages_strings";
 
 
 class UserInfo extends React.Component {
@@ -43,13 +47,17 @@ class UserInfo extends React.Component {
       disabled: true,
       newParamsTypesD : newParamsTypesD,
       // feedbacks
-      nameFeedback : null,
-      emailFeedback : null,
-      phoneFeedback : null,
-      nifFeedback : null,
-      streetFeedback : null,
-      cityFeedback : null,
-      zipcodeFeedback : null,
+      feedbacks : {
+        [parentsParameters.NAME[languageCode]] : false,
+        [parentsParameters.EMAIL[languageCode]] : false,
+        [parentsParameters.PHONE[languageCode]] : false,
+        [parentsParameters.JOB[languageCode]] : false,
+        [parentsParameters.STREET[languageCode]] : false,
+        [parentsParameters.CITY[languageCode]] : false,
+        [parentsParameters.ZIPCODE[languageCode]] : false,
+        [parentsParameters.NIF[languageCode]] : false,
+        [parentsParameters.CC[languageCode]] : false
+      },
       oldParent: null,
     };
 
@@ -58,6 +66,8 @@ class UserInfo extends React.Component {
     this.disableEditableInputs = this.disableEditableInputs.bind(this);
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
+
+    this.updateParent = this.updateParent.bind(this);
 
   }
 
@@ -72,6 +82,46 @@ class UserInfo extends React.Component {
   }
 
   /*********************************** HANDLERS ***********************************/
+
+  updateParent(){
+    const validResult = this.validForm();
+    if(!validResult){
+      showToast(provideRequiredFieldsMessage[languageCode], 5000, "error");
+    }
+    else{
+      this.cancelEditing();
+      showToast(changesCommitSuccess[languageCode], 5000, "success");
+    }
+  }
+
+  validForm(){
+    // remove all feedbacks at the beginning
+    this.resetFeedbacks();
+
+    // check if all inputs are filled
+    let changedFeedbacks = {...this.state.feedbacks};
+    let allFilled = true;
+
+    for(let field in this.state.feedbacks){
+      const value = this.state.parent[field];
+      if(value==null || value.trim()===""){
+        changedFeedbacks[field] = true;
+        allFilled = false;
+      }
+    }
+    this.state.feedbacks = changedFeedbacks;
+    this.forceUpdate();
+    return allFilled;
+  }
+
+  resetFeedbacks(){
+    let changedFeedbacks = {...this.state.feedbacks};
+    for(let field in changedFeedbacks){
+      changedFeedbacks[field] = false;
+    }
+    this.state.feedbacks = changedFeedbacks;
+    this.forceUpdate();
+  }
 
   handleChangeParam(e) {
     let parent = this.state.parent;
@@ -129,6 +179,12 @@ class UserInfo extends React.Component {
         const type = parentParamsTypes[param].type;
         const step = parentParamsTypes[param].step;
 
+        // add feedback control variable
+        let updatedFeedbacks = {...this.state.feedbacks};
+        updatedFeedbacks[param] = false;
+        this.state.feedbacks = updatedFeedbacks;
+        const feedbackIdx = "child" + param + "Feedback";
+
         const newInput = (
           <FormGroup>
             <label htmlFor={idx}>{param}</label>
@@ -142,7 +198,15 @@ class UserInfo extends React.Component {
               onChange={this.handleChangeParam}
               required
               disabled={this.state.disabled ? "disabled" : ""}
+              invalid={this.state.feedbacks[param]}
             />
+            <FormFeedback
+              id={feedbackIdx}
+              valid={false}
+              style={{ display: "none" }}
+            >
+              {fillRequiredFieldMessage[languageCode]}
+            </FormFeedback>
           </FormGroup>
         );
         extraInputs.push(newInput);
@@ -180,6 +244,7 @@ class UserInfo extends React.Component {
                             ]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.NAME[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -196,6 +261,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.EMAIL[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.EMAIL[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -214,6 +280,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.PHONE[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.PHONE[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -228,6 +295,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.JOB[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.JOB[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -245,6 +313,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.STREET[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.STREET[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -260,6 +329,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.CITY[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.CITY[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -275,6 +345,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.ZIPCODE[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.ZIPCODE[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -292,6 +363,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.NIF[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.NIF[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -306,6 +378,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.CC[languageCode]]
                         }
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[parentsParameters.CC[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -313,7 +386,7 @@ class UserInfo extends React.Component {
                   <hr />
                   {this.renderExtra()}
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.cancelEditing}>{saveChanges[languageCode]}</Button> </div>
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateParent}>{saveChanges[languageCode]}</Button> </div>
                     : <Button theme="accent" onClick={this.editForm}>{updateProfile[languageCode]}</Button>
                   }
                 </Form>

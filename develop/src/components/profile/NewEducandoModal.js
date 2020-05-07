@@ -13,10 +13,14 @@ import {
 } from "shards-react";
 import {
   defaultAvatar,
-  languageCode, newParametersEntities,
+  languageCode, newParametersEntities, showToast,
   studentsParameters,
 } from "../../utils/general_utils";
-import { fillRequiredFieldMessage } from "../../utils/messages_strings";
+import {
+  childAddedSuccess,
+  fillRequiredFieldMessage,
+  provideRequiredFieldsMessage
+} from "../../utils/messages_strings";
 import {newChild, submitChild} from "../../utils/page_titles_strings";
 import {addEducandoToParent} from "../../firebase_scripts/profile_functions";
 import {firebase_auth} from "../../firebase-config";
@@ -34,16 +38,24 @@ class NewEducandoModal extends React.Component{
       nameFeedback: null,
       anoFeedback: null,
       newParamsTypesN: this.props.newParamsTypesN,
-      educandoFoto : defaultAvatar
+      educandoFoto : defaultAvatar,
+      feedbacks : {
+        [studentsParameters.NAME[languageCode]] : false,
+        [studentsParameters.SCHOOL_YEAR[languageCode]] : false
+      }
     };
 
-    this.initialState = {
+    this.initial = {
       educando: {},
       show: false,
       nameFeedback: null,
       anoFeedback: null,
       newParamsTypesN: this.props.newParamsTypesN,
-      educandoFoto : defaultAvatar
+      educandoFoto : defaultAvatar,
+      feedbacks : {
+        [studentsParameters.NAME[languageCode]] : false,
+        [studentsParameters.SCHOOL_YEAR[languageCode]] : false
+      }
     };
 
     this.showModal = this.showModal.bind(this);
@@ -53,6 +65,8 @@ class NewEducandoModal extends React.Component{
 
     this.addEducando = this.addEducando.bind(this);
     this.renderExtra = this.renderExtra.bind(this);
+    this.validForm = this.validForm.bind(this);
+    this.resetFeedbacks = this.resetFeedbacks.bind(this);
 
     console.log("state no incio: " + JSON.stringify(this.state));
   }
@@ -60,21 +74,70 @@ class NewEducandoModal extends React.Component{
 
 
   addEducando(){
-    addEducandoToParent(firebase_auth.currentUser.email, this.state.educando, this.state.educandoFoto)
-      .then((updatedParent) => {
-        const upParentString = JSON.stringify(updatedParent);
-        console.log("updatedParent recebido depois do update -> " + upParentString);
-        // update user data in localstorage
-        window.localStorage.setItem("userDoc", upParentString);
-        this.closeModal();
-        this.props.componentDidMount(true);
-      });
+    const validResult = this.validForm();
+    if(!validResult){
+      showToast(provideRequiredFieldsMessage[languageCode], 5000, "error");
+    }
+    else{
+      addEducandoToParent(firebase_auth.currentUser.email, this.state.educando, this.state.educandoFoto)
+        .then((updatedParent) => {
+          const upParentString = JSON.stringify(updatedParent);
+          console.log("updatedParent recebido depois do update -> " + upParentString);
+          // update user data in localstorage
+          window.localStorage.setItem("userDoc", upParentString);
+          this.closeModal();
+          showToast(childAddedSuccess[languageCode], 5000, "success");
+          this.props.componentDidMount(true);
+        });
+    }
+
+  }
+
+  validForm(){
+    //console.log("state no valid 1: " + JSON.stringify(this.state));
+    // remove all feedbacks at the beginning
+    this.resetFeedbacks();
+
+    //console.log("state no valid 2: " + JSON.stringify(this.state));
+    // check if all inputs are filled
+    let changedFeedbacks = {...this.state.feedbacks};
+    let allFilled = true;
+
+    for(let field in this.state.feedbacks){
+      const value = this.state.educando[field];
+      //console.log(field + " : " + value);
+      if(value==null || value.trim()===""){
+        //console.log("entrei com " + field + " a " + value);
+        //console.log("passar de  " + changedFeedbacks[field] + " a true");
+        changedFeedbacks[field] = true;
+        allFilled = false;
+      }
+    }
+    //console.log("changedFeedbacks no valid: " + JSON.stringify(changedFeedbacks));
+    this.state.feedbacks = changedFeedbacks;
+    this.forceUpdate();
+    return allFilled;
+  }
+
+  resetFeedbacks(){
+    let changedFeedbacks = {...this.state.feedbacks};
+    //console.log("------------ RESET ------------");
+    for(let field in changedFeedbacks){
+      //console.log("entrei com " + field);
+      //console.log("passar de  " + changedFeedbacks[field] + " a false");
+      changedFeedbacks[field] = false;
+    }
+
+    //console.log("changedFeedbacks resetados: " + JSON.stringify(changedFeedbacks));
+    this.state.feedbacks = changedFeedbacks;
+    //console.log("feedbacks depois do reset: " + JSON.stringify(this.state.feedbacks));
+    this.forceUpdate();
   }
 
   handleChangeParam(e) {
     let educando = this.state.educando;
     let paramName = e.target.name;
-    console.log("paramName to change: " + paramName);
+    //console.log("paramName to change: " + paramName);
     // update the param with the new value
     educando[paramName] = e.target.value;
     //console.log("educando with new values: " + JSON.stringify(educando));
@@ -91,16 +154,17 @@ class NewEducandoModal extends React.Component{
   }
 
   resetState(){
-    this.setState(this.initialState);
-    console.log("state inicial antes do reset -> " + JSON.stringify(this.initialState));
+    this.setState(this.initial);
+    console.log("state inicial antes do reset -> " + JSON.stringify(this.initial));
     console.log("state depois do reset -> " + JSON.stringify(this.state));
   }
+
 
 
   renderExtra() {
     let extraInputs = [];
 
-    console.log("newParamsTypesN -> " + JSON.stringify(this.state.newParamsTypesN));
+    //console.log("newParamsTypesN -> " + JSON.stringify(this.state.newParamsTypesN));
 
     const childParamsTypes = this.state.newParamsTypesN[newParametersEntities.student[languageCode]];
 
@@ -110,6 +174,14 @@ class NewEducandoModal extends React.Component{
         const idx = "child" + param;
         const type = childParamsTypes[param].type;
         const step = childParamsTypes[param].step;
+
+        // add feedback control variable
+        let updatedFeedbacks = {...this.state.feedbacks};
+        updatedFeedbacks[param] = false;
+        this.state.feedbacks = updatedFeedbacks;
+        const feedbackIdx = "child" + param + "Feedback";
+
+        console.log("state com nova feedback entry -> " + JSON.stringify(this.state));
 
         const newInput = (
           <FormGroup>
@@ -122,8 +194,16 @@ class NewEducandoModal extends React.Component{
               placeholder=""
               value={this.state.educando[param]}
               onChange={this.handleChangeParam}
+              invalid={this.state.feedbacks[param]}
               required
             />
+            <FormFeedback
+              id={feedbackIdx}
+              valid={false}
+              style={{ display: "none" }}
+            >
+              {fillRequiredFieldMessage[languageCode]}
+            </FormFeedback>
           </FormGroup>
         );
         extraInputs.push(newInput);
@@ -195,6 +275,7 @@ class NewEducandoModal extends React.Component{
                         placeholder=""
                         value={this.state.educando[studentsParameters.NAME[languageCode]]}
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[studentsParameters.NAME[languageCode]]}
                         required
                       />
                       <FormFeedback
@@ -217,6 +298,7 @@ class NewEducandoModal extends React.Component{
                         placeholder=""
                         value={this.state.educando[studentsParameters.SCHOOL_YEAR[languageCode]]}
                         onChange={this.handleChangeParam}
+                        invalid={this.state.feedbacks[studentsParameters.SCHOOL_YEAR[languageCode]]}
                         required
                       />
                       <FormFeedback

@@ -6,6 +6,7 @@
 // --------------------------------------------- IMPORTS ----------------------------------------------
 import MD5 from "crypto-js/md5";
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
+import {Bounce, toast} from "react-toastify";
 
 // -------------------------------------------- CONSTANTS --------------------------------------------
 
@@ -172,6 +173,16 @@ const studentsParameters = {
 };
 
 
+export const toastTypes = {
+  // warning, success, error, info, default, dark
+  WARNING : "warning",
+  SUCESS : "success",
+  ERROR : "error",
+  INFO : "info",
+  DEFAULT : "default",
+  DARK : "dark"
+};
+
 
 
 // ---------------------------------------------- OBJECTS ---------------------------------------------
@@ -197,6 +208,19 @@ function getRandomInteger(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
 }
 
+function showToast(message, duration, type) {
+  // type: warning, success, error, info, default
+  toast.configure();
+  toast(message, {
+    transition: Bounce,
+    closeButton: true,
+    autoClose: duration,
+    position: "top-right",
+    type: type,
+  });
+
+}
+
 
 // --------------------------------------------- EXPORTS ----------------------------------------------
 
@@ -218,7 +242,8 @@ export {
   notAvailableDesignation,
   zipCodeRegexes,
   defaultAvatar,
-  newParametersInputTypes
+  newParametersInputTypes,
+  showToast
 }
 
 
