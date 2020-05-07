@@ -9,7 +9,7 @@ import {
   FormGroup,
   FormCheckbox,
   Button,
-  FormFeedback,
+  FormFeedback, Tooltip,
 } from "shards-react";
 import "react-toastify/dist/ReactToastify.css";
 import { Label, Input } from "reactstrap";
@@ -23,9 +23,8 @@ import {
 import {
   defaultAvatar,
   getGravatarURL,
-  languageCode,
-  parentsParameters,
-  regular_role_PT, studentsParameters,
+  languageCode, notAvailableDesignation,
+  parentsParameters, regular_role, showToast, studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
   firestore,
@@ -33,11 +32,17 @@ import {
   firebase,
   firebaseConfig,
 } from "../../firebase-config";
+import {
+  childSchoolYearTipMessage,
+  paramsJsonFileTipMessage,
+  registationError
+} from "../../utils/messages_strings";
 
 class Register_Page extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      yearToolTipOpen: false,
       blocking: false,
       errors: {},
       parentName: "",
@@ -77,6 +82,8 @@ class Register_Page extends Component {
     this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
     this.cancel = this.cancel.bind(this);
     this.renderExtra();
+
+    this.toggle = this.toggle.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -88,6 +95,12 @@ class Register_Page extends Component {
 
   componentWillUnmount() {
     this._isMounted = false;
+  }
+
+  toggle(pos) {
+    const newState = {};
+    newState[pos] = !this.state[pos];
+    this.setState({ ...this.state, ...newState });
   }
 
   handleChangeCheckBox() {
@@ -197,7 +210,7 @@ class Register_Page extends Component {
         nomeAlunoFeedBackArray[x] = true; //not working, using alert method
         if (x != 0) {
           var n = x + 1;
-          alert("Por favor preencha o nome do " + n + "º aluno!");
+          showToast("Por favor preencha o nome do " + n + "º aluno!", 5000, toastTypes.ERROR);
         }
       }
     }
@@ -207,9 +220,7 @@ class Register_Page extends Component {
         anoEscolaridadeFeedBackArray[a] = true;
         if (a !== 0) {
           var n = a + 1;
-          alert(
-            "Por favor preencha o ano de escolaridade do " + n + "º aluno!"
-          );
+          showToast("Por favor preencha o ano de escolaridade do " + n + "º aluno!", 5000, toastTypes.ERROR);
         }
       }
     }
@@ -272,7 +283,7 @@ class Register_Page extends Component {
       parentJson[parentsParameters.CC[languageCode]] = cc;
       parentJson.blocked = false;
       parentJson[parentsParameters.ADMIN[languageCode]] = false;
-      parentJson[parentsParameters.ROLE[languageCode]] = regular_role_PT;
+      parentJson[parentsParameters.ROLE[languageCode]] = regular_role[languageCode];
       parentJson[parentsParameters.STREET[languageCode]] = morada;
 
       // avatar
@@ -311,10 +322,13 @@ class Register_Page extends Component {
       // generate a new associate number
       fetchAssocNumbers()
         .then((array) => {
-          const newAssocNumber = generateNewAssocNumber(array);
-          parentJson[
-            parentsParameters.ASSOC_NUMBER[languageCode]
-          ] = newAssocNumber.toString();
+          let newAssocNumber = notAvailableDesignation[languageCode];
+
+          if(array!=null){
+            newAssocNumber = generateNewAssocNumber(array).toString();
+          }
+
+          parentJson[parentsParameters.ASSOC_NUMBER[languageCode]] = newAssocNumber;
 
           //Save values to database
           saveRegistToDB(parentJson);
@@ -501,9 +515,16 @@ class Register_Page extends Component {
                   </FormFeedback>
                 </FormGroup>
 
-                {/* Descricao Textarea */}
                 <FormGroup>
-                  <label htmlFor="studentYear">Ano Escolaridade</label>
+                  <label htmlFor="studentYear">Ano Escolaridade <span id={"schoolYearTooltip-" + studentNumber} className="material-icons" style={{fontSize:"100%"}}>info</span></label>
+                  <Tooltip
+                    open={this.state.yearToolTipOpen}
+                    target={"#schoolYearTooltip-" + studentNumber}
+                    toggle={() => this.toggle("yearToolTipOpen")}
+                    style={{fontSize:"120%"}}
+                  >
+                    {childSchoolYearTipMessage[languageCode]}
+                  </Tooltip>
                   <FormInput
                     invalid={this_.state.anoEscolaridadeFeedBack[x]}
                     onChange={(e) => {
@@ -936,7 +957,15 @@ class Register_Page extends Component {
 
               {/* Descricao Textarea */}
               <FormGroup>
-                <label htmlFor="studentYear">Ano Escolaridade</label>
+                <label htmlFor="studentYear">Ano Escolaridade <span id="schoolYearTooltip-0" className="material-icons" style={{fontSize:"100%"}}>info</span></label>
+                <Tooltip
+                  open={this.state.yearToolTipOpen}
+                  target="#schoolYearTooltip-0"
+                  toggle={() => this.toggle("yearToolTipOpen")}
+                  style={{fontSize:"120%"}}
+                >
+                  {childSchoolYearTipMessage[languageCode]}
+                </Tooltip>
                 <FormInput
                   invalid={this.state.anoEscolaridadeFeedBack[0]}
                   onChange={(e) => {

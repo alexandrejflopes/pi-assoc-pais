@@ -94,6 +94,14 @@ class UserOverview extends React.Component {
               width="110"
             />
           </div>
+          <Button
+            size="sm"
+            theme="light"
+            id="new_case"
+            onClick={() => {}}
+          >
+            <span className="material-icons md-24">add_a_photo</span>
+          </Button>
           <h4 className="mb-0">{this.state.parent[parentsParameters.NAME[languageCode]]}</h4>
           <span className="text-muted d-block mb-2">{this.state.parent[parentsParameters.EMAIL[languageCode]]}</span>
           <span className="text-muted d-block mb-2">{this.state.parent[parentsParameters.ASSOC_NUMBER[languageCode]]} | {this.state.parent[parentsParameters.ROLE[languageCode]]}</span>
@@ -116,7 +124,7 @@ class UserOverview extends React.Component {
             <Row>
               {userEducandos.length === 0 ? <Col/> :
                 userEducandos.map((student,idx) => (
-                  <EducandosModal educando={userEducandos[idx]} indice={idx} newParamsTypes={this.state.newParamsTypes} componentDidMount={this.componentDidMount}/>
+                  <EducandosModal key={student[studentsParameters.NAME[languageCode]]} educando={userEducandos[idx]} indice={idx} newParamsTypes={this.state.newParamsTypes} componentDidMount={this.componentDidMount}/>
                   /*<Col sm="12" lg="6" md="12">
                     <ListGroupReact flush style={{ textAlign: "center" }}>
                       <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>

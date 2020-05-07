@@ -18,10 +18,10 @@ import ListGroupReact from "react-bootstrap/ListGroup";
 import {
   defaultAvatar,
   languageCode, newParametersEntities, parentsParameters, showToast,
-  studentsParameters,
+  studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
-  changesCommitSuccess,
+  changesCommitSuccess, childDeleteSuccess, confirmDelteChild,
   fillRequiredFieldMessage,
   provideRequiredFieldsMessage, sameChildNameError
 } from "../../utils/messages_strings";
@@ -72,16 +72,16 @@ class EducandosModal extends React.Component {
   updateEducando(){
     const validResult = this.validForm();
     if(!validResult){
-      showToast(provideRequiredFieldsMessage[languageCode], 5000, "error");
+      showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
     else{
       const uniqueChildName = this.checkUniqueChildName();
       if(!uniqueChildName){
-        showToast(sameChildNameError[languageCode], 5000, "error");
+        showToast(sameChildNameError[languageCode], 5000, toastTypes.ERROR);
       }
       else{
         this.cancelEditing();
-        showToast(changesCommitSuccess[languageCode], 5000, "success");
+        showToast(changesCommitSuccess[languageCode], 5000, toastTypes.SUCCESS);
       }
 
     }
@@ -163,15 +163,21 @@ class EducandosModal extends React.Component {
   }
 
   deleteEducando(){
-    deleteEducandoFromParent(firebase_auth.currentUser.email, this.state.educando[studentsParameters.NAME[languageCode]])
-      .then((updatedParent) => {
-        const upParentString = JSON.stringify(updatedParent);
-        console.log("updatedParent recebido depois do delete educando -> " + upParentString);
-        // update user data in localstorage
-        window.localStorage.setItem("userDoc", upParentString);
-        this.closeModal();
-        this.props.componentDidMount(true);
-      });
+    const confirmation = window.confirm(confirmDelteChild[languageCode]);
+    if(confirmation){
+      deleteEducandoFromParent(firebase_auth.currentUser.email, this.state.educando[studentsParameters.NAME[languageCode]])
+        .then((updatedParent) => {
+          const upParentString = JSON.stringify(updatedParent);
+          console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+          // update user data in localstorage
+          window.localStorage.setItem("userDoc", upParentString);
+          this.closeModal();
+          this.props.componentDidMount(true);
+          showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+        });
+    }
+
+
   }
 
   showModal() {

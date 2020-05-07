@@ -9,9 +9,14 @@ import {
   getRandomInteger,
   getGravatarURL,
   languageCode,
-  parentsParameters
+  parentsParameters, showToast, toastTypes
 } from "../utils/general_utils";
-import {jsonParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage} from "../utils/messages_strings";
+import {
+  jsonParamsErrorMessage,
+  importSucessMessage,
+  provideRequiredFieldsMessage,
+  installError
+} from "../utils/messages_strings";
 import {
   getAndSaveJSONparamsData,
   createDefaultUser,
@@ -21,7 +26,8 @@ import {
   uploadAssocDataFiles,
   removeAllInvalidFeedbacks,
   validZip,
-  showZipWarning
+  showZipWarning,
+  installGotErrors, validEmail, showEmailWarning
 } from "./installation";
 
 
@@ -68,7 +74,8 @@ function createInstallerParent(nome, email, cargo) {
       //console.log("EE e educandos guardados com sucesso.");
     })
     .catch(function (error) {
-      alert("Erro: " + error);
+      console.log("Erro: " + error);
+      installGotErrors = false;
     });
 }
 
@@ -138,6 +145,18 @@ function install() {
       return;
     }
 
+    const emailValue = document.getElementById("configAssocEmail").value;
+    if(!validEmail(emailValue)){
+      showEmailWarning("configAssocEmail");
+      return;
+    }
+
+    const adminEmailValue = document.getElementById("configAdminEmail").value;
+    if(!validEmail(adminEmailValue)){
+      showEmailWarning("configAdminEmail");
+      return;
+    }
+
     // read files and save their data
     const paramsJSONfile = document.getElementById("configAssocNewParams").files[0];
 
@@ -149,7 +168,7 @@ function install() {
         document.querySelector("#" + paramsInput.id + "Feedback").style.display =
           "block";
         paramsInput.value = "";
-        alert(jsonErrorMessage);
+        showToast(jsonErrorMessage, 15000, toastTypes.ERROR);
       }
       else{
         // uploads after files are validated
@@ -179,6 +198,7 @@ function install() {
             },
             function (error) {
               console.log("Upload failed: " + error);
+              installGotErrors = true;
             },
             function () {
               // Handle successful uploads on complete
@@ -198,10 +218,16 @@ function install() {
 
     });
 
-  } else alert(requiredFieldsMissingMessage);
+  } else showToast(requiredFieldsMissingMessage, 5000, toastTypes.ERROR);
 }
 
 function continueInstallation(inputsInfo, logoURL) {
+  if(installGotErrors){
+    showToast(installError[languageCode], 5000, toastTypes.ERROR);
+    installGotErrors = false;
+    return;
+  }
+
   const setupDataDoc = () => {
     let temp = {};
     for (const label in inputsInfo) {
@@ -239,7 +265,7 @@ function continueInstallation(inputsInfo, logoURL) {
         .then(function () {
           createDefaultUser();
           sendImportEmailToParent(installerNome, installerEmail).then();
-          alert(sucessImportMessage);
+          showToast(sucessImportMessage, 5000, toastTypes.SUCCESS);
           window.location.href = "/";
         })
         .catch(function (error) {

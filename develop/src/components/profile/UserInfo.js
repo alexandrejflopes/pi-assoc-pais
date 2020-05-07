@@ -16,7 +16,7 @@ import {
 import {
   languageCode, newParametersEntities,
   notAvailableDesignation,
-  parentsParameters, showToast, studentsParameters
+  parentsParameters, showToast, studentsParameters, toastTypes
 } from "../../utils/general_utils";
 import {saveChanges, cancel, updateProfile} from "../../utils/common_strings";
 import {profileInfoFormTitle} from "../../utils/page_titles_strings";
@@ -86,11 +86,11 @@ class UserInfo extends React.Component {
   updateParent(){
     const validResult = this.validForm();
     if(!validResult){
-      showToast(provideRequiredFieldsMessage[languageCode], 5000, "error");
+      showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
     else{
       this.cancelEditing();
-      showToast(changesCommitSuccess[languageCode], 5000, "success");
+      showToast(changesCommitSuccess[languageCode], 5000, toastTypes.SUCCESS);
     }
   }
 

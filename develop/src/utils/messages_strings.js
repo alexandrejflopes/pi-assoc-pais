@@ -40,8 +40,17 @@ const invalidZipMessage = {
   "pt_PT" : "O Código Postal fornecido é inválido em Portugal.\nPor favor, corrija-o. Obrigado."
 };
 
+export const invalidEmailMessage = {
+  "pt_PT" : "O email fornecido tem formato inválido.\nPor favor, corrija-o. Obrigado."
+};
+
 const provideRequiredFieldsMessage = {
   "pt_PT" : "Por favor, preencha os campos em falta."
+};
+
+export const childSchoolYearTipMessage = {
+  "pt_PT" :
+    "Indique o ano escolar em que se encontra o seu educando no ensino regular (1 a 12)"
 };
 
 const aboutYouTipMessage = {
@@ -82,7 +91,51 @@ const fillRequiredFieldMessage = {
 
 // -------------------------------------- OTHERS --------------------------------------
 
+// ------- ERRORS
+
+export const installError = {
+  "pt_PT" : "Houve um ou mais erros durante a instalação.\nPor favor, verifique forneceu todos os dados " +
+    "conforme o manual de utilização. Se sim, por favor, tente novamente."
+};
+
+export const uploadLogoError = {
+  "pt_PT" : "Erro ao carregar o logótipo. Por favor, tente novamente."
+};
+
+export const saveImportedParentsError = {
+  "pt_PT" : "Erro ao guardar os membros da associação e respetivos dados. Por favor, tente novamente."
+};
+
+export const addCaseError = {
+  "pt_PT" : "Erro no envio do caso, por favor, tente novamente!"
+};
+
+export const registationError = {
+  "pt_PT" : "Erro no envio da inscrição, por favor, tente novamente!"
+};
+
+
+// ------- CONFIRMATIONS
+
+export const confirmDelteChild = {
+  "pt_PT" : "Tem a certeza que pretender eliminar este educando?\n" +
+    "Esta ação não é revertível, a menos que volte a adicionar o educando à plataforma."
+};
+
 // ------- SUCCESS
+
+export const saveImportedParentsSuccess = {
+  "pt_PT" : "Membros da associação e respetivos dados guardados com sucesso."
+};
+
+export const addCaseSucess = {
+  "pt_PT" : "Caso criado com sucesso."
+};
+
+
+export const registationSuccess = {
+  "pt_PT" : "Sucesso no envio da inscrição!"
+};
 
 export const childAddedSuccess = {
   "pt_PT" : "Educando adicionado!"
@@ -94,6 +147,10 @@ export const changesCommitSuccess = {
 
 export const sameChildNameError = {
   "pt_PT" : "Não é possível ter educandos com o mesmo nome!"
+};
+
+export const childDeleteSuccess = {
+  "pt_PT" : "Educando eliminado com sucesso!"
 };
 
 

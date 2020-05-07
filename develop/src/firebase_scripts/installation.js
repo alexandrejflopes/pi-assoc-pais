@@ -20,10 +20,18 @@ import {
   parentsParameters,
   notAvailableDesignation,
   zipCodeRegexes,
-  defaultAvatar
+  defaultAvatar, showToast, toastTypes, emailRegex
 } from "../utils/general_utils";
-import {jsonParamsErrorMessage, jsonOrCsvParamsErrorMessage, importSucessMessage, provideRequiredFieldsMessage,
-        invalidZipMessage
+import {
+  jsonParamsErrorMessage,
+  jsonOrCsvParamsErrorMessage,
+  importSucessMessage,
+  provideRequiredFieldsMessage,
+  invalidZipMessage,
+  registationSuccess,
+  registationError,
+  addCaseSucess,
+  addCaseError, uploadLogoError, installError, invalidEmailMessage
 } from "../utils/messages_strings";
 const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
 const csvsErrorMessage = jsonOrCsvParamsErrorMessage[languageCode];
@@ -33,6 +41,8 @@ const requiredFieldsMissingMessage = provideRequiredFieldsMessage[languageCode];
 const parentDesignation = newParametersEntities.parent[languageCode];
 const studentDesignation = newParametersEntities.student[languageCode];
 const NAdesignation = notAvailableDesignation[languageCode];
+
+export let installGotErrors = false;
 
 let membersEmails = {};
 
@@ -252,7 +262,7 @@ function saveNewParamsFromJSONToDB(json) {
       //console.log("Novos parâmetros guardados com sucesso.");
     })
     .catch(function (error) {
-      alert("Erro: " + error);
+      installGotErrors = true;
     });
 }
 
@@ -262,10 +272,11 @@ function saveRegistToDB(json) {
   parentRef
     .set(json)
     .then(function () {
-      alert("Sucesso no envio da inscrição!");
+      showToast(registationSuccess[languageCode], 5000, toastTypes.SUCCESS);
     })
     .catch(function (error) {
-      alert("Erro no envio da inscrição, por favor, tente novamente!");
+      console.log("regist save error: " + JSON.stringify(error));
+      showToast(registationError[languageCode], 5000, toastTypes.ERROR);
     });
 }
 
@@ -278,10 +289,10 @@ function saveCaseToDB(json) {
   ref
     .set(json)
     .then(function () {
-      alert("Sucesso!");
+      showToast(addCaseSucess[languageCode], 5000, toastTypes.SUCCESS);
     })
     .catch(function (error) {
-      alert("Erro no envio do caso, por favor, tente novamente!");
+      showToast(addCaseError[languageCode], 5000, toastTypes.ERROR);
     });
 }
 
@@ -415,8 +426,6 @@ function getandSaveCSVdata(parentsFile, childrenFile, callback) {
           if(childrenFileString.trim().length===0){
             throw "Too few data in CSV file to process";
           }
-
-
 
           const childrenList = setupCSVData(childrenFileString, false);
 
@@ -569,7 +578,7 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
         //console.log("EE e educandos guardados com sucesso.");
       })
       .catch(function (error) {
-        alert("Erro: " + error);
+        installGotErrors = true;
       });
   }
 }
@@ -750,7 +759,7 @@ function uploadAssocDataFiles(inputID) {
       //alert("Uploaded a blob or file!");
     })
     .catch(function (error) {
-      alert(error);
+      installGotErrors = true;
     });
 }
 
@@ -815,7 +824,22 @@ function showZipWarning(elementId) {
   document.querySelector("#" + zipInput.id + "Feedback").style.display =
     "block";
   //zipInput.value = "";
-  alert(invalidZipMessage[languageCode]);
+  showToast(invalidZipMessage[languageCode], 5000, toastTypes.ERROR);
+}
+
+function validEmail(emailValue) {
+  const emailReg = emailRegex;
+  const processedEmail = emailValue.trim();
+  return emailReg.test(processedEmail);
+}
+
+function showEmailWarning(elementId) {
+  // if there's an error with zip code, not allow to submit the form and show warning
+  const emailInput = document.getElementById(elementId);
+  emailInput.classList.add("is-invalid");
+  document.querySelector("#" + emailInput.id + "Feedback").style.display =
+    "block";
+  showToast(invalidEmailMessage[languageCode], 5000, toastTypes.ERROR);
 }
 
 
@@ -869,6 +893,12 @@ function install() {
       return;
     }
 
+    const emailValue = document.getElementById("configAssocEmail").value;
+    if(!validEmail(emailValue)){
+      showEmailWarning("configAssocEmail");
+      return;
+    }
+
     // read files and save their data
     const paramsJSONfile = document.getElementById("configAssocNewParams")
       .files[0];
@@ -884,7 +914,7 @@ function install() {
         document.querySelector("#" + paramsInput.id + "Feedback").style.display =
           "block";
         paramsInput.value = "";
-        alert(jsonErrorMessage);
+        showToast(jsonErrorMessage, 15000, toastTypes.ERROR);
       }
       else{
         getandSaveCSVdata(membersFile, studentsFile, function (paramsFilesCorrect) {
@@ -910,7 +940,7 @@ function install() {
             document.querySelector("#" + studentsInput.id + "Feedback").style.display =
               "block";
             studentsInput.value = "";
-            alert(csvsErrorMessage);
+            showToast(csvsErrorMessage, 15000, toastTypes.ERROR);
           }
 
           else{
@@ -943,6 +973,8 @@ function install() {
                 },
                 function (error) {
                   console.log("Logo upload failed: " + error);
+                  installGotErrors = true;
+                  showToast(uploadLogoError[languageCode], 5000, toastTypes.ERROR);
                 },
                 function () {
                   // Handle successful uploads on complete
@@ -968,11 +1000,18 @@ function install() {
     });
 
   } else {
-      alert(requiredFieldsMissingMessage);
+      showToast(requiredFieldsMissingMessage, 5000, toastTypes.ERROR);
   }
 }
 
 function continueInstallation(inputsInfo, logoURL) {
+
+  if(installGotErrors){
+    showToast(installError[languageCode], 5000, toastTypes.ERROR);
+    installGotErrors = false;
+    return;
+  }
+
   const setupDataDoc = () => {
     let temp = {};
     for (const label in inputsInfo) {
@@ -1006,7 +1045,7 @@ function continueInstallation(inputsInfo, logoURL) {
         .then(function () {
           createDefaultUser();
           notifyAllParents();
-          alert(sucessImportMessage);
+          showToast(sucessImportMessage, 5000, toastTypes.SUCCESS);
           window.location.href = "/";
         })
         .catch(function (error) {
@@ -1029,6 +1068,8 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         removeAllInvalidFeedbacks,
         validZip,
         showZipWarning,
+        validEmail,
+        showEmailWarning,
         generateNewAssocNumber,
         fetchAssocNumbers,
         // functions used in tests

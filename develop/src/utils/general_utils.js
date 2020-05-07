@@ -10,7 +10,6 @@ import {Bounce, toast} from "react-toastify";
 
 // -------------------------------------------- CONSTANTS --------------------------------------------
 
-const regular_role_PT = "Associado(a)";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
 const defaultAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000";
 /*
@@ -18,6 +17,10 @@ const defaultAvatar = "https://www.gravatar.com/avatar/0000000000000000000000000
 * that shall be in new parameters's JSON file*/
 const membersImportFileNewParametersStartIndex = 13;
 const studentsImportFileNewParametersStartIndex = 4;
+
+export const regular_role = {
+  "pt_PT" : "Associado(a)"
+};
 
 const membersCSVparamsIndexes = {
     assoc_num_index : 0,
@@ -56,6 +59,8 @@ const zipCodeRegexes = {
     regex : new RegExp(/\d{4}\-\d{3}/)
   }
 };
+
+export const emailRegex = new RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
 
 const notAvailableDesignation = {
   "pt_PT" : "ND" // nao determinado/disponivel
@@ -176,7 +181,7 @@ const studentsParameters = {
 export const toastTypes = {
   // warning, success, error, info, default, dark
   WARNING : "warning",
-  SUCESS : "success",
+  SUCCESS : "success",
   ERROR : "error",
   INFO : "info",
   DEFAULT : "default",
@@ -226,7 +231,6 @@ function showToast(message, duration, type) {
 
 export {
   getGravatarURL,
-  regular_role_PT,
   defaultLogoFile,
   defaultIBAN,
   getRandomInteger,

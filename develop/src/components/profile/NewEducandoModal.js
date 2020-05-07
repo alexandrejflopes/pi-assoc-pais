@@ -13,13 +13,13 @@ import {
 } from "shards-react";
 import {
   defaultAvatar,
-  languageCode, newParametersEntities, showToast,
-  studentsParameters,
+  languageCode, newParametersEntities, parentsParameters, showToast,
+  studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
   childAddedSuccess,
   fillRequiredFieldMessage,
-  provideRequiredFieldsMessage
+  provideRequiredFieldsMessage, sameChildNameError
 } from "../../utils/messages_strings";
 import {newChild, submitChild} from "../../utils/page_titles_strings";
 import {addEducandoToParent} from "../../firebase_scripts/profile_functions";
@@ -76,21 +76,50 @@ class NewEducandoModal extends React.Component{
   addEducando(){
     const validResult = this.validForm();
     if(!validResult){
-      showToast(provideRequiredFieldsMessage[languageCode], 5000, "error");
+      showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
     else{
-      addEducandoToParent(firebase_auth.currentUser.email, this.state.educando, this.state.educandoFoto)
-        .then((updatedParent) => {
-          const upParentString = JSON.stringify(updatedParent);
-          console.log("updatedParent recebido depois do update -> " + upParentString);
-          // update user data in localstorage
-          window.localStorage.setItem("userDoc", upParentString);
-          this.closeModal();
-          showToast(childAddedSuccess[languageCode], 5000, "success");
-          this.props.componentDidMount(true);
-        });
+      const uniqueChildName = this.checkUniqueChildName();
+      if(!uniqueChildName){
+        showToast(sameChildNameError[languageCode], 5000, toastTypes.ERROR);
+      }
+      else{
+        addEducandoToParent(firebase_auth.currentUser.email, this.state.educando, this.state.educandoFoto)
+          .then((updatedParent) => {
+            const upParentString = JSON.stringify(updatedParent);
+            console.log("updatedParent recebido depois do update -> " + upParentString);
+            // update user data in localstorage
+            window.localStorage.setItem("userDoc", upParentString);
+            this.closeModal();
+            this.props.componentDidMount(true);
+            showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+          });
+      }
+
     }
 
+  }
+
+  checkUniqueChildName(){
+    const nameToAdd = this.state.educando[studentsParameters.NAME[languageCode]];
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const nameDesignation = studentsParameters.NAME[languageCode];
+    const educandos = localUser[parentsParameters.CHILDREN[languageCode]];
+
+    const names = [];
+    for (let i in educandos){
+      const educando = educandos[i];
+      const currentName = educando[nameDesignation];
+      names.push(currentName);
+    }
+
+    if(names.includes(nameToAdd)){
+      this.showInvalidNameFeedback();
+      return false;
+    }
+
+    this.hideInvalidNameFeedback();
+    return true;
   }
 
   validForm(){
@@ -117,6 +146,16 @@ class NewEducandoModal extends React.Component{
     this.state.feedbacks = changedFeedbacks;
     this.forceUpdate();
     return allFilled;
+  }
+
+  showInvalidNameFeedback(){
+    this.state.feedbacks[studentsParameters.NAME[languageCode]] = true;
+    this.forceUpdate();
+  }
+
+  hideInvalidNameFeedback(){
+    this.state.feedbacks[studentsParameters.NAME[languageCode]] = false;
+    this.forceUpdate();
   }
 
   resetFeedbacks(){

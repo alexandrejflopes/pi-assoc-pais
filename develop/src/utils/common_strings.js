@@ -2,6 +2,13 @@
 * file to save common strings that are repeated along the app
 * */
 
+export const yes = {
+  "pt_PT" : "Sim"
+};
+
+export const no = {
+  "pt_PT" : "Não"
+};
 
 export const saveChanges = {
   "pt_PT" : "Guardar alterações"
