@@ -35,6 +35,7 @@ const {
   deleteParent,
   approveParent,
   addFirstPayment,
+  alterParentEmail,
   addCota,
   updateCota,
   confirmarPaganteCota,
@@ -86,6 +87,7 @@ app.get('/updateParent',updateParent);
 app.get('/deleteParent',deleteParent);
 app.get('/approveParent',approveParent);
 app.get('/addFirstPayment',addFirstPayment);
+app.get('/alterParentEmail',alterParentEmail);
 app.get('/addCota',addCota);
 app.get('/updateCota',updateCota);
 app.get('/confirmarPaganteCota',confirmarPaganteCota);

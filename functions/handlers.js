@@ -873,6 +873,82 @@ exports.addFirstPayment = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+/**
+ * Função utilizada para alterar o email de um parent
+ * Leva os argumentos email (antigo) e new_email (novo email)
+ * Devolve o documento do parent com o email alterado
+ * Nota: De forma a manter o serviço de autenticação e a base de dados coerentes o email enviado terá de estar presente em ambos
+ * os serviços e o novo email não poderá já existir nem na base de dados nem no serviço de autenticação 
+ */
+exports.alterParentEmail = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let email = request.query.email;
+    let new_email = request.query.new_email;
+    let document;
+    /*let authToken = request.header("Authorization");
+    const userData = await admin.auth().verifyIdToken(authToken)
+    .catch(err => {
+        console.log('User token invalid:', err);
+        return response.status(405).send({"error" : err});
+    });*/
+    admin.auth().getUserByEmail(email)
+    .then((userRecord) => {
+        // See the UserRecord reference doc for the contents of userRecord.
+        console.log('Successfully fetched user data:', userRecord.toJSON());
+        console.log('Old email', email);
+        console.log('New email', new_email);
+        admin.auth().updateUser(userRecord.uid, {"email":new_email});
+        return;
+        //return response.send();
+    })
+    .then(() => {
+        db.collection('parents').doc(email).get().then(doc => {
+            if (!doc.exists) {
+                console.log('Parent document with first email not found!');
+                return response.status(404).send({"error":"No such document"});
+            }
+            else {
+                //console.log('Document data:', doc.data());
+                /**
+                 * let data = doc.data();
+                data["Email"] = new_email;
+                document = JSON.stringify(data)
+                 */
+                document = doc.data();
+                document["Email"] = new_email;
+                console.log('Successfully fetched database parent data:', document);
+                db.collection('parents').doc(email).delete()
+                .then(() => {
+                    db.collection('parents').doc(new_email).set(document)
+                    .then(() => {
+                        console.log("Document successfully written!");
+                        response.send(document);
+                        return;
+                    })
+                    .catch((error) => {
+                        console.error("Error writing document: ", error);
+                        return response.status(405).send({"error" : err});
+                    });
+                    return;
+                })
+                .catch(err => {
+                    console.log('Error deleting user first email:', error);
+                    return response.status(405).send({"error" : err});
+                });
+            return;
+            }
+        }).catch(err => {
+            console.log('Error getting user first email:', error);
+            return response.status(405).send({"error" : err});
+        });
+        return;
+    })
+    .catch((error) => {
+        console.log('Error updating user auth email:', error);
+        console.log('data:', document);
+        return response.status(405).send({"error" : err});
+    });
+});
 
 /**
  * Funções relacionadas com as partes das cotas dos enc de educação
