@@ -7,7 +7,8 @@ import {
   DropdownItem,
   Collapse,
   NavItem,
-  NavLink
+  NavLink,
+  Row
 } from "shards-react";
 import {
   defaultAvatar,
@@ -46,7 +47,6 @@ export default class UserActions extends React.Component {
 
     this.updateNavBarUserPhotoAndName();
     //this.updateNavBarUserPhotoAndNameV2();
-
   }
 
   componentWillUnmount() {
@@ -114,7 +114,7 @@ export default class UserActions extends React.Component {
   render() {
     return (
       <NavItem tag={Dropdown} caret toggle={this.toggleUserActions}>
-        <DropdownToggle caret tag={NavLink} className="text-nowrap px-3">
+        <DropdownToggle caret tag={NavLink} className="text-nowrap px-3" >
           <img
             className="user-avatar rounded-circle mr-2"
             src={this.state.userPhoto}

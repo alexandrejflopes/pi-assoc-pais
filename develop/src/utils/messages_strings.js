@@ -93,6 +93,23 @@ const fillRequiredFieldMessage = {
 
 // ------- ERRORS
 
+
+export const childAddPhotoError = {
+  "pt_PT" : "Houve um problema a carregar a foto do seu educando. Por favor, tente novamente."
+};
+
+export const parentUpdatePhotoError = {
+  "pt_PT" : "Houve um problema a atualizar a foto de perfil. Por favor, tente novamente."
+};
+
+export const parentUpdateError = {
+  "pt_PT" : "Houve um problema a atualizar as informações. Por favor, tente novamente."
+};
+
+export const childUpdateError = {
+  "pt_PT" : "Houve um problema a atualizar o seu educando. Por favor, tente novamente."
+};
+
 export const installError = {
   "pt_PT" : "Houve um ou mais erros durante a instalação.\nPor favor, verifique forneceu todos os dados " +
     "conforme o manual de utilização. Se sim, por favor, tente novamente."
@@ -114,15 +131,31 @@ export const registationError = {
   "pt_PT" : "Erro no envio da inscrição, por favor, tente novamente!"
 };
 
+export const childDeleteError = {
+  "pt_PT" : "Houve um problema a eliminar o seu educando. Por favor, tente novamente."
+};
+
 
 // ------- CONFIRMATIONS
 
-export const confirmDelteChild = {
+export const confirmDeleteChild = {
   "pt_PT" : "Tem a certeza que pretender eliminar este educando?\n" +
     "Esta ação não é revertível, a menos que volte a adicionar o educando à plataforma."
 };
 
 // ------- SUCCESS
+
+export const parentUpdatePhotoSuccess = {
+  "pt_PT" : "Foto de perfil atualizada com sucesso."
+};
+
+export const parentUpdateSuccess = {
+  "pt_PT" : "Informações atualizadas com sucesso."
+};
+
+export const childUpdateSucess = {
+  "pt_PT" : "Educado atualizado com sucesso."
+};
 
 export const saveImportedParentsSuccess = {
   "pt_PT" : "Membros da associação e respetivos dados guardados com sucesso."

@@ -7,6 +7,7 @@
 import MD5 from "crypto-js/md5";
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
 import {Bounce, toast} from "react-toastify";
+import {firebase_auth} from "../firebase-config";
 
 // -------------------------------------------- CONSTANTS --------------------------------------------
 
@@ -224,6 +225,29 @@ function showToast(message, duration, type) {
     type: type,
   });
 
+}
+
+
+function updateFirebaseUserPhoto(photo_url){
+  const firebaseUser = firebase_auth.currentUser;
+  return firebaseUser.updateProfile({
+    photoURL: photo_url
+  });
+}
+
+function updateFirebaseUserDisplayName(newName){
+  const firebaseUser = firebase_auth.currentUser;
+  return firebaseUser.updateProfile({
+    displayName: newName
+  });
+}
+
+function updateFirebaseUserDisplayNameAndPhoto(newName, photo_url){
+  const firebaseUser = firebase_auth.currentUser;
+  return firebaseUser.updateProfile({
+    displayName: newName,
+    photoURL: photo_url
+  });
 }
 
 

@@ -21,9 +21,17 @@ import {
 import {saveChanges, cancel, updateProfile} from "../../utils/common_strings";
 import {profileInfoFormTitle} from "../../utils/page_titles_strings";
 import {
-  changesCommitSuccess, fillRequiredFieldMessage,
+  changesCommitSuccess,
+  childDeleteError,
+  childDeleteSuccess,
+  fillRequiredFieldMessage, parentUpdateError, parentUpdateSuccess,
   provideRequiredFieldsMessage
 } from "../../utils/messages_strings";
+import {firebase_auth} from "../../firebase-config";
+import {updateParent} from "../../firebase_scripts/profile_functions";
+import UserOverview from "./UserOverview";
+import UsersOverview from "../blog/UsersOverview";
+import UserActions from "../layout/MainNavbar/NavbarNav/UserActions";
 
 
 class UserInfo extends React.Component {
@@ -66,8 +74,10 @@ class UserInfo extends React.Component {
     this.disableEditableInputs = this.disableEditableInputs.bind(this);
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
+    this.lockFormAfterSubmit = this.lockFormAfterSubmit.bind(this);
 
     this.updateParent = this.updateParent.bind(this);
+
 
   }
 
@@ -89,9 +99,35 @@ class UserInfo extends React.Component {
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
     else{
-      this.cancelEditing();
-      showToast(changesCommitSuccess[languageCode], 5000, toastTypes.SUCCESS);
+      //this.cancelEditing();
+      //showToast(changesCommitSuccess[languageCode], 5000, toastTypes.SUCCESS);
+      updateParent(firebase_auth.currentUser.email, this.state.parent)
+        .then((updatedParent) => {
+          const upParentString = JSON.stringify(updatedParent);
+          console.log("updatedParent recebido depois do update info -> " + upParentString);
+          // update user data in localstorage
+          window.localStorage.setItem("userDoc", upParentString);
+          this.lockFormAfterSubmit();
+          this.props.componentDidMount(true);
+          // TODO: update navbar instantaneously
+          showToast(parentUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+        })
+        .catch((error) => {
+          if(Object.keys(error).length!==0){
+            console.log("update error: " + JSON.stringify(error));
+            showToast(parentUpdateError[languageCode], 5000, toastTypes.ERROR);
+          }
+        });
     }
+  }
+
+  lockFormAfterSubmit(){
+    //this.resetFeedbacks();
+    this.disableEditableInputs();
+    this.setState({ editing: false });
+    // save new parent data
+    const parent = {...this.state.parent};
+    this.setState({ oldParent: parent });
   }
 
   validForm(){

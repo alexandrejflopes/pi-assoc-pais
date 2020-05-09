@@ -1,6 +1,7 @@
 import {
   firebase_auth,
   firebaseConfig,
+  storage,
   firestore,
   storageRef
 } from "../firebase-config";
@@ -134,8 +135,97 @@ function mapParamsToInputType(paramsDoc){
 }
 
 
+function updateEducando(parentEmail, educandoDoc){
+
+  console.log("educandoDoc -> " + JSON.stringify(educandoDoc));
+
+  let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+  let children = localUser[parentsParameters.CHILDREN[languageCode]];
+
+  for(let i in children){
+    let currentChild = children[i];
+    // find child with that name to update it
+    if(currentChild[studentsParameters.NAME[languageCode]]===educandoDoc[studentsParameters.NAME[languageCode]]){
+      children[i] = educandoDoc;
+      break;
+    }
+  }
+  const childrenDesignation = parentsParameters.CHILDREN[languageCode];
+  const newChildrenField = {[childrenDesignation] : children};
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/updateParent?" +
+    "id=" + parentEmail +
+    "&doc=" + encodeURIComponent(JSON.stringify(newChildrenField));
+
+  const request = async () => {
+    let updatedParent = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into json
+      .then(function (data) {
+        console.log("parentUpdated no request update child -> ", JSON.stringify(data));
+        updatedParent = data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    return updatedParent;
+  };
+
+  return request();
+
+
+}
+
+function updateParent(parentEmail, parentDoc) {
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/updateParent?" +
+    "id=" + parentEmail +
+    "&doc=" + encodeURIComponent(JSON.stringify(parentDoc));
+
+  const request = async () => {
+    let updatedParent = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into json
+      .then(function (data) {
+        console.log("parentUpdated no request update info -> ", JSON.stringify(data));
+        updatedParent = data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    return updatedParent;
+  };
+
+  return request();
+
+}
+
+
+function uploadProfilePhoto(photoFile){
+  const newPhotoPath = "profilePhotos/" + photoFile.name;
+  const newPhotoRef = storageRef.child(newPhotoPath);
+  return newPhotoRef.put(photoFile);
+}
+
+function uploadChildPhoto(photoFile){
+  const newPhotoPath = "childPhotos/" + photoFile.name;
+  const newPhotoRef = storageRef.child(newPhotoPath);
+  return newPhotoRef.put(photoFile);
+}
+
+
 /*
-* function to add
+* function to add a child to a parent
 * */
 function addEducandoToParent(parentEmail, newChild, photo){
 
@@ -275,4 +365,5 @@ function deleteEducandoFromParent(parentEmail, childName){
 
 
 export {fetchUserDoc, userLogOut, mapParamsToInputType, getNewParams,
-  addEducandoToParent, deleteEducandoFromParent}
+  addEducandoToParent, deleteEducandoFromParent, updateEducando, updateParent,
+  uploadProfilePhoto, uploadChildPhoto}

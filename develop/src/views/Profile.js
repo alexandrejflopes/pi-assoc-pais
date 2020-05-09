@@ -41,11 +41,20 @@ class Profile extends React.Component {
 
     //this.componentDidMount = this.componentDidMount.bind(this);
     this.saveNewParams = this.saveNewParams.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  componentDidMount() {
-    this._isMounted = true;
+  componentDidMount(updating) {
+
+    if(updating){
+      const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
+      if(localUser!=null){
+        this.setState({userDoc : localUser});
+      }
+    }
+    //this._isMounted = true;
 
     console.log("DID MOUNT!");
 
@@ -204,6 +213,7 @@ class Profile extends React.Component {
               <UserInfo
                 userD={this.state.userDoc}
                 newParamsTypesD={this.state.newParamsInputTypes}
+                componentDidMount={this.componentDidMount}
               />
             </Col>
           </Row>

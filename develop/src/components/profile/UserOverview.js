@@ -15,10 +15,11 @@ import {
   languageCode,
   parentsParameters, studentsParameters
 } from "../../utils/general_utils";
-import {saveChanges} from "../../utils/common_strings";
+import {cancel, saveChanges, updateProfile} from "../../utils/common_strings";
 import {profileMyChildren} from "../../utils/page_titles_strings";
 import EducandosModal from "./EducandosModal";
 import NewEducandoModal from "./NewEducandoModal";
+import ParentPhotoModal from "./ParentPhotoModal";
 
 class UserOverview extends React.Component {
 
@@ -36,7 +37,8 @@ class UserOverview extends React.Component {
 
     this.state = {
       parent : parent,
-      newParamsTypes : newParamsTypes
+      newParamsTypes : newParamsTypes,
+      editingPhoto : false
       /*educandosTeste : [
         {
           id: 0,
@@ -54,6 +56,8 @@ class UserOverview extends React.Component {
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.cancelEditingPhoto = this.cancelEditingPhoto.bind(this);
+    this.editPhoto = this.editPhoto.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -77,6 +81,19 @@ class UserOverview extends React.Component {
   /*********************************** HANDLERS ***********************************/
 
 
+  editPhoto() {
+    this.setState({ editingPhoto: true });
+    document.getElementById("add-photo-button").onclick(function(e){
+      e.preventDefault();
+      document.getElementById("file-upload-input").trigger('click');
+    });
+  }
+
+
+  cancelEditingPhoto() {
+    this.setState({ editingPhoto: false });
+  }
+
   render() {
     const { educandosTeste } = this.state;
     const userEducandos = this.state.parent[parentsParameters.CHILDREN[languageCode]];
@@ -86,22 +103,32 @@ class UserOverview extends React.Component {
     return (
       <Card small className="mb-4 pt-3">
         <CardHeader className="border-bottom text-center">
-          <div className="mb-3 mx-auto">
+          <Row style={{
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+            <div style={{
+              width : "110px",
+              height: "110px",
+              backgroundImage: "url(" + this.state.parent[parentsParameters.PHOTO[languageCode]] + ")",
+              backgroundPosition : "center",
+              borderRadius: "50%",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat"
+            }}>
+            </div>
+            {/*
             <img
               className="rounded-circle"
               src={this.state.parent[parentsParameters.PHOTO[languageCode]]}
               alt={this.state.parent[parentsParameters.NAME[languageCode]]}
               width="110"
             />
-          </div>
-          <Button
-            size="sm"
-            theme="light"
-            id="new_case"
-            onClick={() => {}}
-          >
-            <span className="material-icons md-24">add_a_photo</span>
-          </Button>
+            */}
+          </Row>
+          <div style={{ margin: "10px" }} />
+          <ParentPhotoModal photo={this.state.parent[parentsParameters.PHOTO[languageCode]]} componentDidMount={this.componentDidMount}/>
           <h4 className="mb-0">{this.state.parent[parentsParameters.NAME[languageCode]]}</h4>
           <span className="text-muted d-block mb-2">{this.state.parent[parentsParameters.EMAIL[languageCode]]}</span>
           <span className="text-muted d-block mb-2">{this.state.parent[parentsParameters.ASSOC_NUMBER[languageCode]]} | {this.state.parent[parentsParameters.ROLE[languageCode]]}</span>

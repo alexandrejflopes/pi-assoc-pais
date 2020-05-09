@@ -17,14 +17,16 @@ import {
   studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
-  childAddedSuccess,
-  fillRequiredFieldMessage,
+  childAddedSuccess, childAddPhotoError,
+  fillRequiredFieldMessage, parentUpdatePhotoError, parentUpdatePhotoSuccess,
   provideRequiredFieldsMessage, sameChildNameError
 } from "../../utils/messages_strings";
 import {newChild, submitChild} from "../../utils/page_titles_strings";
-import {addEducandoToParent} from "../../firebase_scripts/profile_functions";
-import {firebase_auth} from "../../firebase-config";
-import Profile from "../../views/Profile";
+import {
+  addEducandoToParent, updateParent, uploadChildPhoto,
+  uploadProfilePhoto
+} from "../../firebase_scripts/profile_functions";
+import {firebase_auth, storage} from "../../firebase-config";
 
 
 
@@ -42,7 +44,9 @@ class NewEducandoModal extends React.Component{
       feedbacks : {
         [studentsParameters.NAME[languageCode]] : false,
         [studentsParameters.SCHOOL_YEAR[languageCode]] : false
-      }
+      },
+      originalPhoto : defaultAvatar,
+      fileToUpload : null
     };
 
     this.initial = {
@@ -55,13 +59,16 @@ class NewEducandoModal extends React.Component{
       feedbacks : {
         [studentsParameters.NAME[languageCode]] : false,
         [studentsParameters.SCHOOL_YEAR[languageCode]] : false
-      }
+      },
+      originalPhoto : defaultAvatar,
+      fileToUpload : null
     };
 
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.resetState = this.resetState.bind(this);
     this.handleChangeParam = this.handleChangeParam.bind(this);
+    this.handleChangePhoto = this.handleChangePhoto.bind(this);
 
     this.addEducando = this.addEducando.bind(this);
     this.renderExtra = this.renderExtra.bind(this);
@@ -71,7 +78,15 @@ class NewEducandoModal extends React.Component{
     console.log("state no incio: " + JSON.stringify(this.state));
   }
 
-
+  handleChangePhoto(e) {
+    //console.log("state antes: " + JSON.stringify(this.state));
+    //console.log("file: " + e.target.files[0].name);
+    const imageFile = e.target.files[0];
+    //console.log("imageFile: " + imageFile);
+    const imageTempUrl = URL.createObjectURL(imageFile);
+    //console.log("tempURL: " + imageTempUrl);
+    this.setState({fileToUpload : imageFile, educandoFoto : imageTempUrl});
+  }
 
   addEducando(){
     const validResult = this.validForm();
@@ -84,16 +99,49 @@ class NewEducandoModal extends React.Component{
         showToast(sameChildNameError[languageCode], 5000, toastTypes.ERROR);
       }
       else{
-        addEducandoToParent(firebase_auth.currentUser.email, this.state.educando, this.state.educandoFoto)
-          .then((updatedParent) => {
-            const upParentString = JSON.stringify(updatedParent);
-            console.log("updatedParent recebido depois do update -> " + upParentString);
-            // update user data in localstorage
-            window.localStorage.setItem("userDoc", upParentString);
-            this.closeModal();
-            this.props.componentDidMount(true);
-            showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
-          });
+        const closeModal = this.closeModal;
+        const myComponentDidMount = this.props.componentDidMount;
+        let myState = {...this.state};
+
+        // if photo changed, upload it as well
+        if(this.state.educandoFoto!==this.state.originalPhoto){
+          const newPhotoFile = this.state.fileToUpload;
+
+          const uploadTask = uploadChildPhoto(newPhotoFile);
+          uploadTask
+            .then((snapshot) => {
+              // Handle successful uploads on complete
+              // get the download URL
+              snapshot.ref.getDownloadURL().then(function (downloadURL) {
+                addEducandoToParent(firebase_auth.currentUser.email, myState.educando, downloadURL)
+                  .then((updatedParent) => {
+                    const upParentString = JSON.stringify(updatedParent);
+                    console.log("updatedParent recebido depois do update -> " + upParentString);
+                    // update user data in localstorage
+                    window.localStorage.setItem("userDoc", upParentString);
+                    closeModal();
+                    myComponentDidMount(true);
+                    showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                  });
+              });
+            })
+            .catch((error) => {
+              console.log("Photo upload failed: " + JSON.stringify(error));
+              showToast(childAddPhotoError[languageCode], 5000, toastTypes.ERROR);
+            });
+        }
+        else{
+          addEducandoToParent(firebase_auth.currentUser.email, myState.educando, myState.educandoFoto)
+            .then((updatedParent) => {
+              const upParentString = JSON.stringify(updatedParent);
+              console.log("updatedParent recebido depois do update -> " + upParentString);
+              // update user data in localstorage
+              window.localStorage.setItem("userDoc", upParentString);
+              closeModal();
+              myComponentDidMount(true);
+              showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+            });
+        }
       }
 
     }
@@ -277,12 +325,16 @@ class NewEducandoModal extends React.Component{
                       alignItems: "center",
                     }}
                   >
-                    <img
-                      className="rounded-circle"
-                      src={this.state.educandoFoto}
-                      alt={newChild[languageCode]}
-                      width="110"
-                    />
+                    <div style={{
+                      width : "110px",
+                      height: "110px",
+                      backgroundImage: "url(" + this.state.educandoFoto + ")",
+                      backgroundPosition : "center",
+                      borderRadius: "50%",
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat"
+                    }}>
+                    </div>
                   </Row>
                   <div style={{ margin: "10px" }} />
                   <Row
@@ -292,14 +344,23 @@ class NewEducandoModal extends React.Component{
                       alignItems: "center",
                     }}
                   >
-                    <Button
-                      size="sm"
-                      theme="light"
-                      id="new_case"
-                      onClick={() => {}}
-                    >
-                      <span className="material-icons md-24">add_a_photo</span>
-                    </Button>
+                    <Row style={{justifyContent: "center", alignItems: "center", marginBottom: "5px"}}>
+                      <Button
+                        size="sm"
+                        theme="light"
+                        id="add-photo-button"
+                      >
+                        <label htmlFor="file-upload-input" style={{cursor: "pointer", padding:"0px", margin : "0px"}}>
+                          <span className="material-icons md-24">add_a_photo</span>
+                        </label>
+                      </Button>
+                      <input
+                        id="file-upload-input"
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        style={{display: "none", margin: "0px"}}
+                        onChange={this.handleChangePhoto}/>
+                    </Row>
                   </Row>
 
                   <Form>

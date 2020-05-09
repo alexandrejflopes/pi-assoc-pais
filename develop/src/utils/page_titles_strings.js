@@ -33,5 +33,10 @@ export const submitChild = {
   "pt_PT" : "Criar educando"
 };
 
+export const newProfilePhoto = {
+  "pt_PT" : "Foto de perfil"
+};
+
+
 
 
