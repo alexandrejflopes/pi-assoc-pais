@@ -93,8 +93,6 @@ class EducandosModal extends React.Component {
         showToast(sameChildNameError[languageCode], 5000, toastTypes.ERROR);
       }
       else{
-
-
         const closeModal = this.closeModal;
         const myComponentDidMount = this.props.componentDidMount;
         let myState = {...this.state};
@@ -102,9 +100,10 @@ class EducandosModal extends React.Component {
         const originalPhotoURL = this.state.oldEducando[studentsParameters.PHOTO[languageCode]];
         const newPhotoFile = this.state.fileToUpload;
 
+        const previousName = this.state.oldEducando[studentsParameters.NAME[languageCode]];
+
         // if photo changed, upload it as well
         if(this.state.newPhoto!==originalPhotoURL){
-
           /*
           * this will catch the error of trying to get the reference for the
           * defaultAvatar reference, which does not exist
@@ -124,7 +123,7 @@ class EducandosModal extends React.Component {
                       let updatedEducando = {...myState.educando};
                       updatedEducando[studentsParameters.PHOTO[languageCode]] = downloadURL;
 
-                      updateEducando(firebase_auth.currentUser.email, updatedEducando)
+                      updateEducando(firebase_auth.currentUser.email, updatedEducando, previousName)
                         .then((updatedParent) => {
                           const upParentString = JSON.stringify(updatedParent);
                           console.log("updatedParent recebido depois do update educando -> " + upParentString);
@@ -163,7 +162,7 @@ class EducandosModal extends React.Component {
                   let updatedEducando = {...myState.educando};
                   updatedEducando[studentsParameters.PHOTO[languageCode]] = downloadURL;
 
-                  updateEducando(firebase_auth.currentUser.email, updatedEducando)
+                  updateEducando(firebase_auth.currentUser.email, updatedEducando, previousName)
                     .then((updatedParent) => {
                       const upParentString = JSON.stringify(updatedParent);
                       console.log("updatedParent recebido depois do update educando -> " + upParentString);
@@ -187,7 +186,8 @@ class EducandosModal extends React.Component {
           }
         }
         else{
-          updateEducando(firebase_auth.currentUser.email, this.state.educando)
+          const previousName = this.state.oldEducando[studentsParameters.NAME[languageCode]];
+          updateEducando(firebase_auth.currentUser.email, this.state.educando, previousName)
             .then((updatedParent) => {
               const upParentString = JSON.stringify(updatedParent);
               console.log("updatedParent recebido depois do update educando -> " + upParentString);
@@ -294,16 +294,41 @@ class EducandosModal extends React.Component {
 
   deleteEducando(){
     const confirmation = window.confirm(confirmDeleteChild[languageCode]);
+    const photoUrl = this.state.educando[studentsParameters.PHOTO[languageCode]];
     if(confirmation){
       deleteEducandoFromParent(firebase_auth.currentUser.email, this.state.educando[studentsParameters.NAME[languageCode]])
         .then((updatedParent) => {
-          const upParentString = JSON.stringify(updatedParent);
-          console.log("updatedParent recebido depois do delete educando -> " + upParentString);
-          // update user data in localstorage
-          window.localStorage.setItem("userDoc", upParentString);
-          this.closeModal();
-          this.props.componentDidMount(true);
-          showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+
+          // delete its photo from storage
+          try{
+            let photoRef = storage.refFromURL(photoUrl);
+            // delete current photo to save the new and not cluttering the storage
+            photoRef.delete()
+              .then(() => {
+                const upParentString = JSON.stringify(updatedParent);
+                console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+                // update user data in localstorage
+                window.localStorage.setItem("userDoc", upParentString);
+                this.closeModal();
+                this.props.componentDidMount(true);
+                showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+              })
+              .catch(() => {
+                console.log("erro no delete");
+                showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+                this.restoreOriginalPhoto();
+              });
+          }
+          catch(e){
+            const upParentString = JSON.stringify(updatedParent);
+            console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+            // update user data in localstorage
+            window.localStorage.setItem("userDoc", upParentString);
+            this.closeModal();
+            this.props.componentDidMount(true);
+            showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+          }
+
         })
         .catch((error) => {
           showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
@@ -527,7 +552,7 @@ class EducandosModal extends React.Component {
                         onChange={this.handleChangeParam}
                         invalid={this.state.feedbacks[studentsParameters.NAME[languageCode]]}
                         required
-                        disabled
+                        disabled={this.state.disabled ? "disabled" : ""}
                       />
                       <FormFeedback
                         id="childNameFeedback"

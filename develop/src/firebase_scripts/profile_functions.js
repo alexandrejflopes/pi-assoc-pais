@@ -135,7 +135,7 @@ function mapParamsToInputType(paramsDoc){
 }
 
 
-function updateEducando(parentEmail, educandoDoc){
+function updateEducando(parentEmail, educandoDoc, oldName){
 
   console.log("educandoDoc -> " + JSON.stringify(educandoDoc));
 
@@ -145,7 +145,7 @@ function updateEducando(parentEmail, educandoDoc){
   for(let i in children){
     let currentChild = children[i];
     // find child with that name to update it
-    if(currentChild[studentsParameters.NAME[languageCode]]===educandoDoc[studentsParameters.NAME[languageCode]]){
+    if(currentChild[studentsParameters.NAME[languageCode]]===oldName){
       children[i] = educandoDoc;
       break;
     }

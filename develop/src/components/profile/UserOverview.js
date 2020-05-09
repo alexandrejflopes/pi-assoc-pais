@@ -63,10 +63,8 @@ class UserOverview extends React.Component {
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount(updating) {
     //this._isMounted = true;
-
     if(updating){
       const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
-
       if(localUser!=null){
         this.setState({parent : localUser});
       }

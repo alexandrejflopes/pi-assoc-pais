@@ -24,7 +24,10 @@ import {
   changesCommitSuccess,
   childDeleteError,
   childDeleteSuccess,
-  fillRequiredFieldMessage, parentUpdateError, parentUpdateSuccess,
+  fillRequiredFieldMessage,
+  invalidZipMessage,
+  parentUpdateError,
+  parentUpdateSuccess,
   provideRequiredFieldsMessage
 } from "../../utils/messages_strings";
 import {firebase_auth} from "../../firebase-config";
@@ -32,6 +35,7 @@ import {updateParent} from "../../firebase_scripts/profile_functions";
 import UserOverview from "./UserOverview";
 import UsersOverview from "../blog/UsersOverview";
 import UserActions from "../layout/MainNavbar/NavbarNav/UserActions";
+import {validZip} from "../../firebase_scripts/installation";
 
 
 class UserInfo extends React.Component {
@@ -57,7 +61,7 @@ class UserInfo extends React.Component {
       // feedbacks
       feedbacks : {
         [parentsParameters.NAME[languageCode]] : false,
-        [parentsParameters.EMAIL[languageCode]] : false,
+        //[parentsParameters.EMAIL[languageCode]] : false,
         [parentsParameters.PHONE[languageCode]] : false,
         [parentsParameters.JOB[languageCode]] : false,
         [parentsParameters.STREET[languageCode]] : false,
@@ -136,18 +140,26 @@ class UserInfo extends React.Component {
 
     // check if all inputs are filled
     let changedFeedbacks = {...this.state.feedbacks};
-    let allFilled = true;
+    let allValid = true;
 
     for(let field in this.state.feedbacks){
       const value = this.state.parent[field];
       if(value==null || value.trim()===""){
         changedFeedbacks[field] = true;
-        allFilled = false;
+        allValid = false;
       }
     }
+
+    const zip = this.state.parent[parentsParameters.ZIPCODE[languageCode]];
+    if(!validZip(zip)){
+      changedFeedbacks[parentsParameters.ZIPCODE[languageCode]] = true;
+      allValid = false;
+      showToast(invalidZipMessage[languageCode], 5000, toastTypes.ERROR);
+    }
+
     this.state.feedbacks = changedFeedbacks;
     this.forceUpdate();
-    return allFilled;
+    return allValid;
   }
 
   resetFeedbacks(){
@@ -267,7 +279,7 @@ class UserInfo extends React.Component {
                 <Form>
                   <Row form>
                     {/* First Name */}
-                    <Col md="6" className="form-group">
+                    <Col md="12" className="form-group">
                       <label htmlFor="parentName">{parentsParameters.NAME[languageCode]}</label>
                       <FormInput
                         required
@@ -285,7 +297,7 @@ class UserInfo extends React.Component {
                       />
                     </Col>
                     {/* Email */}
-                    <Col md="6" className="form-group">
+                    {/*<Col md="6" className="form-group">
                       <label htmlFor="parentEmail">{parentsParameters.EMAIL[languageCode]}</label>
                       <FormInput
                         required
@@ -300,7 +312,7 @@ class UserInfo extends React.Component {
                         invalid={this.state.feedbacks[parentsParameters.EMAIL[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
-                    </Col>
+                    </Col>*/}
                   </Row>
                   <Row form>
                     {/* Phone */}

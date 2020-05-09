@@ -37,8 +37,6 @@ class ParentPhotoModal extends React.Component {
       fileToUpload : null
     };
 
-    console.log("state incial: " + JSON.stringify(this.state));
-
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.handleChangePhoto = this.handleChangePhoto.bind(this);
@@ -51,7 +49,7 @@ class ParentPhotoModal extends React.Component {
 
   updatePhoto(){
 
-    console.log("state antes do update: " + JSON.stringify(this.state));
+    //console.log("state antes do update: " + JSON.stringify(this.state));
 
     // if the photo is the same, do nothing
     if(this.state.newPhoto===this.state.originalPhoto){
@@ -87,7 +85,7 @@ class ParentPhotoModal extends React.Component {
                 updateParent(firebase_auth.currentUser.email, newPhotoField)
                   .then((updatedParent) => {
                     const upParentString = JSON.stringify(updatedParent);
-                    console.log("updatedParent recebido depois do update foto -> " + upParentString);
+                    //console.log("updatedParent recebido depois do update foto -> " + upParentString);
                     // update user data in localstorage
                     window.localStorage.setItem("userDoc", upParentString);
                     closeModalAfterTheUpdate();
@@ -160,12 +158,8 @@ class ParentPhotoModal extends React.Component {
 
 
   handleChangePhoto(e) {
-    console.log("state antes: " + JSON.stringify(this.state));
-    console.log("file: " + e.target.files[0].name);
     const imageFile = e.target.files[0];
-    console.log("imageFile: " + imageFile);
     const imageTempUrl = URL.createObjectURL(imageFile);
-    console.log("tempURL: " + imageTempUrl);
     this.setState({fileToUpload : imageFile, newPhoto : imageTempUrl});
   }
 
@@ -187,7 +181,7 @@ class ParentPhotoModal extends React.Component {
   restoreOriginalPhoto() {
     const originalPhoto = this.state.originalPhoto;
     this.setState({ newPhoto: originalPhoto });
-    console.log("first photo restored: " + JSON.stringify(originalPhoto));
+    //console.log("first photo restored: " + JSON.stringify(originalPhoto));
   }
 
 

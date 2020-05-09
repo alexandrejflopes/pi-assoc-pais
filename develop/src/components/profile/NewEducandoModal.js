@@ -75,16 +75,11 @@ class NewEducandoModal extends React.Component{
     this.validForm = this.validForm.bind(this);
     this.resetFeedbacks = this.resetFeedbacks.bind(this);
 
-    console.log("state no incio: " + JSON.stringify(this.state));
   }
 
   handleChangePhoto(e) {
-    //console.log("state antes: " + JSON.stringify(this.state));
-    //console.log("file: " + e.target.files[0].name);
     const imageFile = e.target.files[0];
-    //console.log("imageFile: " + imageFile);
     const imageTempUrl = URL.createObjectURL(imageFile);
-    //console.log("tempURL: " + imageTempUrl);
     this.setState({fileToUpload : imageFile, educandoFoto : imageTempUrl});
   }
 
@@ -268,7 +263,7 @@ class NewEducandoModal extends React.Component{
         this.state.feedbacks = updatedFeedbacks;
         const feedbackIdx = "child" + param + "Feedback";
 
-        console.log("state com nova feedback entry -> " + JSON.stringify(this.state));
+        //console.log("state com nova feedback entry -> " + JSON.stringify(this.state));
 
         const newInput = (
           <FormGroup>
