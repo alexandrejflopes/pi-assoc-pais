@@ -143,6 +143,12 @@ export const confirmDeleteChild = {
     "Esta ação não é revertível, a menos que volte a adicionar o educando à plataforma."
 };
 
+export const confirmUpdateEmail = {
+  "pt_PT" : "Tem a certeza que pretender atualizar o seu email?\n" +
+    "Com esta alteração deixa de se conseguir autenticar com o email atual, passando a ser " +
+    "usado o novo para o efeito."
+};
+
 // ------- SUCCESS
 
 export const parentUpdatePhotoSuccess = {

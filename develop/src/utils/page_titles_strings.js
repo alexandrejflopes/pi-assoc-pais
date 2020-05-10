@@ -13,6 +13,14 @@ export const profileSettingsPageTitle = {
   "pt_PT": "Definições avançadas"
 };
 
+export const profileSettingsDataFormTitle = {
+  "pt_PT" : "Dados da conta"
+};
+
+export const profileSettingsProvidersSectionTitle = {
+  "pt_PT" : "Associar outras contas"
+};
+
 export const profilePageTitle = {
   "pt_PT": "O meu perfil"
 };

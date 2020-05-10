@@ -14,46 +14,31 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode, newParametersEntities,
-  notAvailableDesignation,
-  parentsParameters, showToast, studentsParameters, toastTypes
+  languageCode,
+  parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
 import {
   saveChanges,
   cancel,
-  updateProfile,
   changeEmail
 } from "../../utils/common_strings";
-import {profileInfoFormTitle} from "../../utils/page_titles_strings";
 import {
-  changesCommitSuccess,
-  childDeleteError,
-  childDeleteSuccess,
-  fillRequiredFieldMessage,
-  invalidZipMessage,
-  parentUpdateError,
-  parentUpdateSuccess,
-  provideRequiredFieldsMessage
+  profileSettingsDataFormTitle
+} from "../../utils/page_titles_strings";
+import {
+  provideRequiredFieldsMessage, confirmUpdateEmail
 } from "../../utils/messages_strings";
-import {firebase_auth} from "../../firebase-config";
-import {updateParent} from "../../firebase_scripts/profile_functions";
-import UserOverview from "./UserOverview";
-import UsersOverview from "../blog/UsersOverview";
-import UserActions from "../layout/MainNavbar/NavbarNav/UserActions";
-import {validZip} from "../../firebase_scripts/installation";
 
 
 class AdvancedSettings extends React.Component {
   constructor(props) {
     super(props);
 
-    let parent, newParamsTypesD = null;
-    const noValueString = notAvailableDesignation[languageCode];
-    const infoFormTitle = profileInfoFormTitle[languageCode];
+    let parent = null;
+    const infoFormTitle = profileSettingsDataFormTitle[languageCode];
 
     if(this.props.user!=null){
       parent = this.props.user;
-      newParamsTypesD = this.props.newParamsTypesD;
     }
 
     //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
@@ -62,7 +47,6 @@ class AdvancedSettings extends React.Component {
       parent : parent,
       editing : false,
       disabled: true,
-      newParamsTypesD : newParamsTypesD,
       // feedbacks
       feedbacks : {
         [parentsParameters.EMAIL[languageCode]] : false,
@@ -100,6 +84,7 @@ class AdvancedSettings extends React.Component {
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
     else{
+      const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
       this.cancelEditing();
     }
   }

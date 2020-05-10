@@ -1,8 +1,8 @@
 import React from "react";
-import {Container, Row, Col, Button} from "shards-react";
+import {Container, Row, Col, Button, DropdownItem} from "shards-react";
 
 import PageTitle from "../components/common/PageTitle";
-import { Redirect } from "react-router-dom";
+import {Link, Redirect} from "react-router-dom";
 import { firebase_auth } from "../firebase-config";
 import { languageCode, parentsParameters } from "../utils/general_utils";
 import {
@@ -11,6 +11,7 @@ import {
 } from "../utils/page_titles_strings";
 import { loadingInfo } from "../utils/messages_strings";
 import AdvancedSettings from "../components/profile/AdvancedSettings";
+import LinkProviders from "../components/profile/LinkProviders";
 
 class ProfileSettings extends React.Component {
   constructor(props) {
@@ -90,12 +91,18 @@ class ProfileSettings extends React.Component {
               className="ml-sm-auto mr-sm-auto"
             />
           </Row>
-          <Row noGutters className="page-header" style={{ marginTop: "10px", marginBottom: "20px" }}>
-            <Button pill onClick={() => {window.location.href="profile"}}>&larr; {goBackToProfile[languageCode]}</Button>
-          </Row>
+          {/*<Row noGutters className="page-header" style={{ marginTop: "10px", marginBottom: "20px" }}>
+            <Button pill tag={Link} to="/profile">&larr; {goBackToProfile[languageCode]}</Button>
+          </Row>*/}
           <Row>
-            <Col lg="9" md="12">
+            <Col lg="6" md="12">
               <AdvancedSettings
+                user={this.state.userDoc}
+                componentDidMount={this.componentDidMount}
+              />
+            </Col>
+            <Col lg="6" md="12">
+              <LinkProviders
                 user={this.state.userDoc}
                 componentDidMount={this.componentDidMount}
               />
