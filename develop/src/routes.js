@@ -24,6 +24,7 @@ import ApprovalPage from "./views/Approval";
 import NewAssocChoicePage from "./views/NewAssocChoicePage";
 import AssocConfigurationNew from "./views/AssocConfigurationNew";
 import Profile from "./views/Profile";
+import ProfileSettings from "./views/ProfileSettings";
 
 export default [
   {
@@ -129,4 +130,11 @@ export default [
       : DefaultLayout,
     component: Profile,
   },
+  {
+    path: "/profile-settings",
+    layout: window.localStorage.getItem("admin")
+      ? DefaultAdminLayout
+      : DefaultLayout,
+    component: ProfileSettings,
+  }
 ];

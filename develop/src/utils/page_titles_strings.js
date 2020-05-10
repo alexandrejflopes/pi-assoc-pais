@@ -1,9 +1,17 @@
 /*
-* file to save page titles
+* file to save page titles and subtitles
 * */
 
 
 // -----------------------------------  PROFILE  -----------------------------------
+
+export const goBackToProfile = {
+  "pt_PT" : "Voltar ao perfil"
+};
+
+export const profileSettingsPageTitle = {
+  "pt_PT": "Definições avançadas"
+};
 
 export const profilePageTitle = {
   "pt_PT": "O meu perfil"

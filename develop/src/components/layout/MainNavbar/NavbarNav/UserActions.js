@@ -126,7 +126,7 @@ export default class UserActions extends React.Component {
           <DropdownItem tag={Link} to="profile">
             <i className="material-icons">&#xE7FD;</i> {profilePageTitle[languageCode]}
           </DropdownItem>
-          <DropdownItem tag={Link} to="edit-user-profile">
+          <DropdownItem tag={Link} to="profile-settings">
             <i className="material-icons">&#xE8B8;</i> {profileSettings[languageCode]} {/*TODO: to export its data and delete account*/}
           </DropdownItem>
           <DropdownItem divider />

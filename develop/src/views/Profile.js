@@ -39,7 +39,7 @@ class Profile extends React.Component {
       newParamsInputTypes: null,
     };
 
-    //this.componentDidMount = this.componentDidMount.bind(this);
+
     this.saveNewParams = this.saveNewParams.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
@@ -170,7 +170,7 @@ class Profile extends React.Component {
         <Container fluid className="main-content-container px-4">
           <Row noGutters className="page-header py-4">
             <PageTitle
-              title="O meu perfil"
+              title={profilePageTitle[languageCode]}
               md="12"
               className="ml-sm-auto mr-sm-auto"
             />

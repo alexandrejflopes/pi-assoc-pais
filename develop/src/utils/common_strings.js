@@ -26,6 +26,10 @@ export const close = {
   "pt_PT" : "Fechar"
 };
 
+export const changeEmail = {
+  "pt_PT" : "Mudar email"
+};
+
 
 export const updateInfo = {
   "pt_PT" : "Atualizar informações"
