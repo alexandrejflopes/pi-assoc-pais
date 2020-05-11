@@ -45,7 +45,7 @@ class Profile extends React.Component {
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  
+
   componentDidMount(updating) {
 
     if(updating){
@@ -65,10 +65,7 @@ class Profile extends React.Component {
 
   if(currentUser!=null){
     if(localUser!=null){
-      if (
-          localUser[parentsParameters.EMAIL[languageCode]] !==
-          firebase_auth.currentUser.email
-      ) {
+      if (localUser[parentsParameters.EMAIL[languageCode]] !== firebase_auth.currentUser.email) {
           const userPromise = fetchUserDoc(this_.state.userEmail);
 
           userPromise
@@ -85,19 +82,16 @@ class Profile extends React.Component {
             })
             .catch((error) => {
               console.log("1. error userDoc: " + JSON.stringify(error));
-              /*
-              * TODO: estava a entrar aqui mesmo depois de ter entrado no then...
-              *  Então voltei a chamar a função para 'recarregar'
-              * */
-              this.componentDidMount();
+              this_.componentDidMount();
             });
-        } else {
+      }
+      else {
           console.log("atualizar state com localUser");
           this_.saveNewParams();
           this_.setState({ userDoc: localUser });
-        }
       }
-      else {
+      }
+    else {
         console.log("não há user no LS, buscar novo");
         const userPromise = fetchUserDoc(this_.state.userEmail);
 
@@ -115,17 +109,14 @@ class Profile extends React.Component {
           })
           .catch((error) => {
             console.log("2. error userDoc: " + JSON.stringify(error));
-            /*
-              * TODO: estava a entrar aqui mesmo depois de ter entrado no then...
-              *  Então voltei a chamar a função para 'recarregar'
-              * */
-            this.componentDidMount();
+            this_.componentDidMount();
           });
       }
-      }
-      }
-    }
   }
+
+
+}
+
 
   componentWillUnmount() {
     this._isMounted = false;

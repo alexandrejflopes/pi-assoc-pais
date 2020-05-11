@@ -48,6 +48,7 @@ async function fetchUserDoc(email) {
 function userLogOut() {
   window.localStorage.removeItem("userDoc");
   window.localStorage.removeItem("newParamsInputTypes");
+  //window.localStorage.removeItem("emailForSignIn");
   firebase_auth
     .signOut()
     .then(function () {
