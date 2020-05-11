@@ -15,9 +15,11 @@ import {
   languageCode,
   parentsParameters, studentsParameters
 } from "../../utils/general_utils";
-import {saveChanges} from "../../utils/common_strings";
+import {cancel, saveChanges, updateProfile} from "../../utils/common_strings";
 import {profileMyChildren} from "../../utils/page_titles_strings";
 import EducandosModal from "./EducandosModal";
+import NewEducandoModal from "./NewEducandoModal";
+import ParentPhotoModal from "./ParentPhotoModal";
 
 class UserOverview extends React.Component {
 
@@ -26,29 +28,17 @@ class UserOverview extends React.Component {
 
     //console.log("overview props: " + JSON.stringify(props));
 
-    let name, photo, assocNumber, email, phone, role, children, newParamsTypes = null;
+    let parent, newParamsTypes = null;
 
     if(this.props.user!=null){
-      name = this.props.user[parentsParameters.NAME[languageCode]];
-      photo = this.props.user[parentsParameters.PHOTO[languageCode]];
-      assocNumber = this.props.user[parentsParameters.ASSOC_NUMBER[languageCode]];
-      email = this.props.user[parentsParameters.EMAIL[languageCode]];
-      phone = this.props.user[parentsParameters.PHONE[languageCode]];
-      role = this.props.user[parentsParameters.ROLE[languageCode]];
-      children = this.props.user[parentsParameters.CHILDREN[languageCode]];
+      parent = this.props.user;
       newParamsTypes = this.props.newParamsTypes;
     }
 
     this.state = {
-      userName : name!=null ? name : "",
-      userPhoto : photo!=null ? photo : "",
-      userAssocNumber : assocNumber!=null ? assocNumber : "",
-      userEmail : email!=null ? email : "",
-      userPhone : phone!=null ? phone : "",
-      userRole : role!=null ? role : "",
-      userEducandos : children!=null ? children : [],
-      newParamsTypes : newParamsTypes
-
+      parent : parent,
+      newParamsTypes : newParamsTypes,
+      editingPhoto : false
       /*educandosTeste : [
         {
           id: 0,
@@ -63,12 +53,22 @@ class UserOverview extends React.Component {
           schoolYear: "8"
         }
       ]*/
-    }
+    };
+
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.cancelEditingPhoto = this.cancelEditingPhoto.bind(this);
+    this.editPhoto = this.editPhoto.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  componentDidMount() {
-    this._isMounted = true;
+  componentDidMount(updating) {
+    //this._isMounted = true;
+    if(updating){
+      const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+      if(localUser!=null){
+        this.setState({parent : localUser});
+      }
+    }
 
   }
 
@@ -79,25 +79,57 @@ class UserOverview extends React.Component {
   /*********************************** HANDLERS ***********************************/
 
 
+  editPhoto() {
+    this.setState({ editingPhoto: true });
+    document.getElementById("add-photo-button").onclick(function(e){
+      e.preventDefault();
+      document.getElementById("file-upload-input").trigger('click');
+    });
+  }
+
+
+  cancelEditingPhoto() {
+    this.setState({ editingPhoto: false });
+  }
+
   render() {
-    const { educandosTeste, userEducandos } = this.state;
+    const { educandosTeste } = this.state;
+    const userEducandos = this.state.parent[parentsParameters.CHILDREN[languageCode]];
 
     //console.log("userEducandos: " + JSON.stringify(userEducandos));
 
     return (
       <Card small className="mb-4 pt-3">
         <CardHeader className="border-bottom text-center">
-          <div className="mb-3 mx-auto">
+          <Row style={{
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+            <div style={{
+              width : "110px",
+              height: "110px",
+              backgroundImage: "url(" + this.state.parent[parentsParameters.PHOTO[languageCode]] + ")",
+              backgroundPosition : "center",
+              borderRadius: "50%",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat"
+            }}>
+            </div>
+            {/*
             <img
               className="rounded-circle"
-              src={this.state.userPhoto}
-              alt={this.state.userName}
+              src={this.state.parent[parentsParameters.PHOTO[languageCode]]}
+              alt={this.state.parent[parentsParameters.NAME[languageCode]]}
               width="110"
             />
-          </div>
-          <h4 className="mb-0">{this.state.userName}</h4>
-          <span className="text-muted d-block mb-2">{this.state.userEmail}</span>
-          <span className="text-muted d-block mb-2">{this.state.userAssocNumber} | {this.state.userRole}</span>
+            */}
+          </Row>
+          <div style={{ margin: "10px" }} />
+          <ParentPhotoModal photo={this.state.parent[parentsParameters.PHOTO[languageCode]]} componentDidMount={this.componentDidMount}/>
+          <h4 className="mb-0">{this.state.parent[parentsParameters.NAME[languageCode]]}</h4>
+          <span className="text-muted d-block mb-2">{this.state.parent[parentsParameters.EMAIL[languageCode]]}</span>
+          <span className="text-muted d-block mb-2">{this.state.parent[parentsParameters.ASSOC_NUMBER[languageCode]]} | {this.state.parent[parentsParameters.ROLE[languageCode]]}</span>
         </CardHeader>
         <ListGroup flush>
           <ListGroupItem className="px-4">
@@ -106,7 +138,10 @@ class UserOverview extends React.Component {
                 <h5 className="mb-0 float-left">{profileMyChildren[languageCode]}</h5>
               </Col>
               <Col lg="2" md="2" sm="2">
+                <NewEducandoModal newParamsTypesN={this.state.newParamsTypes} componentDidMount={this.componentDidMount}/>
+                {/*
                 <Button size="sm" className="float-right" onClick={() => {}}><span className="material-icons" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>person_add</span></Button>
+                */}
               </Col>
             </Row>
           </ListGroupItem>
@@ -114,7 +149,7 @@ class UserOverview extends React.Component {
             <Row>
               {userEducandos.length === 0 ? <Col/> :
                 userEducandos.map((student,idx) => (
-                  <EducandosModal educando={userEducandos[idx]} indice={idx} newParamsTypes={this.state.newParamsTypes}/>
+                  <EducandosModal key={student[studentsParameters.NAME[languageCode]]} educando={userEducandos[idx]} indice={idx} newParamsTypes={this.state.newParamsTypes} componentDidMount={this.componentDidMount}/>
                   /*<Col sm="12" lg="6" md="12">
                     <ListGroupReact flush style={{ textAlign: "center" }}>
                       <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>

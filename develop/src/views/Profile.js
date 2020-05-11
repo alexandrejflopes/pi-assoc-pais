@@ -20,8 +20,7 @@ class Profile extends React.Component {
   constructor(props) {
     super(props);
 
-    let userEmail,
-      userProvided = null;
+    let userEmail, userProvided = null;
     if (this.props.location.state != null) {
       userEmail = this.props.location.state.userEmail;
       userProvided = this.props.location.state.userProvided;
@@ -40,34 +39,41 @@ class Profile extends React.Component {
       newParamsInputTypes: null,
     };
 
-    //this.componentDidMount = this.componentDidMount.bind(this);
+
     this.saveNewParams = this.saveNewParams.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  componentDidMount() {
-    this._isMounted = true;
+  
+  componentDidMount(updating) {
+
+    if(updating){
+      const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
+      if(localUser!=null){
+        this.setState({userDoc : localUser});
+      }
+    }
+    //this._isMounted = true;
     const this_ = this;
+
     console.log("DID MOUNT!");
 
-    if (firebase_auth.currentUser != null) {
-      console.log("currentUser: " + JSON.stringify(firebase_auth.currentUser));
-      console.log(
-        "localUser: " +
-          JSON.stringify(JSON.parse(window.localStorage.getItem("userDoc")))
-      );
-      if (window.localStorage.getItem("userDoc") != null) {
-        let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const currentUser = firebase_auth.currentUser;
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
-        if (
+  if(currentUser!=null){
+    if(localUser!=null){
+      if (
           localUser[parentsParameters.EMAIL[languageCode]] !==
           firebase_auth.currentUser.email
-        ) {
+      ) {
           const userPromise = fetchUserDoc(this_.state.userEmail);
 
           userPromise
             .then((result) => {
-              console.log("Result userDoc: " + JSON.stringify(result));
+              console.log("1. Result userDoc: " + JSON.stringify(result));
               if (result.error == null) {
                 // no error
                 console.log("atualizar state com user doc recebido");
@@ -78,20 +84,26 @@ class Profile extends React.Component {
               }
             })
             .catch((error) => {
-              console.log("error userDoc: " + JSON.stringify(error));
+              console.log("1. error userDoc: " + JSON.stringify(error));
+              /*
+              * TODO: estava a entrar aqui mesmo depois de ter entrado no then...
+              *  Então voltei a chamar a função para 'recarregar'
+              * */
+              this.componentDidMount();
             });
         } else {
           console.log("atualizar state com localUser");
           this_.saveNewParams();
           this_.setState({ userDoc: localUser });
         }
-      } else {
+      }
+      else {
         console.log("não há user no LS, buscar novo");
         const userPromise = fetchUserDoc(this_.state.userEmail);
 
         userPromise
           .then((result) => {
-            console.log("Result userDoc: " + JSON.stringify(result));
+            console.log("2. Result userDoc: " + JSON.stringify(result));
             if (result.error == null) {
               // no error
               console.log("atualizar state com user doc recebido");
@@ -102,8 +114,15 @@ class Profile extends React.Component {
             }
           })
           .catch((error) => {
-            console.log("error userDoc: " + JSON.stringify(error));
+            console.log("2. error userDoc: " + JSON.stringify(error));
+            /*
+              * TODO: estava a entrar aqui mesmo depois de ter entrado no then...
+              *  Então voltei a chamar a função para 'recarregar'
+              * */
+            this.componentDidMount();
           });
+      }
+      }
       }
     }
   }
@@ -116,15 +135,13 @@ class Profile extends React.Component {
 
   saveNewParams() {
     console.log("entrei nos newParamsTypes");
-    if (window.localStorage.getItem("newParamsInputTypes") != null) {
-      const newParamsInputTypes = JSON.parse(
-        window.localStorage.getItem("newParamsInputTypes")
-      );
-      console.log(
-        "recebi newParamsTypes: " + JSON.stringify(newParamsInputTypes)
-      );
+    const newParamsInputTypes = JSON.parse(window.localStorage.getItem("newParamsInputTypes"));
+    console.log("newParamsTypes no LS: " + JSON.stringify(newParamsInputTypes));
+    if (newParamsInputTypes != null) {
+      console.log("recebi newParamsTypes: " + JSON.stringify(newParamsInputTypes));
       this.setState({ newParamsInputTypes: newParamsInputTypes });
-    } else {
+    }
+    else {
       const paramsPromise = getNewParams(this.state.userEmail);
 
       paramsPromise
@@ -135,14 +152,8 @@ class Profile extends React.Component {
             const newParamsInputTypes = mapParamsToInputType(result);
             this.setState({ newParamsInputTypes: newParamsInputTypes });
 
-            console.log(
-              "newParamsTypes do LocalStorage: " +
-                JSON.stringify(newParamsInputTypes)
-            );
-            window.localStorage.setItem(
-              "newParamsInputTypes",
-              JSON.stringify(newParamsInputTypes)
-            );
+            console.log("newParamsTypes do LocalStorage: " + JSON.stringify(newParamsInputTypes));
+            window.localStorage.setItem("newParamsInputTypes", JSON.stringify(newParamsInputTypes));
           }
         })
         .catch((error) => {
@@ -152,22 +163,15 @@ class Profile extends React.Component {
   }
 
   render() {
-    if (
-      this.state.userEmail == null ||
-      !this.state.userProvided ||
-      firebase_auth.currentUser == null
-    ) {
+    if (this.state.userEmail == null || !this.state.userProvided || firebase_auth.currentUser == null) {
       return <Redirect to="/login" />;
-    } else if (
-      this.state.userDoc == null ||
-      Object.keys(this.state.userDoc).length === 0 ||
-      this.state.newParamsInputTypes == null
-    ) {
+    }
+    else if (this.state.userDoc == null || Object.keys(this.state.userDoc).length === 0 || this.state.newParamsInputTypes == null) {
       return (
         <Container fluid className="main-content-container px-4">
           <Row noGutters className="page-header py-4">
             <PageTitle
-              title="O meu perfil"
+              title={profilePageTitle[languageCode]}
               md="12"
               className="ml-sm-auto mr-sm-auto"
             />
@@ -210,6 +214,7 @@ class Profile extends React.Component {
               <UserInfo
                 userD={this.state.userDoc}
                 newParamsTypesD={this.state.newParamsInputTypes}
+                componentDidMount={this.componentDidMount}
               />
             </Col>
           </Row>

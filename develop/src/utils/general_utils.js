@@ -6,10 +6,11 @@
 // --------------------------------------------- IMPORTS ----------------------------------------------
 import MD5 from "crypto-js/md5";
 import defaultLogoFile from "../assets/assoc-pais-logo-default.png";
+import {Bounce, toast} from "react-toastify";
+import {firebase_auth} from "../firebase-config";
 
 // -------------------------------------------- CONSTANTS --------------------------------------------
 
-const regular_role_PT = "Associado(a)";
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
 const defaultAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000";
 /*
@@ -17,6 +18,10 @@ const defaultAvatar = "https://www.gravatar.com/avatar/0000000000000000000000000
 * that shall be in new parameters's JSON file*/
 const membersImportFileNewParametersStartIndex = 13;
 const studentsImportFileNewParametersStartIndex = 4;
+
+export const regular_role = {
+  "pt_PT" : "Associado(a)"
+};
 
 const membersCSVparamsIndexes = {
     assoc_num_index : 0,
@@ -55,6 +60,8 @@ const zipCodeRegexes = {
     regex : new RegExp(/\d{4}\-\d{3}/)
   }
 };
+
+export const emailRegex = new RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
 
 const notAvailableDesignation = {
   "pt_PT" : "ND" // nao determinado/disponivel
@@ -172,6 +179,16 @@ const studentsParameters = {
 };
 
 
+export const toastTypes = {
+  // warning, success, error, info, default, dark
+  WARNING : "warning",
+  SUCCESS : "success",
+  ERROR : "error",
+  INFO : "info",
+  DEFAULT : "default",
+  DARK : "dark"
+};
+
 
 
 // ---------------------------------------------- OBJECTS ---------------------------------------------
@@ -197,12 +214,47 @@ function getRandomInteger(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
 }
 
+function showToast(message, duration, type) {
+  // type: warning, success, error, info, default
+  toast.configure();
+  toast(message, {
+    transition: Bounce,
+    closeButton: true,
+    autoClose: duration,
+    position: "top-right",
+    type: type,
+  });
+
+}
+
+
+function updateFirebaseUserPhoto(photo_url){
+  const firebaseUser = firebase_auth.currentUser;
+  return firebaseUser.updateProfile({
+    photoURL: photo_url
+  });
+}
+
+function updateFirebaseUserDisplayName(newName){
+  const firebaseUser = firebase_auth.currentUser;
+  return firebaseUser.updateProfile({
+    displayName: newName
+  });
+}
+
+function updateFirebaseUserDisplayNameAndPhoto(newName, photo_url){
+  const firebaseUser = firebase_auth.currentUser;
+  return firebaseUser.updateProfile({
+    displayName: newName,
+    photoURL: photo_url
+  });
+}
+
 
 // --------------------------------------------- EXPORTS ----------------------------------------------
 
 export {
   getGravatarURL,
-  regular_role_PT,
   defaultLogoFile,
   defaultIBAN,
   getRandomInteger,
@@ -218,7 +270,8 @@ export {
   notAvailableDesignation,
   zipCodeRegexes,
   defaultAvatar,
-  newParametersInputTypes
+  newParametersInputTypes,
+  showToast
 }
 
 

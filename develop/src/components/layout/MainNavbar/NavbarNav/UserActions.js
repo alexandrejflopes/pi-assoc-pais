@@ -8,6 +8,7 @@ import {
   Collapse,
   NavItem,
   NavLink,
+  Row,
 } from "shards-react";
 import {
   defaultAvatar,
@@ -76,8 +77,8 @@ export default class UserActions extends React.Component {
     let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
     let firebaseUser = firebase_auth.currentUser;
 
-    //console.log("localUser barra: " + JSON.stringify(localUser));
-    //console.log("currentUser: barra" + JSON.stringify(firebase_auth.currentUser));
+    console.log("localUser barra: " + JSON.stringify(localUser));
+    console.log("currentUser: barra" + JSON.stringify(firebaseUser));
 
     if (localUser != null && firebaseUser != null) {
       const localEmail = localUser[parentsParameters.EMAIL[languageCode]];
@@ -94,7 +95,9 @@ export default class UserActions extends React.Component {
               this.setState({ userName: displayName, userPhoto: photoURL });
             }
           })
-          .catch((error) => {});
+          .catch((error) => {
+            console.log("error no fetch da barra: " + JSON.stringify(error));
+          });
       } else {
         //console.log("aproveitar o storage");
         const displayName = localUser[parentsParameters.NAME[languageCode]];
@@ -123,7 +126,7 @@ export default class UserActions extends React.Component {
             <i className="material-icons">&#xE7FD;</i>{" "}
             {profilePageTitle[languageCode]}
           </DropdownItem>
-          <DropdownItem tag={Link} to="edit-user-profile">
+          <DropdownItem tag={Link} to="profile-settings">
             <i className="material-icons">&#xE8B8;</i>{" "}
             {profileSettings[languageCode]}{" "}
             {/*TODO: to export its data and delete account*/}
