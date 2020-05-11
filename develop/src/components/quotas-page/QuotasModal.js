@@ -32,7 +32,6 @@ class QuotasModal extends React.Component {
       emissor: "",
       valor: -1,
       anoLetivo: "",
-      notas: "",
       data: new Date(),
     };
 
@@ -41,7 +40,6 @@ class QuotasModal extends React.Component {
     this.onSelectRecetor = this.onSelectRecetor.bind(this);
     this.handlechangeValor = this.handlechangeValor.bind(this);
     this.handlechangeAnoLetivo = this.handlechangeAnoLetivo.bind(this);
-    this.handlechangeNotas = this.handlechangeNotas.bind(this);
 
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
@@ -70,10 +68,6 @@ class QuotasModal extends React.Component {
 
   handlechangeAnoLetivo(e) {
     this.setState({ anoLetivo: e.target.value });
-  }
-
-  handlechangeNotas(e) {
-    this.setState({ notas: e.target.value });
   }
 
   loadParents() {
@@ -108,7 +102,7 @@ class QuotasModal extends React.Component {
   }
 
   saveCota() {
-    const { recetor, emissor, valor, anoLetivo, notas, data } = this.state;
+    const { recetor, emissor, valor, anoLetivo, data } = this.state;
     const this_ = this;
 
     var regex = /[0-9]{4}\/[0-9]{2}/;
@@ -162,7 +156,7 @@ class QuotasModal extends React.Component {
       json["Pagante"] = emissor;
       json["Recetor"] = recetor;
       json["Valor"] = valor;
-      json["Notas"] = notas;
+      json["Notas"] = "";
       const ref = firestore.collection("quotas").doc();
       ref
         .set(json)
@@ -266,14 +260,6 @@ class QuotasModal extends React.Component {
                         id="valor"
                         type="text"
                         onChange={this.handlechangeAnoLetivo}
-                      ></FormInput>
-                    </FormGroup>
-                    <FormGroup>
-                      <label htmlFor="notas">Notas (opcional)</label>
-                      <FormInput
-                        id="notas"
-                        type="text"
-                        onChange={this.handlechangeNotas}
                       ></FormInput>
                     </FormGroup>
                     <FormGroup>

@@ -12,12 +12,14 @@ import { FormInput } from "shards-react";
 import { Link, Redirect } from "react-router-dom";
 import BlockUi from "react-block-ui";
 import { Loader } from "react-loaders";
+import { toast, Bounce } from "react-toastify";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 
 //import * as UsersService from "../../services/users/api_user";
 import CostumForm from "../../common/Form/form";
 import bg1 from "../../assets/mother.png";
-import {languageCode, parentsParameters} from "../../utils/general_utils";
+import { languageCode, parentsParameters } from "../../utils/general_utils";
+import { errorSignOut } from "../../utils/messages_strings";
 
 class Payment_Page extends CostumForm {
   constructor(props) {
@@ -68,7 +70,15 @@ class Payment_Page extends CostumForm {
       })
       .catch(function (error) {
         // An error happened.
-        alert("Erro ao efetuar logout");
+        var message = errorSignOut[languageCode];
+        toast.configure();
+        toast(message, {
+          transition: Bounce,
+          closeButton: true,
+          autoClose: 2000,
+          position: "top-right",
+          type: "error",
+        });
       });
   }
   doSubmit = async (e) => {

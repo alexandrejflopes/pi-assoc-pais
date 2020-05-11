@@ -2,17 +2,16 @@ import {
   firebase_auth,
   firebaseConfig,
   firestore,
-  storageRef
+  storageRef,
 } from "../firebase-config";
 import {
   languageCode,
-  newParametersEntities, newParametersInputTypes,
-  newParametersTypes
+  newParametersEntities,
+  newParametersInputTypes,
+  newParametersTypes,
 } from "../utils/general_utils";
 
-
 async function fetchUserDoc(email) {
-
   console.log("profile email to fetch: " + email);
 
   const project_id = firebaseConfig.projectId;
@@ -46,7 +45,16 @@ async function fetchUserDoc(email) {
 function userLogOut() {
   window.localStorage.removeItem("userDoc");
   window.localStorage.removeItem("newParamsInputTypes");
-  firebase_auth.signOut().then(() => {window.location.href = "/login"});
+  firebase_auth
+    .signOut()
+    .then(function () {
+      // Sign-out successful.
+      window.location = "/login";
+    })
+    .catch(function (error) {
+      // An error happened.
+      console.log(error);
+    });
 }
 
 function getNewParams() {
@@ -74,50 +82,45 @@ function getNewParams() {
   };
 
   return request();
-
 }
 
-function mapParamsToInputType(paramsDoc){
+function mapParamsToInputType(paramsDoc) {
   let inputTypesDoc = {};
   let parentParams = paramsDoc[newParametersEntities.parent[languageCode]];
   let childParams = paramsDoc[newParametersEntities.student[languageCode]];
 
-  if(parentParams!=null){
-    for(let p in parentParams){
-      if(parentParams[p]===newParametersTypes.TEXT[languageCode]){
+  if (parentParams != null) {
+    for (let p in parentParams) {
+      if (parentParams[p] === newParametersTypes.TEXT[languageCode]) {
         const inputType = newParametersInputTypes.TEXT.type;
         const inputStep = newParametersInputTypes.TEXT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep};
-      }
-      else if(parentParams[p]===newParametersTypes.INT[languageCode]){
+        inputTypesDoc[p] = { type: inputType, step: inputStep };
+      } else if (parentParams[p] === newParametersTypes.INT[languageCode]) {
         const inputType = newParametersInputTypes.INT.type;
         const inputStep = newParametersInputTypes.INT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
-      }
-      else if(parentParams[p]===newParametersTypes.FLOAT[languageCode]){
+        inputTypesDoc[p] = { type: inputType, step: inputStep };
+      } else if (parentParams[p] === newParametersTypes.FLOAT[languageCode]) {
         const inputType = newParametersInputTypes.FLOAT.type;
         const inputStep = newParametersInputTypes.FLOAT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
+        inputTypesDoc[p] = { type: inputType, step: inputStep };
       }
     }
   }
 
-  if(childParams!=null){
-    for(let p in childParams){
-      if(childParams[p]===newParametersTypes.TEXT[languageCode]){
+  if (childParams != null) {
+    for (let p in childParams) {
+      if (childParams[p] === newParametersTypes.TEXT[languageCode]) {
         const inputType = newParametersInputTypes.TEXT.type;
         const inputStep = newParametersInputTypes.TEXT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep};
-      }
-      else if(childParams[p]===newParametersTypes.INT[languageCode]){
+        inputTypesDoc[p] = { type: inputType, step: inputStep };
+      } else if (childParams[p] === newParametersTypes.INT[languageCode]) {
         const inputType = newParametersInputTypes.INT.type;
         const inputStep = newParametersInputTypes.INT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
-      }
-      else if(childParams[p]===newParametersTypes.FLOAT[languageCode]){
+        inputTypesDoc[p] = { type: inputType, step: inputStep };
+      } else if (childParams[p] === newParametersTypes.FLOAT[languageCode]) {
         const inputType = newParametersInputTypes.FLOAT.type;
         const inputStep = newParametersInputTypes.FLOAT.step;
-        inputTypesDoc[p] = {type : inputType, step : inputStep}
+        inputTypesDoc[p] = { type: inputType, step: inputStep };
       }
     }
   }
@@ -125,4 +128,4 @@ function mapParamsToInputType(paramsDoc){
   return inputTypesDoc;
 }
 
-export {fetchUserDoc, userLogOut, mapParamsToInputType, getNewParams}
+export { fetchUserDoc, userLogOut, mapParamsToInputType, getNewParams };

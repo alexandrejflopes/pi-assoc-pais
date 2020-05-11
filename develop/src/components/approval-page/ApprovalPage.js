@@ -35,6 +35,7 @@ class Approval_Page extends Component {
       dicionarioRegistos: null,
       blocking: false,
       errors: {},
+      timer: null,
 
       extraParent: null,
       extraStudent: null,
@@ -45,6 +46,7 @@ class Approval_Page extends Component {
     };
 
     this.renderExtra = this.renderExtra.bind(this);
+    this.deletePassedRegisters = this.deletePassedRegisters.bind(this);
     this.reload = this.reload.bind(this);
     this.addStudent = this.addStudent.bind(this);
     this.getParentsToApprove = this.getParentsToApprove.bind(this);
@@ -61,14 +63,51 @@ class Approval_Page extends Component {
     this.getParentsToApprove();
     this.renderExtra();
   }
+
   componentDidMount() {
     this._isMounted = true;
 
+    var timer = setInterval(() => this.deletePassedRegisters(), 1000 * 60 * 30);
+    this.setState({ timer: timer });
     // const user = UsersService.getCurrentUser();
   }
 
   componentWillUnmount() {
+    clearInterval(this.state.timer);
     this._isMounted = false;
+  }
+
+  deletePassedRegisters() {
+    const { resgistosPorAprovar } = this.state;
+
+    for (var i = 0; i < resgistosPorAprovar.length; i++) {
+      var json = resgistosPorAprovar[i];
+
+      var data = json["Data inscricao"];
+      if (data != null) {
+        var date = new Date(data);
+        var days = 7;
+        var compareDate = new Date(date.getTime() + days * 86400000);
+        var today = new Date();
+
+        var bool = today;
+
+        if (compareDate.getTime() > today.getTime()) {
+          //Delete register from db
+          firestore
+            .collection("parents")
+            .doc(json["Email"])
+            .delete()
+            .then(function () {
+              console.log("Document successfully deleted!");
+            })
+            .catch(function (error) {
+              console.error("Error removing document: ", error);
+            });
+        }
+      }
+    }
+    this.reload();
   }
 
   /**
@@ -282,9 +321,10 @@ class Approval_Page extends Component {
               data[i]["Validated"].toString() == "false"
             ) {
               if (
-                data[i]["Quotas Pagas"] != undefined &&
-                data[i]["Quotas Pagas"] != null &&
-                data[i]["Quotas Pagas"].toString() == "Não"
+                data[i]["Quotas pagas"] != undefined &&
+                data[i]["Quotas pagas"] != null &&
+                (data[i]["Quotas pagas"].toString() == "Não" ||
+                  data[i]["Quotas pagas"].toString() == "false")
               ) {
                 resgistosPorAprovar.push(data[i]);
                 var title = data[i]["Email"];

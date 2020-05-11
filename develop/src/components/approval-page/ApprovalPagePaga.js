@@ -282,9 +282,10 @@ class Approval_Page extends Component {
               data[i]["Validated"].toString() == "false"
             ) {
               if (
-                data[i]["Quotas Pagas"] != undefined &&
-                data[i]["Quotas Pagas"] != null &&
-                data[i]["Quotas Pagas"].toString() == "Não"
+                data[i]["Quotas pagas"] != undefined &&
+                data[i]["Quotas pagas"] != null &&
+                (data[i]["Quotas pagas"].toString() == "Não" ||
+                  data[i]["Quotas pagas"].toString() == "false")
               ) {
               } else {
                 resgistosPorAprovarComPagamentoFeito.push(data[i]);

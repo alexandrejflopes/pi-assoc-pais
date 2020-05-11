@@ -47,6 +47,7 @@ class Profile extends React.Component {
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount() {
     this._isMounted = true;
+    const this_ = this;
     console.log("DID MOUNT!");
 
     if (firebase_auth.currentUser != null) {
@@ -62,7 +63,7 @@ class Profile extends React.Component {
           localUser[parentsParameters.EMAIL[languageCode]] !==
           firebase_auth.currentUser.email
         ) {
-          const userPromise = fetchUserDoc(this.state.userEmail);
+          const userPromise = fetchUserDoc(this_.state.userEmail);
 
           userPromise
             .then((result) => {
@@ -70,10 +71,10 @@ class Profile extends React.Component {
               if (result.error == null) {
                 // no error
                 console.log("atualizar state com user doc recebido");
-                this.setState({ userDoc: result });
+                this_.setState({ userDoc: result });
                 window.localStorage.setItem("userDoc", JSON.stringify(result));
                 UserActions.componentDidMount();
-                this.saveNewParams();
+                this_.saveNewParams();
               }
             })
             .catch((error) => {
@@ -81,12 +82,12 @@ class Profile extends React.Component {
             });
         } else {
           console.log("atualizar state com localUser");
-          this.saveNewParams();
-          this.setState({ userDoc: localUser });
+          this_.saveNewParams();
+          this_.setState({ userDoc: localUser });
         }
       } else {
         console.log("não há user no LS, buscar novo");
-        const userPromise = fetchUserDoc(this.state.userEmail);
+        const userPromise = fetchUserDoc(this_.state.userEmail);
 
         userPromise
           .then((result) => {
@@ -94,10 +95,10 @@ class Profile extends React.Component {
             if (result.error == null) {
               // no error
               console.log("atualizar state com user doc recebido");
-              this.setState({ userDoc: result });
+              this_.setState({ userDoc: result });
               window.localStorage.setItem("userDoc", JSON.stringify(result));
+              this_.saveNewParams();
               UserActions.componentDidMount();
-              this.saveNewParams();
             }
           })
           .catch((error) => {

@@ -236,11 +236,7 @@ class Quotas_Page extends Component {
               name={"notas-" + x}
               onChange={this.handleChangeNotas}
               value={this.state.notas[x]}
-              disabled={
-                this.state.nome == Pagante || this.state.nome == Recetor
-                  ? false
-                  : true
-              }
+              disabled={this.state.nome == Pagante ? false : true}
             ></textarea>
           </td>
         </tr>

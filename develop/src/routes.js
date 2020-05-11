@@ -93,9 +93,7 @@ export default [
   },
   {
     path: "/payment",
-    layout: window.localStorage.getItem("admin")
-      ? DefaultAdminLayout
-      : DefaultLayout,
+    layout: DefaultConfigLayout,
     component: PaymentPage,
   },
   {

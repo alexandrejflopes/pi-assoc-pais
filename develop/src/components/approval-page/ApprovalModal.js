@@ -58,105 +58,111 @@ class ApprovalModal extends React.Component {
     var dicionarioAlunos = {};
 
     //Get student parameters from database
-    const extrasDoc = firestore.doc("initialConfigs/newParameters");
-    extrasDoc
-      .get()
-      .then((doc) => {
-        if (doc.exists === true) {
-          const dataDoc = doc.data();
+    let uri =
+      "https://us-central1-associacao-pais.cloudfunctions.net/api/getAllNewParams";
+    const request = async () => {
+      let resposta;
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          var dataDoc = data;
+          if (data === undefined || data.error) {
+            console.log("doc não existe");
+          } else {
+            const studentData = data["aluno"];
+            if (studentData !== undefined) {
+              var keys = Object.keys(studentData);
 
-          const studentData = dataDoc["aluno"];
-          if (studentData !== undefined) {
-            var keys = Object.keys(studentData);
+              var dadosAluno = [];
+              for (var i = 0; i < keys.length; i++) {
+                for (
+                  var index = 0;
+                  index < this_.state.dados.Educandos.length;
+                  index++
+                ) {
+                  var valS = keys[i];
 
-            var dadosAluno = [];
-            for (var i = 0; i < keys.length; i++) {
-              for (
-                var index = 0;
-                index < this.state.dados.Educandos.length;
-                index++
-              ) {
-                var valS = keys[i];
+                  var idS = valS + "-" + i; //Id now contains a unique number to identify it
+                  var value = this_.state.dados.Educandos[index];
 
-                var idS = valS + "-" + i; //Id now contains a unique number to identify it
-                var value = this.state.dados.Educandos[index];
+                  //Object to render
+                  var dado = (
+                    <FormGroup>
+                      <label htmlFor={idS}>{valS}</label>
+                      <FormInput
+                        id={idS}
+                        placeholder={valS}
+                        value={value[valS]}
+                        disabled={true}
+                      />
+                    </FormGroup>
+                  );
 
-                //Object to render
-                var dado = (
-                  <FormGroup>
-                    <label htmlFor={idS}>{valS}</label>
-                    <FormInput
-                      id={idS}
-                      placeholder={valS}
-                      value={value[valS]}
-                      disabled={true}
-                    />
-                  </FormGroup>
-                );
+                  if (i == 0) {
+                    dicionarioAlunos[index] = [dado];
+                  } else {
+                    var dados = dicionarioAlunos[index];
+                    dados.push(dado);
+                    dicionarioAlunos[index] = dados;
+                  }
 
-                if (i == 0) {
-                  dicionarioAlunos[index] = [dado];
-                } else {
-                  var dados = dicionarioAlunos[index];
-                  dados.push(dado);
-                  dicionarioAlunos[index] = dados;
+                  dadosAluno.push(dado);
                 }
-
-                dadosAluno.push(dado);
               }
+
+              var finalArray = [];
+
+              for (
+                var index1 = 0;
+                index1 < this_.state.dados.Educandos.length;
+                index1++
+              ) {
+                var newName = "studentName-" + index1;
+                var newYear = "studentYear-" + index1;
+
+                var add = (
+                  <Fragment>
+                    <hr />
+                    <FormGroup>
+                      <label htmlFor="studentName">Nome Aluno</label>
+                      <FormInput
+                        id={newName}
+                        type="text"
+                        placeholder="Nome"
+                        value={this_.state.dados.Educandos[index1]["Nome"]}
+                        disabled={true}
+                      />
+                    </FormGroup>
+
+                    <FormGroup>
+                      <label htmlFor="studentYear">Ano Escolaridade</label>
+                      <FormInput
+                        id={newYear}
+                        type="text"
+                        placeholder="5º"
+                        value={this_.state.dados.Educandos[index1]["Ano"]}
+                        disabled={true}
+                      />
+                    </FormGroup>
+                    {dicionarioAlunos[index1]}
+                  </Fragment>
+                );
+                finalArray.push([add]);
+              }
+
+              this_.setState({
+                moreStudents: finalArray,
+              });
             }
-
-            var finalArray = [];
-
-            for (
-              var index1 = 0;
-              index1 < this.state.dados.Educandos.length;
-              index1++
-            ) {
-              var newName = "studentName-" + index1;
-              var newYear = "studentYear-" + index1;
-
-              var add = (
-                <Fragment>
-                  <hr />
-                  <FormGroup>
-                    <label htmlFor="studentName">Nome Aluno</label>
-                    <FormInput
-                      id={newName}
-                      type="text"
-                      placeholder="Nome"
-                      value={this.state.dados.Educandos[index1]["Nome"]}
-                      disabled={true}
-                    />
-                  </FormGroup>
-
-                  <FormGroup>
-                    <label htmlFor="studentYear">Ano Escolaridade</label>
-                    <FormInput
-                      id={newYear}
-                      type="text"
-                      placeholder="5º"
-                      value={this.state.dados.Educandos[index1]["Ano"]}
-                      disabled={true}
-                    />
-                  </FormGroup>
-                  {dicionarioAlunos[index1]}
-                </Fragment>
-              );
-              finalArray.push([add]);
-            }
-
-            this_.setState({
-              moreStudents: finalArray,
-            });
           }
-        } else {
-          console.log("doc não existe");
-        }
-      })
-      .catch((err) => {
-        //alert(err);
-      });
+        })
+        .catch(function (error) {
+          alert(error);
+        });
+      return resposta;
+    };
+
+    var dados = request();
   }
 
   loadExtraParent() {
@@ -165,52 +171,58 @@ class ApprovalModal extends React.Component {
 
     var dadosFinaisPai = null;
 
-    const extrasDoc = firestore.doc("initialConfigs/newParameters");
-    extrasDoc
-      .get()
-      .then((doc) => {
-        if (doc.exists === true) {
-          const dataDoc = doc.data();
+    let uri =
+      "https://us-central1-associacao-pais.cloudfunctions.net/api/getAllNewParams";
+    const request = async () => {
+      let resposta;
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          var dataDoc = data;
+          if (data === undefined || data.error) {
+            console.log("doc não existe");
+          } else {
+            const eeData = data["EE"]; // Get parent dictionary of extra parameters
+            if (eeData !== undefined) {
+              var keys = Object.keys(eeData);
 
-          const eeData = dataDoc["EE"]; // Get parent dictionary of extra parameters
-          if (eeData !== undefined) {
-            var keys = Object.keys(eeData);
+              var extraPai = 0; // Counts number of extra parameters that belong to the parent part of the registry
 
-            var extraPai = 0; // Counts number of extra parameters that belong to the parent part of the registry
+              var dadosPai = []; // Will store all objects to render from the parent side
+              for (var i = 0; i < keys.length; i++) {
+                extraPai++;
+                var val = keys[i]; // Actual name of parameter
 
-            var dadosPai = []; // Will store all objects to render from the parent side
-            for (var i = 0; i < keys.length; i++) {
-              extraPai++;
-              var val = keys[i]; // Actual name of parameter
-
-              // Objects to render
-              var dado = (
-                <FormGroup>
-                  <label htmlFor={val}>{val}</label>
-                  <FormInput
-                    id={val}
-                    placeholder={val}
-                    value={this.state.dados[val]}
-                    disabled={true}
-                  />
-                </FormGroup>
-              );
-              dadosPai.push(dado); //Add object to array
+                // Objects to render
+                var dado = (
+                  <FormGroup>
+                    <label htmlFor={val}>{val}</label>
+                    <FormInput
+                      id={val}
+                      placeholder={val}
+                      value={this_.state.dados[val]}
+                      disabled={true}
+                    />
+                  </FormGroup>
+                );
+                dadosPai.push(dado); //Add object to array
+              }
+              dadosFinaisPai = dadosPai;
             }
-            dadosFinaisPai = dadosPai;
-          }
 
-          // Save data to state
-          this_.setState({
-            extraParent: dadosFinaisPai,
-          });
-        } else {
-          console.log("doc não existe");
-        }
-      })
-      .catch((err) => {
-        alert(err);
-      });
+            // Save data to state
+            this_.setState({
+              extraParent: dadosFinaisPai,
+            });
+          }
+        })
+        .catch(function (error) {
+          alert(error);
+        });
+      return resposta;
+    };
+
+    var dados = request();
   }
 
   approve() {
