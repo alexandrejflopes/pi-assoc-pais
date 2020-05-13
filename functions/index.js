@@ -54,6 +54,7 @@ const {
   sendPositionEmail,
   exportParentCSV,
   exportEducandosCSV,
+  exportSingleParentCSV,
   getParentsNewParams,
   getEducandosNewParams,
   getAllNewParams
@@ -106,6 +107,7 @@ app.get('/sendNotificationEmail',sendNotificationEmail);
 app.get('/sendPositionEmail',sendPositionEmail);
 app.get('/exportParentCSV',exportParentCSV);
 app.get('/exportEducandosCSV',exportEducandosCSV);
+app.get('/exportSingleParentCSV',exportSingleParentCSV);
 app.get('/getParentsNewParams',getParentsNewParams);
 app.get('/getEducandosNewParams',getEducandosNewParams);
 app.get('/getAllNewParams',getAllNewParams);

@@ -55,8 +55,8 @@ exports.getCasos = functions.https.onRequest((request, response) => {
 });
 /**
  * Função que serve para criar um novo caso na base de dados.
- * Leva os seguintes argumentos: titulo , descricao , privado(true/false) , membros (array de ficheiros json em string no caso de ser privado)
- * Ex de membros: [ {'nome':'maria','id':'pljouHGIHpo'},{'nome':'jose','id':'SIdjisdnDI'} ]
+ * Leva os seguintes argumentos: titulo , descricao , privado(true/false) , membros (array de ficheiros json em string no caso de ser privado) e foto_autor (url fotografia criador)
+ * Ex de membros: [ {'nome':'maria','id':'pljouHGIHpo', 'photo':'url'},{'nome':'jose','id':'SIdjisdnDI', 'photo':'url'} ]
  * Os argumentos deverão especificados nos query params.
  * O caso criado tem por defeito nenhum ficheiro, arquivado a false, observações vazias.
  * A função devolve o documento (JSON) do caso criado.
@@ -72,8 +72,8 @@ exports.addCaso = functions.https.onRequest((request, response) => {
     caso["ficheiros"] = [];
     caso["arquivado"] = false;
     caso["observacoes"] = [];
-    caso["autor"] = {"nome":request.query.nome_autor, "id":request.query.id_autor};
-
+    caso["autor"] = {"nome":request.query.nome_autor, "id":request.query.id_autor, "photo":request.query.foto_autor};
+    
     if (request.query.privado === "true"){
         caso["membros"] = JSON.parse(request.query.membros);
         caso["membros"].push(caso["autor"]);
@@ -83,7 +83,7 @@ exports.addCaso = functions.https.onRequest((request, response) => {
     }
     caso["data_criacao"] = new Date();
     console.log("caso -> ", caso);
-
+    
 
     db.collection('casos').add(caso).then(ref => {
         console.log("Added document");
@@ -171,7 +171,7 @@ exports.updateMembrosCaso = functions.https.onRequest((request, response) => {
 });
 /**
  * Esta função adiciona um membro a um caso
- * Leva como argumentos: id , membro_nome , membro_id
+ * Leva como argumentos: id , membro_nome , membro_id, membro_foto
  * Sendo o id o id do caso, membro nome o nome do utilizador a ser adicionado e membro_id o seu id
  * Devolve a lista de membros do caso após o update/adição
  * Todas as funções de adição e remoção de elementos de uma lista de documentos(como adicionar ou remover membros a casos, comentários ou anexos)
@@ -183,6 +183,7 @@ exports.addMembroCaso = functions.https.onRequest((request, response) => {
     //let member = JSON.parse(request.query.membro);
     let member_name = request.query.membro_nome;
     let member_id = request.query.membro_id;
+    let member_photo = request.query.membro_foto;
     let docRef = db.collection('casos').doc(id);
 
     let transaction = db.runTransaction(t => {
@@ -190,7 +191,7 @@ exports.addMembroCaso = functions.https.onRequest((request, response) => {
         return t.get(docRef).then(doc => {
             let data = doc.data();
             members = data["membros"];
-            members.push({"nome":member_name,"id":member_id});
+            members.push({"nome":member_name,"id":member_id, "photo":member_photo});
             response.send(members);
             return (t.update(docRef,{"membros":members}));
         }).catch(err => {
@@ -294,9 +295,9 @@ exports.updateFullCaso = functions.https.onRequest((request, response) => {
 });
 /**
  * Esta função permite adicionar um comentário a um caso
- * Leva como argumento: id , user_id , user_name , observacao
+ * Leva como argumento: id , user_id , user_name , observacao, photo
  * Sendo id o id do caso a adicionar o comentário , user_id o id do utilizador que realizou o comentário, user_name o seu nome,
- * e a observacao o conteúdo do comentário
+ * , a observacao o conteúdo do comentário e photo a fotografia do utilizador que realizou o comentário
  * Devolve a lista de observações após este ter sido adicionado
  */
 exports.addCommentCaso = functions.https.onRequest((request, response) => {
@@ -305,6 +306,7 @@ exports.addCommentCaso = functions.https.onRequest((request, response) => {
     let user_id = request.query.user_id;
     let user_name = request.query.user_name;
     let observacao = request.query.observacao;
+    let user_photo = request.query.photo;
     let docRef = db.collection('casos').doc(id);
 
     let transaction = db.runTransaction(t => {
@@ -312,7 +314,7 @@ exports.addCommentCaso = functions.https.onRequest((request, response) => {
         return t.get(docRef).then(doc => {
             let data = doc.data();
             observacoes = data["observacoes"];
-            observacoes.push({"user":{"nome":user_name,"id":user_id}, "conteudo":observacao, "tempo":new Date(), "editado":false});
+            observacoes.push({"user":{"nome":user_name,"id":user_id, "photo":user_photo}, "conteudo":observacao, "tempo":new Date(), "editado":false});
             response.send(observacoes);
             return (t.update(docRef,{"observacoes":observacoes}));
         })
@@ -1593,7 +1595,39 @@ exports.exportEducandosCSV = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+/**
+ * Função devolve/inicia o download de um ficheiro de extensão CSV com um parent.
+ * Devolve as informações de um utilizador não incluindo os seus educandos nem as suas cotas.
+ * Leva como argumento o id do documento do utilizador.
+ */
+exports.exportSingleParentCSV = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
 
+    let id = request.query.id;
+
+    db.collection('parents').doc(id).get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            //console.log('Document data:', doc.data());
+            let data = doc.data();
+            console.log("data -> ",data);
+            const csv = json2csv(data);
+            response.setHeader(
+                "Content-disposition",
+                "attachment; filename=parent"+id+".csv"
+            );
+            response.set("Content-Type", "text/csv");
+            return response.status(200).send(csv);
+        }
+    })
+    .catch((err) => {
+        console.log('Error exporting data', err);
+        return response.status(405).send({"error" : err});
+    });
+}); 
 /**
  * Retorna os parametros adicionados pelo administrador do sistema á entidade "parents"/encarregados de educação
  */
