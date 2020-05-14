@@ -13,6 +13,10 @@ import {
   parentsParameters,
   studentsParameters,
 } from "../utils/general_utils";
+import {
+  emailAlreadyTaken,
+  genericEmailUpdateErrorMsg
+} from "../utils/messages_strings";
 
 async function fetchUserDoc(email) {
   console.log("profile email to fetch: " + email);
@@ -377,6 +381,79 @@ function deleteEducandoFromParent(parentEmail, childName) {
     });*/
 }
 
+/*
+* function to check if the current email exists in Firebase auth
+* */
+
+function emailExistsInFBAuth(email) {
+
+  return firebase_auth.fetchSignInMethodsForEmail(email)
+    .then((providers) => {
+      // if no providers, then user does no exist
+      return !(!providers || providers.length === 0);
+    })
+    .catch((e) => {
+      return false;
+    });
+}
+
+/*
+* function to check if an email exists in DB
+* */
+function emailExistsInDB(email) {
+
+  console.log("email to check in DB: " + email);
+
+  // in case of, for some reason, the current email is not in the DB
+  let parentRef = firestore.collection('parents').doc(email);
+
+  return parentRef.get()
+    .then((doc) => {
+      console.log("doc para DB <" + email + ">: " + JSON.stringify(doc.data()));
+      if (!doc.exists) {
+        console.log("doc para <" + email + "> não existe");
+        return false;
+      }
+      return true;
+    })
+    .catch((error) => {
+      console.log("erro para DB <" + email + ">: " + JSON.stringify(error));
+      return false
+    });
+
+}
+
+function updateParentEmail(currentEmail, newEmail) {
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/alterParentEmail?" +
+    "email=" +
+    encodeURIComponent(currentEmail) +
+    "&new_email=" +
+    encodeURIComponent(newEmail);
+
+  const request = async () => {
+    let updatedParent = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into json
+      .then(function (data) {
+        console.log("parentUpdated no request update email -> ", JSON.stringify(data));
+        updatedParent = data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    return updatedParent;
+  };
+
+  return request();
+
+}
+
 export {
   fetchUserDoc,
   userLogOut,
@@ -388,4 +465,7 @@ export {
   updateParent,
   uploadProfilePhoto,
   uploadChildPhoto,
+  emailExistsInFBAuth,
+  emailExistsInDB,
+  updateParentEmail
 };

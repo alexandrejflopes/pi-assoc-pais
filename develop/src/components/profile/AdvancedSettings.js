@@ -26,8 +26,16 @@ import {
   profileSettingsDataFormTitle
 } from "../../utils/page_titles_strings";
 import {
-  provideRequiredFieldsMessage, confirmUpdateEmail
+  provideRequiredFieldsMessage,
+  confirmUpdateEmail,
+  genericEmailUpdateErrorMsg,
+  emailAlreadyTaken, parentUpdateSuccess, parentUpdateError, emailUpdateSuccess
 } from "../../utils/messages_strings";
+import {firebase_auth} from "../../firebase-config";
+import {
+  emailExistsInDB,
+  emailExistsInFBAuth, updateParentEmail
+} from "../../firebase_scripts/profile_functions";
 
 
 class AdvancedSettings extends React.Component {
@@ -61,7 +69,7 @@ class AdvancedSettings extends React.Component {
     this.cancelEditing = this.cancelEditing.bind(this);
     this.lockFormAfterUpdate = this.lockFormAfterUpdate.bind(this);
 
-    this.updateParent = this.updateParent.bind(this);
+    this.updateEmail = this.updateEmail.bind(this);
 
 
   }
@@ -78,14 +86,142 @@ class AdvancedSettings extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
-  updateParent(){
-    const validResult = this.validForm();
+  updateEmail(){
+    const this_ = this;
+    const validResult = this_.validForm();
+
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
+    const currentEmail = localUser[parentsParameters.EMAIL[languageCode]];
+    const newEmail = this_.state.parent[parentsParameters.EMAIL[languageCode]];
+
+    console.log("currentEmail -> " + currentEmail);
+    console.log("newEmail -> " + newEmail);
+
     if(!validResult){
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
+    // if current and new email are the same, do nothing
+    else if(currentEmail===newEmail){
+      this.cancelEditing();
+    }
     else{
       const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
-      this.cancelEditing();
+      if(confirmation){
+        // in case of, for some reason, these don't match
+        if(currentEmail!==firebase_auth.currentUser.email){
+          showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+          this_.cancelEditing();
+          return;
+        }
+
+        // just to check if the current email exists in FB Auth
+        // if so, we can proceed
+        emailExistsInFBAuth(currentEmail)
+          .then((exists) => {
+            if(exists){
+              console.log("current existe na Auth");
+              // just to check if the current email exists in DB
+              // if so, we can proceed
+              emailExistsInDB(currentEmail)
+                .then((exists) => {
+                  if(exists){
+                    console.log("current existe na DB");
+
+                    // check if the new email exists in FB Auth (already taken)
+                    // if so, we cannot proceed
+                    emailExistsInFBAuth(newEmail)
+                      .then((exists) => {
+                        if(!exists){
+                          console.log("newEmail não existe na Auth");
+                          // just to check if the new email exists in DB (already taken)
+                          // if so, we cannot proceed
+                          emailExistsInDB(newEmail)
+                            .then((exists) => {
+                              if(!exists){
+                                console.log("newEmail não existe na DB");
+                                // if all conditions are set, then update email
+
+                                updateParentEmail(currentEmail, newEmail)
+                                  .then((result) => {
+                                    if(result.error==null){
+                                      const upParentString = JSON.stringify(result);
+                                      console.log("updatedParent recebido depois do update email -> " + upParentString);
+                                      // update user data in localstorage
+                                      window.localStorage.setItem("userDoc", upParentString);
+                                      this_.lockFormAfterUpdate();
+                                      this_.props.componentDidMount(true);
+                                      showToast(emailUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                                    }
+                                    else{
+                                      console.log("result error: " + JSON.stringify(result));
+                                      showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                                      this_.cancelEditing();
+                                    }
+
+                                  })
+                                  .catch((error) => {
+                                    if(Object.keys(error).length!==0){
+                                      console.log("update error: " + JSON.stringify(error));
+                                      showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                                      this_.cancelEditing();
+                                    }
+                                  });
+                              }
+                              else{
+                                console.log("newEmail já existe na DB");
+                                showToast(emailAlreadyTaken[languageCode], 5000, toastTypes.ERROR);
+                                this_.cancelEditing();
+                              }
+                            })
+                            .catch(() => {
+                              console.log("generic error 6");
+                              showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                              this_.cancelEditing();
+                            });
+                        }
+                        else{
+                          console.log("newEmail já existe na Auth");
+                          showToast(emailAlreadyTaken[languageCode], 5000, toastTypes.ERROR);
+                          this_.cancelEditing();
+                        }
+                      })
+                      .catch(() => {
+                        console.log("generic error 5");
+                        showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                        this_.cancelEditing();
+                      });
+
+                  }
+                  else{
+                    console.log("generic error 4");
+                    showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                    this_.cancelEditing();
+                  }
+                })
+                .catch(() => {
+                  console.log("generic error 3");
+                  showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                  this_.cancelEditing();
+                });
+            }
+            else{
+              console.log("generic error 2");
+              showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+              this_.cancelEditing();
+            }
+          })
+          .catch(() => {
+            console.log("generic error 1");
+            showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+            this_.cancelEditing();
+          });
+      }
+      else{
+        this_.cancelEditing();
+      }
+
+
     }
   }
 
@@ -204,7 +340,7 @@ class AdvancedSettings extends React.Component {
                   </Row>
                   <hr />
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateParent}>{saveChanges[languageCode]}</Button> </div>
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateEmail}>{saveChanges[languageCode]}</Button> </div>
                     : <Button theme="accent" onClick={this.editForm}>{changeEmail[languageCode]}</Button>
                   }
                 </Form>

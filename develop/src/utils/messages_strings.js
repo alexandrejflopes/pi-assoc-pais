@@ -100,6 +100,13 @@ const errorSignOut = {
 
 // ------- ERRORS
 
+export const emailAlreadyTaken = {
+  "pt_PT" : "Houve um problema a atualizar o email. Por favor, tente novamente."
+};
+
+export const genericEmailUpdateErrorMsg = {
+  "pt_PT" : "Houve um problema a atualizar o email. Por favor, tente novamente."
+};
 
 export const childAddPhotoError = {
   "pt_PT" : "Houve um problema a carregar a foto do seu educando. Por favor, tente novamente."
@@ -157,6 +164,10 @@ export const confirmUpdateEmail = {
 };
 
 // ------- SUCCESS
+
+export const emailUpdateSuccess = {
+  "pt_PT" : "Email atualizado com sucesso."
+};
 
 export const parentUpdatePhotoSuccess = {
   "pt_PT" : "Foto de perfil atualizada com sucesso."

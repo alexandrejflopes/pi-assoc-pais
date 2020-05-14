@@ -37,8 +37,15 @@ class ProfileSettings extends React.Component {
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  componentDidMount() {
-    this._isMounted = true;
+  componentDidMount(updating) {
+    //this._isMounted = true;
+
+    if(updating){
+      const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+      if(localUser!=null){
+        this.setState({userDoc : localUser});
+      }
+    }
   }
 
   componentWillUnmount() {
