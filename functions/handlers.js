@@ -1692,3 +1692,51 @@ exports.getAllNewParams = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+
+exports.exportCasoPdf = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.id;
+
+    db.collection('casos').doc(id).get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            const pdf = new pdfkit();
+            response.setHeader(
+                "Content-disposition",
+                "attachment; filename=Caso"+doc.get("titulo")+".pdf"
+            );
+            response.set("Content-Type", "application/pdf");
+            pdf.pipe(response);
+            pdf.fontSize(25).text('Caso: '+doc.get("titulo")+'\n\n');
+            pdf.fontSize(14).text('Autor: '+doc.get("autor")["nome"]+'\n\nEmail: '+doc.get("autor")["id"]+'\n\n');
+            let tc =  doc.get("data_criacao").toDate();
+            //let tc = new Date();
+            pdf.fontSize(14).text('Data criação: '+tc+'\n\n');
+            pdf.fontSize(14).text('Data criação (UTC): '+tc.getUTCDate()+'/'+(tc.getUTCMonth()+1)+'/'+tc.getUTCFullYear()+' '+tc.getUTCHours()+':'+tc.getUTCMinutes()+':'+tc.getUTCSeconds()+'\n\n');
+            pdf.fontSize(14).text('Descrição:\n'+doc.get("descricao")+'\n\n');
+            pdf.fontSize(14).text('Arquivado: '+(doc.get("arquivado") ? 'Sim' : 'Não')+'\n\n');
+            pdf.fontSize(14).text('Privado: '+(doc.get("privado") ? 'Sim' : 'Não')+'\n\n');
+            pdf.fontSize(14).text('Membros: \n');
+            for(i = 0;i<doc.get("membros").length;i++) {
+                pdf.fontSize(14).text('-> Nome: '+doc.get("membros")[i]["nome"]+' ; Email: '+doc.get("membros")[i]["id"]+'\n');
+            }
+            pdf.fontSize(14).text('\nObservações: \n');
+            for(i = 0;i<doc.get("observacoes").length;i++) {
+                let to = doc.get("observacoes")[i]["tempo"].toDate();
+                pdf.fontSize(14).text('-> Obs. '+i+': \n');
+                pdf.fontSize(14).text('     Nome: '+doc.get("observacoes")[i]["user"]["nome"]+' ; Email: '+doc.get("observacoes")[i]["user"]["id"]+' \n');
+                pdf.fontSize(14).text('     Editado: '+(doc.get("observacoes")[i]["editado"] ? 'Sim' : 'Não')+'\n');
+                pdf.fontSize(14).text('     Data (UTC): '+to.getUTCDate()+'/'+(to.getUTCMonth()+1)+'/'+to.getUTCFullYear()+' '+to.getUTCHours()+':'+to.getUTCMinutes()+':'+to.getUTCSeconds()+'\n');
+                pdf.fontSize(14).text('     Conteúdo: '+doc.get("observacoes")[i]["conteudo"]+'\n');
+            }
+            return pdf.end();
+        }
+    })
+    .catch((err) => {
+        console.log('Error exporting data', err);
+        return response.status(405).send({"error" : err});
+    });
+});

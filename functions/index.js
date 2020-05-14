@@ -57,7 +57,8 @@ const {
   exportSingleParentCSV,
   getParentsNewParams,
   getEducandosNewParams,
-  getAllNewParams
+  getAllNewParams,
+  exportCasoPdf
 } = require('./handlers');
 
 
@@ -111,6 +112,7 @@ app.get('/exportSingleParentCSV',exportSingleParentCSV);
 app.get('/getParentsNewParams',getParentsNewParams);
 app.get('/getEducandosNewParams',getEducandosNewParams);
 app.get('/getAllNewParams',getAllNewParams);
+app.get('/exportCasoPdf',exportCasoPdf);
 
 // URL de base para os requests: https://us-central1-associacao-pais.cloudfunctions.net/api
 exports.api = functions.https.onRequest(app);
