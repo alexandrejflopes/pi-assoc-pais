@@ -24,6 +24,7 @@ class AknowledgementDialog extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.closeDialog = this.closeDialog.bind(this);
     this.openDialog = this.openDialog.bind(this);
+    this.handleOk = this.handleOk.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -46,6 +47,9 @@ class AknowledgementDialog extends React.Component {
     this.setState({open : true});
   }
 
+  handleOk(){
+    this.props.after(this.props.parent);
+  }
 
 
 
@@ -66,7 +70,7 @@ class AknowledgementDialog extends React.Component {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.after(this.props.parent)} theme="primary" autoFocus>
+          <Button onClick={this.handleOk} theme="primary" autoFocus>
             {ok[languageCode]}
           </Button>
         </DialogActions>

@@ -62,7 +62,7 @@ function userLogOut() {
     })
     .catch(function (error) {
       // An error happened.
-      console.log(error);
+      console.log("Error logging out: " + error);
     });
 }
 
@@ -483,7 +483,7 @@ async function sendChangeEmailAuth(nome, email) {
 
   const request = async () => {
     await fetch(uri)
-      .then()
+      .then(() => {})
       .catch(function (error) {
         console.log("Error sending newEmail email: " + error);
       });

@@ -341,10 +341,12 @@ class AdvancedSettings extends React.Component {
   }
 
   closeSuccessDialog() {
+    //alert("close success");
     this.setState({emailUpdatedDialogOpen : false});
   }
 
   openSuccessDialog() {
+    //alert("abrir success");
     this.setState({emailUpdatedDialogOpen : true});
   }
 
