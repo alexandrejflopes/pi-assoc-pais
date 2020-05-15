@@ -22,6 +22,7 @@ import {
   errorLoginGoogle,
   errorNoLogedInUser,
 } from "../../utils/messages_strings";
+import {signInWithGoogle, signInWithLink} from "../../utils/common_strings";
 
 class Login extends CostumForm {
   constructor(props) {
@@ -91,7 +92,7 @@ class Login extends CostumForm {
                 type: "warning",
               });
             } else {
-              if (email == dataDoc.Email && dataDoc["Validated"] == false) {
+              if (email === dataDoc.Email && dataDoc["Validated"] === false) {
                 var red;
                 if (
                   dataDoc[parentsParameters.PAYED_FEE[languageCode]] === false
@@ -117,8 +118,8 @@ class Login extends CostumForm {
                 //Redirecionar para página de pagamento
                 this_.setState({ redirect: red });
               } else if (
-                email == dataDoc.Email &&
-                dataDoc["Validated"] == true
+                email === dataDoc.Email &&
+                dataDoc["Validated"] === true
               ) {
                 if (
                   dataDoc.Admin != undefined &&
@@ -603,7 +604,7 @@ class Login extends CostumForm {
                                 margin: "8px",
                               }}
                             >
-                              <i /> Sign In with Link
+                              <i /> {signInWithLink[languageCode]}
                             </Button>
                           </Col>
 
@@ -617,7 +618,7 @@ class Login extends CostumForm {
                                 textAlign: "center",
                               }}
                             >
-                              {"Sign In With Google"}
+                              {signInWithGoogle[languageCode]}
                             </Button>
                           </Col>
 

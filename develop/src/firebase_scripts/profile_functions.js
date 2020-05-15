@@ -17,6 +17,7 @@ import {
   emailAlreadyTaken,
   genericEmailUpdateErrorMsg
 } from "../utils/messages_strings";
+import {hello} from "../utils/common_strings";
 
 async function fetchUserDoc(email) {
   console.log("profile email to fetch: " + email);
@@ -454,6 +455,43 @@ function updateParentEmail(currentEmail, newEmail) {
 
 }
 
+
+/*
+ * send email to parent to notify it was imported to platform
+ */
+async function sendChangeEmailAuth(nome, email) {
+
+  let message = hello[languageCode] + ",\n\n";
+
+  message.concat("Link para entrar com novo email:");
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/sendNotificationEmail?" +
+    "email=" +
+    email +
+    "&" +
+    "nome=" +
+    nome +
+    "&" +
+    "message=" +
+    message;
+
+  window.localStorage.setItem("emailForSignIn", email);
+
+  const request = async () => {
+    await fetch(uri)
+      .then()
+      .catch(function (error) {
+        console.log("Error sending newEmail email: " + error);
+      });
+  };
+
+  return request();
+}
+
 export {
   fetchUserDoc,
   userLogOut,
@@ -467,5 +505,6 @@ export {
   uploadChildPhoto,
   emailExistsInFBAuth,
   emailExistsInDB,
-  updateParentEmail
+  updateParentEmail,
+  sendChangeEmailAuth
 };

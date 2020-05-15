@@ -2,6 +2,11 @@
 * file to save common strings that are repeated along the app
 * */
 
+export const ok = {
+  "pt_PT" : "Ok"
+};
+
+
 export const yes = {
   "pt_PT" : "Sim"
 };
@@ -37,6 +42,29 @@ export const updateInfo = {
 
 export const deleteChild = {
   "pt_PT" : "Eliminar educando"
+};
+
+
+export const attentionPrompt = {
+  "pt_PT" : "IMPORTANTE"
+};
+
+
+export const updateEmailPrompt = {
+  "pt_PT" : "Atualizar email?"
+};
+
+
+export const signInWithLink = {
+  "pt_PT" : "Entrar com link"
+};
+
+export const signInWithGoogle = {
+  "pt_PT" : "Entrar com conta Google"
+};
+
+export const hello = {
+  "pt_PT" : "Olá"
 };
 
 

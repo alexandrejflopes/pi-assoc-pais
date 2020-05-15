@@ -16,6 +16,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
+
 const firestore = firebase.firestore();
 const initDoc = firestore.doc("installations/installationDoc");
 //firebase.analytics();

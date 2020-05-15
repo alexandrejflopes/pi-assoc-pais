@@ -96,7 +96,14 @@ const errorLoginGoogle = {
 const errorSignOut = {
   "pt_PT": "Erro ao fazer logout, tente novamente",
 };
+
+// ------------------ STRINGS RELATED TO PROFILE ------------------
+
+
+
 // -------------------------------------- OTHERS --------------------------------------
+
+
 
 // ------- ERRORS
 
@@ -158,15 +165,21 @@ export const confirmDeleteChild = {
 };
 
 export const confirmUpdateEmail = {
-  "pt_PT" : "Tem a certeza que pretender atualizar o seu email?\n" +
-    "Com esta alteração deixa de se conseguir autenticar com o email atual, passando a ser " +
-    "usado o novo para o efeito."
+  "pt_PT" : "Ao alterar o seu email, deixa de se conseguir autenticar com o email atual, passando a ser " +
+    "usado o novo para o efeito.\n Após a atualização, irá sair da sua conta e receber um link " +
+    "no novo email para se autenticar com o mesmo.\n" +
+    "Deseja continuar?"
+};
+
+export const confirmLogoutAndNewLink = {
+  "pt_PT" : "Foi-lhe enviado um link para o novo " +
+    " email para se autenticar.\nSe não o receber, proceda ao login normalmente, pedindo um novo link. \n"
 };
 
 // ------- SUCCESS
 
 export const emailUpdateSuccess = {
-  "pt_PT" : "Email atualizado com sucesso."
+  "pt_PT" : "Email atualizado com sucesso"
 };
 
 export const parentUpdatePhotoSuccess = {

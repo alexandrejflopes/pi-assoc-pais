@@ -20,7 +20,7 @@ import {
 import {
   saveChanges,
   cancel,
-  changeEmail
+  changeEmail, yes, no, attentionPrompt, updateEmailPrompt
 } from "../../utils/common_strings";
 import {
   profileSettingsDataFormTitle
@@ -29,13 +29,19 @@ import {
   provideRequiredFieldsMessage,
   confirmUpdateEmail,
   genericEmailUpdateErrorMsg,
-  emailAlreadyTaken, parentUpdateSuccess, parentUpdateError, emailUpdateSuccess
+  emailAlreadyTaken,
+  parentUpdateSuccess,
+  parentUpdateError,
+  emailUpdateSuccess,
+  confirmLogoutAndNewLink
 } from "../../utils/messages_strings";
-import {firebase_auth} from "../../firebase-config";
+import {firebase_auth, firebase} from "../../firebase-config";
 import {
   emailExistsInDB,
-  emailExistsInFBAuth, updateParentEmail
+  emailExistsInFBAuth, sendChangeEmailAuth, updateParentEmail, userLogOut
 } from "../../firebase_scripts/profile_functions";
+import ConfirmationDialog from "../dialog/ConfirmationDialog";
+import AknowledgementDialog from "../dialog/AknowledgementDialog";
 
 
 class AdvancedSettings extends React.Component {
@@ -60,6 +66,9 @@ class AdvancedSettings extends React.Component {
         [parentsParameters.EMAIL[languageCode]] : false,
       },
       oldParent: null,
+      dialogOpen : false,
+      emailUpdatedDialogOpen : false,
+      this_ : this
     };
 
     this.handleChangeParam = this.handleChangeParam.bind(this);
@@ -68,6 +77,10 @@ class AdvancedSettings extends React.Component {
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
     this.lockFormAfterUpdate = this.lockFormAfterUpdate.bind(this);
+    this.closeDialog = this.closeDialog.bind(this);
+    this.openDialog = this.openDialog.bind(this);
+    this.closeSuccessDialog = this.closeSuccessDialog.bind(this);
+    this.openSuccessDialog = this.openSuccessDialog.bind(this);
 
     this.updateEmail = this.updateEmail.bind(this);
 
@@ -86,11 +99,17 @@ class AdvancedSettings extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
-  updateEmail(){
+
+  updateEmail(confirmation){
+
+    console.log("result dialog: " + confirmation);
+    this.closeDialog();
+
     const this_ = this;
     const validResult = this_.validForm();
 
     const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const userName = localUser[parentsParameters.NAME[languageCode]];
 
     const currentEmail = localUser[parentsParameters.EMAIL[languageCode]];
     const newEmail = this_.state.parent[parentsParameters.EMAIL[languageCode]];
@@ -106,10 +125,12 @@ class AdvancedSettings extends React.Component {
       this.cancelEditing();
     }
     else{
-      const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
+      //const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
       if(confirmation){
+
+        let FBuser = firebase_auth.currentUser;
         // in case of, for some reason, these don't match
-        if(currentEmail!==firebase_auth.currentUser.email){
+        if(currentEmail!==FBuser.email){
           showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
           this_.cancelEditing();
           return;
@@ -151,7 +172,9 @@ class AdvancedSettings extends React.Component {
                                       window.localStorage.setItem("userDoc", upParentString);
                                       this_.lockFormAfterUpdate();
                                       this_.props.componentDidMount(true);
-                                      showToast(emailUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                                      console.log("firebase user (não) atualizado: " + JSON.stringify(firebase_auth.currentUser));
+                                      //showToast(emailUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                                      this_.openSuccessDialog();
                                     }
                                     else{
                                       console.log("result error: " + JSON.stringify(result));
@@ -218,12 +241,14 @@ class AdvancedSettings extends React.Component {
           });
       }
       else{
+        this.closeDialog();
         this_.cancelEditing();
       }
 
 
     }
   }
+
 
   lockFormAfterUpdate(){
     //this.resetFeedbacks();
@@ -307,6 +332,33 @@ class AdvancedSettings extends React.Component {
   }
 
 
+  closeDialog() {
+    this.setState({dialogOpen : false});
+  }
+
+  openDialog() {
+    this.setState({dialogOpen : true});
+  }
+
+  closeSuccessDialog() {
+    this.setState({emailUpdatedDialogOpen : false});
+  }
+
+  openSuccessDialog() {
+    this.setState({emailUpdatedDialogOpen : true});
+  }
+
+  finnishUpdateEmailFlow(parent){
+    const this_ = parent;
+    this_.closeSuccessDialog();
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const userName = localUser[parentsParameters.NAME[languageCode]];
+    const newEmail = this_.state.parent[parentsParameters.EMAIL[languageCode]];
+    userLogOut();
+    sendChangeEmailAuth(userName, newEmail).then();
+  }
+
+
 
   render() {
     return (
@@ -340,7 +392,7 @@ class AdvancedSettings extends React.Component {
                   </Row>
                   <hr />
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateEmail}>{saveChanges[languageCode]}</Button> </div>
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.openDialog}>{saveChanges[languageCode]}</Button> </div>
                     : <Button theme="accent" onClick={this.editForm}>{changeEmail[languageCode]}</Button>
                   }
                 </Form>
@@ -348,7 +400,26 @@ class AdvancedSettings extends React.Component {
             </Row>
           </ListGroupItem>
         </ListGroup>
+
+        {this.state.dialogOpen ?
+          <ConfirmationDialog
+            open={this.state.dialogOpen}
+            result={this.updateEmail}
+            title={updateEmailPrompt[languageCode]}
+            message={confirmUpdateEmail[languageCode]}/>
+          : null}
+
+        {this.state.emailUpdatedDialogOpen ?
+          <AknowledgementDialog
+            open={this.state.emailUpdatedDialogOpen}
+            after={this.finnishUpdateEmailFlow}
+            title={emailUpdateSuccess[languageCode]}
+            message={confirmLogoutAndNewLink[languageCode]}
+            parent={this}/>
+          : null}
+
       </Card>
+
     );
   }
 }

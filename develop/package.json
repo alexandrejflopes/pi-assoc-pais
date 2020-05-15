@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
+    "@material-ui/core": "^4.9.14",
     "aws-sdk": "^2.663.0",
     "bcrypt": "^4.0.1",
     "camelize": "^1.0.0",
