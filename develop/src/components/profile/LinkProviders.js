@@ -74,15 +74,15 @@ class LinkProviders extends React.Component {
         <ListGroup flush>
           <ListGroupItem className="p-3">
             <Row>
-              <Col lg="4" md="12" style={{marginBottom: "10px"}}>
+              <Col lg="12" md="12" style={{marginBottom: "23px"}}>
                 <Button theme="primary" onClick={this.editForm}>
                   <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>Facebook</Button>
               </Col>
-              <Col lg="4" md="12" style={{marginBottom: "10px"}}>
+              <Col lg="12" md="12" style={{marginBottom: "23px"}}>
                 <Button theme="danger" onClick={this.editForm}>
                   <i className="fab fa-google" style={{marginRight: "10px"}}/>Google</Button>
               </Col>
-              <Col lg="4" md="12">
+              <Col lg="12" md="12">
                 <Button theme="success" onClick={this.editForm}>
                   <i className="fab fa-microsoft" style={{marginRight: "10px"}}/>Microsoft</Button>
               </Col>

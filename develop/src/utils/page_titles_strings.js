@@ -53,6 +53,14 @@ export const newProfilePhoto = {
   "pt_PT" : "Foto de perfil"
 };
 
+export const exportMyData = {
+  "pt_PT" : "Exportar os meus dados"
+};
+
+export const exportWord = {
+  "pt_PT" : "Exportar"
+};
+
 
 
 

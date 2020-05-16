@@ -12,6 +12,7 @@ import {
 import { loadingInfo } from "../utils/messages_strings";
 import AdvancedSettings from "../components/profile/AdvancedSettings";
 import LinkProviders from "../components/profile/LinkProviders";
+import ExportProfile from "../components/profile/ExportProfile";
 
 class ProfileSettings extends React.Component {
   constructor(props) {
@@ -102,16 +103,21 @@ class ProfileSettings extends React.Component {
             <Button pill tag={Link} to="/profile">&larr; {goBackToProfile[languageCode]}</Button>
           </Row>*/}
           <Row>
-            <Col lg="6" md="12">
+            <Col lg="8" md="12">
               <AdvancedSettings
                 user={this.state.userDoc}
                 componentDidMount={this.componentDidMount}
               />
             </Col>
-            <Col lg="6" md="12">
+            <Col lg="4" md="12">
               <LinkProviders
                 user={this.state.userDoc}
                 componentDidMount={this.componentDidMount}
+              />
+            </Col>
+            <Col lg="6" md="12">
+              <ExportProfile
+                user={this.state.userDoc}
               />
             </Col>
           </Row>

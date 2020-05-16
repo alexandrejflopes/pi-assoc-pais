@@ -358,6 +358,7 @@ class EducandosModal extends React.Component {
   restorePreviousChildData() {
     const oldEducando = {...this.state.oldEducando};
     this.setState({ educando: oldEducando });
+    this.setState({ newPhoto: oldEducando[studentsParameters.PHOTO[languageCode]] });
     //console.log("educando restored: " + JSON.stringify(oldEducando));
   }
 
