@@ -887,12 +887,7 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
     let email = request.query.email;
     let new_email = request.query.new_email;
     let document;
-    /*let authToken = request.header("Authorization");
-    const userData = await admin.auth().verifyIdToken(authToken)
-    .catch(err => {
-        console.log('User token invalid:', err);
-        return response.status(405).send({"error" : err});
-    });*/
+    
     admin.auth().getUserByEmail(email)
     .then((userRecord) => {
         // See the UserRecord reference doc for the contents of userRecord.
@@ -910,12 +905,6 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
                 return response.status(404).send({"error":"No such document"});
             }
             else {
-                //console.log('Document data:', doc.data());
-                /**
-                 * let data = doc.data();
-                data["Email"] = new_email;
-                document = JSON.stringify(data)
-                 */
                 document = doc.data();
                 document["Email"] = new_email;
                 console.log('Successfully fetched database parent data:', document);
@@ -924,6 +913,8 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
                     db.collection('parents').doc(new_email).set(document)
                     .then(() => {
                         console.log("Document successfully written!");
+                        alterEmailInCasos(email, new_email);
+                        alterEmailInCotas(email, new_email);
                         response.send(document);
                         return;
                     })
@@ -951,6 +942,68 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+
+async function alterEmailInCasos(oldEmail, newEmail) {
+    let db = admin.firestore();
+    
+    db.collection('casos').get().then(snapshot => {
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['autor']['id'] === oldEmail) {
+                data['autor']['id'] = newEmail;
+                c = c + 1;
+            }
+            for (i = 0; i < data['membros'].length; i++) {
+                if (data['membros'][i]['id'] === oldEmail){
+                    data['membros'][i]['id'] === newEmail;
+                    c = c + 1;
+                }
+            }
+            for (i = 0; i < data['observacoes'].length; i++) {
+                if (data['observacoes'][i]['user']['id'] === oldEmail){
+                    data['observacoes'][i]['user']['id'] === newEmail;
+                    c = c + 1;
+                }
+            }
+            if (c !== 0) {
+                db.collection('casos').doc(doc.id).update(data);
+            }
+        });
+        return;
+    })
+    .catch(err => {
+        console.log('Error altering email in casos:', error);
+        return err;
+    });
+}
+
+async function alterEmailInCotas(oldEmail, newEmail) {
+    let db = admin.firestore();
+    
+    db.collection('cotas').get().then(snapshot => {
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['pagante'] && data['pagante']['id'] === oldEmail) {
+                data['pagante']['id'] = newEmail;
+                c = c + 1;
+            }
+            if (data['recetor'] && data['recetor']['id'] === oldEmail) {
+                data['recetor']['id'] = newEmail;
+                c = c + 1;
+            }
+            if (c !== 0) {
+                db.collection('casos').doc(doc.id).update(data);
+            }
+        });
+        return;
+    })
+    .catch(err => {
+        console.log('Error altering email in cotas:', error);
+        return err;
+    });
+}
 
 /**
  * Funções relacionadas com as partes das cotas dos enc de educação
