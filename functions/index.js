@@ -52,9 +52,12 @@ const {
   sendUserImportEmail,
   sendNotificationEmail,
   sendPositionEmail,
+  sendAuthenticationEmailAfterEmailChange,
+  sendRegisterEliminationEmail,
   exportParentCSV,
   exportEducandosCSV,
   exportSingleParentCSV,
+  exportSingleParentPDF,
   getParentsNewParams,
   getEducandosNewParams,
   getAllNewParams,
@@ -106,9 +109,12 @@ app.get('/sendAuthenticationEmail',sendAuthenticationEmail);
 app.get('/sendUserImportEmail',sendUserImportEmail);
 app.get('/sendNotificationEmail',sendNotificationEmail);
 app.get('/sendPositionEmail',sendPositionEmail);
+app.get('/sendAuthenticationEmailAfterEmailChange',sendAuthenticationEmailAfterEmailChange);
+app.get('/sendRegisterEliminationEmail',sendRegisterEliminationEmail);
 app.get('/exportParentCSV',exportParentCSV);
 app.get('/exportEducandosCSV',exportEducandosCSV);
 app.get('/exportSingleParentCSV',exportSingleParentCSV);
+app.get('/exportSingleParentPDF',exportSingleParentPDF);
 app.get('/getParentsNewParams',getParentsNewParams);
 app.get('/getEducandosNewParams',getEducandosNewParams);
 app.get('/getAllNewParams',getAllNewParams);

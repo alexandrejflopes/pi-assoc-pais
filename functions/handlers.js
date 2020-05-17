@@ -942,7 +942,9 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
-
+/**
+ * Função auxiliar da cloud function alterParentEmail
+ */
 async function alterEmailInCasos(oldEmail, newEmail) {
     let db = admin.firestore();
     
@@ -977,11 +979,13 @@ async function alterEmailInCasos(oldEmail, newEmail) {
         return err;
     });
 }
-
+/**
+ * Função auxiliar da cloud function alterParentEmail
+ */
 async function alterEmailInCotas(oldEmail, newEmail) {
     let db = admin.firestore();
     
-    db.collection('cotas').get().then(snapshot => {
+    db.collection('quotas').get().then(snapshot => {
         snapshot.forEach((doc) => {
             let c = 0;
             let data = doc.data();
@@ -1362,12 +1366,25 @@ exports.sendRegisterEmail = functions.https.onRequest((request, response) => {
     let email = request.query.email;
     let nome = request.query.nome;
 
-    let message = "Olá, "+nome+"\nObrigado por se ter submetido o registo na plataforma. O seu formulário foi submetido com sucesso e está a aguardar aprovação dos órgãos sociais.\nPor favor, fique atento à sua caixa de entrada para o resultado da avaliação.\n\nAtenciosamente,\nA Equipa\n";
+    var actionCodeSettings = {
+        // URL you want to redirect back to. The domain (www.example.com) for this
+        // URL must be whitelisted in the Firebase Console.
+        url: 'https://www.google.com/',
+        // This must be true.
+        handleCodeInApp: true,
+    };
+    admin.auth().generateSignInWithEmailLink(email, actionCodeSettings).then(link => {
+        let message = "Olá, "+nome+"\n\nObrigado por se ter submetido o registo na plataforma. O seu formulário foi submetido com sucesso e está a aguardar aprovação dos órgãos sociais.\n\nInformamos que é necessário proceder ao pagamento da primeira cota para poder usar a plataforma.\nPara confirmar que já efetuou o pagamento desta, clique no link abaixo para entrar na sua conta e confirmar o pagamento. Após a confirmação, fique atento à sua caixa de entrada para obter o resultado da avaliação do seu registo.\n\nLink: "+link+"\n\nSe considera que este email se trata de um erro, por favor contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";
 
-    let subject = `Registo para associação de pais - ${APP_NAME}!`;
+        let subject = `Registo para associação de pais - ${APP_NAME}!`;
 
-    response.status(204).send();
-    return sendEmail(email, subject, message)
+        response.status(204).send();
+        return sendEmail(email, subject, message)
+    })
+    .catch(err => {
+        console.log('Error creating sign in link email', err);
+        return response.status(405).send({"error" : err});
+    });
 });
 /**
  * Função envia um email enviado quando um utilizador é rejeitado como membro da associação
@@ -1565,7 +1582,60 @@ exports.sendPositionEmail = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+/**
+ * Função envia um email de autenticação quando um utilizador muda de email
+ * Este email tem um link que permite o utilizador se autenticar/registar e redireciona-o para a aplicação
+ * Leva como argumentos email (do utilizador) e nome .
+ * Devolve uma mensagem vazia sem conteúdo.
+ * O email demora um pouco a chegar, mesmo a respoesta já tendo sido enviada (assíncrona)
+ * Nota: É necessário mudar o url da variável actionCodeSettings. Esse url vai ser a página para o qual o utilizador
+ * vai ser redirecionado quando clica no link de registo/autenticação
+ */
+exports.sendAuthenticationEmailAfterEmailChange = functions.https.onRequest((request, response) => {
+    let email = request.query.email;
+    let nome = request.query.nome;
 
+    var actionCodeSettings = {
+        // URL you want to redirect back to. The domain (www.example.com) for this
+        // URL must be whitelisted in the Firebase Console.
+        url: 'https://www.google.com/',
+        // This must be true.
+        handleCodeInApp: true,
+    };
+    
+    admin.auth().generateSignInWithEmailLink(email, actionCodeSettings).then(link => {
+        let message = "Olá, "+ nome +"\n\nRecebemos um pedido de mudança de email da sua conta da plataforma da sua associação de pais para este endereço. Por favor, clique no link abaixo para autenticar com este novo email.\n\nLink: "+ link +"\n\nSe considera que se trata de um erro, por favor ignore este email ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";
+
+        let subject = `Mudança de email - Autenticação para associação de pais - ${APP_NAME}!`;
+
+        response.status(204).send();
+        return sendEmail(email, subject, message)
+    })
+    .catch(err => {
+        console.log('Error creating sign in email', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função envia um email enviado quando um utilizador não paga a primeira cota a tempo e não entra na associação
+ * Este email tem um link que permite o utilizador se autenticar/registar e redireciona-o para a aplicação
+ * Leva como argumentos email (do utilizador) e nome.
+ * Devolve uma mensagem vazia sem conteúdo.
+ * O email demora um pouco a chegar, mesmo a respoesta já tendo sido enviada (assíncrona)
+ * Nota: É necessário mudar o url da variável actionCodeSettings. Esse url vai ser a página para o qual o utilizador
+ * vai ser redirecionado quando clica no link de registo/autenticação
+ */
+exports.sendRegisterEliminationEmail = functions.https.onRequest((request, response) => {
+    let email = request.query.email;
+    let nome = request.query.nome;
+
+    let message = "Olá, "+nome+"\n\nApós ter efetuado o pedido de registo na associação, passou o limite de tempo para efetuar o pagamento da 1ª quota e o seu registo foi automaticamente eliminado. Se efetuou o pagamento da quota, por favor, contacte os órgãos sociais da associação para proceder à reinserção do registo e validação.\n\nSe considera que se trata de um erro, por favor ignore este email ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";    
+    
+    let subject = `Registo para associação de pais - ${APP_NAME}!`;
+    
+    response.status(204).send();
+    return sendEmail(email, subject, message)
+});
 
 /**
  * Função auxiliar utilizada para enviar emails
@@ -1680,7 +1750,57 @@ exports.exportSingleParentCSV = functions.https.onRequest((request, response) =>
         console.log('Error exporting data', err);
         return response.status(405).send({"error" : err});
     });
-}); 
+});
+/**
+ * Função devolve/inicia o download de um ficheiro PDF com as informações do utilizador presentes na base de dados.
+ * Estas informações não incluem as suas cotas.
+ * Leva como argumento o id do documento do parent a ser exportado.
+ */
+exports.exportSingleParentPDF = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    let id = request.query.id;
+    
+    db.collection('parents').doc(id).get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            //console.log('Document data:', doc.data());
+            let data = doc.data();
+            const pdf = new pdfkit();
+            response.setHeader(
+                "Content-disposition",
+                "attachment; filename=User"+doc.get("Nome")+".pdf"
+            );
+            response.set("Content-Type", "application/pdf");
+            pdf.pipe(response);
+            pdf.fontSize(25).text('Parent info\n\n');
+            pdf.fontSize(14).text('Nome: '+doc.get("Nome")+'\nEmail: '+doc.get("Email")+'\n');
+            delete data['Nome']
+            delete data['Email']
+            let educandos = data["Educandos"]
+            delete data['Educandos']
+            for (var k in data) {
+                pdf.fontSize(14).text(k+': '+data[k]+'\n');
+            }
+            pdf.fontSize(14).text('Educandos:\n');
+            for(i = 0;i<educandos.length;i++) {
+                pdf.fontSize(14).text('-> Educando '+i+': \n');
+                for (var nk in educandos[i]){
+                    pdf.fontSize(14).text('     '+nk+' : '+educandos[i][nk]+'\n');
+                }
+            }
+            return pdf.end();
+        }
+    })
+    .catch((err) => {
+        console.log('Error exporting data', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+
 /**
  * Retorna os parametros adicionados pelo administrador do sistema á entidade "parents"/encarregados de educação
  */
@@ -1745,7 +1865,10 @@ exports.getAllNewParams = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
-
+/**
+ * Função que exporta um documento de um caso presente na base de dados no formato de um pdf.
+ * Leva como argumento o id do docuemnto do caso a exportar.
+ */
 exports.exportCasoPdf = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let id = request.query.id;
