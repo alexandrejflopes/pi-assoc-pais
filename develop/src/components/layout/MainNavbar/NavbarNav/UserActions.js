@@ -18,7 +18,7 @@ import {
 import {
   profileLogout,
   profilePageTitle,
-  profileSettings,
+  profileSettings, profileSettingsAdminSectionTitle,
 } from "../../../../utils/page_titles_strings";
 import {
   fetchUserDoc,
@@ -34,6 +34,7 @@ export default class UserActions extends React.Component {
       visible: false,
       userName: "ND",
       userPhoto: defaultAvatar,
+      isAdmin : false
     };
 
     this.toggleUserActions = this.toggleUserActions.bind(this);
@@ -67,8 +68,9 @@ export default class UserActions extends React.Component {
     if (currentUser != null) {
       const displayName = currentUser[parentsParameters.NAME[languageCode]];
       const photoURL = currentUser[parentsParameters.PHOTO[languageCode]];
+      const isAdmin = currentUser[parentsParameters.ADMIN[languageCode]];
 
-      this.setState({ userName: displayName, userPhoto: photoURL });
+      this.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
     }
   }
 
@@ -92,7 +94,8 @@ export default class UserActions extends React.Component {
               // no error
               const displayName = result[parentsParameters.NAME[languageCode]];
               const photoURL = result[parentsParameters.PHOTO[languageCode]];
-              this.setState({ userName: displayName, userPhoto: photoURL });
+              const isAdmin = result[parentsParameters.ADMIN[languageCode]];
+              this.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
             }
           })
           .catch((error) => {
@@ -102,8 +105,8 @@ export default class UserActions extends React.Component {
         //console.log("aproveitar o storage");
         const displayName = localUser[parentsParameters.NAME[languageCode]];
         const photoURL = localUser[parentsParameters.PHOTO[languageCode]];
-
-        this.setState({ userName: displayName, userPhoto: photoURL });
+        const isAdmin = localUser[parentsParameters.ADMIN[languageCode]];
+        this.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
       }
     }
   }
@@ -131,6 +134,15 @@ export default class UserActions extends React.Component {
             {profileSettings[languageCode]}{" "}
             {/*TODO: to export its data and delete account*/}
           </DropdownItem>
+          {/* render admin option only if the user is admin */}
+          {this.state.isAdmin ?
+            <DropdownItem tag={Link} to="admin-settings">
+              <i className="material-icons">vpn_key</i>{" "}
+              {profileSettingsAdminSectionTitle[languageCode]}{" "}
+              {/* TODO: export assotiation data */}
+            </DropdownItem>
+          :
+          null}
           <DropdownItem divider />
           <DropdownItem tag={Link} onClick={userLogOut} className="text-danger">
             <i className="material-icons text-danger">&#xE879;</i>{" "}

@@ -103,7 +103,21 @@ const errorSignOut = {
 
 // -------------------------------------- OTHERS --------------------------------------
 
+// ------- INFOS
 
+
+export const exportProfileExplanation = {
+  "pt_PT" : "Pode descarregar uma cópia das suas informações detidas pela plataforma em qualquer altura. \n" +
+    "Descarregar as suas informações requer que entre na sua conta e só o utilizador tenm acesso a este processo. " +
+    "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro PDF para o disco do seu dispositivo."
+};
+
+export const exportAssocDataExplanation = {
+  "pt_PT" : "Pode descarregar uma cópia das suas informações detidas pela plataforma em qualquer altura. " +
+    "Descarregar as suas informações requer que entre na sua conta com previlégios adicionais, como órgão social, " +
+    "e só o utilizador e outros órgãos sociais têm acesso a este processo. " +
+    "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro para o disco do seu dispositivo."
+};
 
 // ------- ERRORS
 

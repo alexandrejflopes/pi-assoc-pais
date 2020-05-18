@@ -13,18 +13,22 @@ import {
   languageCode
 } from "../../utils/general_utils";
 import {
+  exportAssocData,
   exportMyData, exportWord,
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
-import {exportProfileExplanation} from "../../utils/messages_strings";
+import {
+  exportAssocDataExplanation,
+  exportProfileExplanation
+} from "../../utils/messages_strings";
 
 
-class ExportProfile extends React.Component {
+class ExportAssocData extends React.Component {
   constructor(props) {
     super(props);
 
     let parent = null;
-    const infoFormTitle = exportMyData[languageCode];
+    const infoFormTitle = exportAssocData[languageCode];
 
     if(this.props.user!=null){
       parent = this.props.user;
@@ -67,7 +71,7 @@ class ExportProfile extends React.Component {
                   <Row form>
                     <Col md="12" className="form-group">
                       <p>
-                        {exportProfileExplanation[languageCode]}
+                        {exportAssocDataExplanation[languageCode]}
                       </p>
                     </Col>
                   </Row>
@@ -87,6 +91,4 @@ class ExportProfile extends React.Component {
 
 
 
-
-
-export default ExportProfile;
+export default ExportAssocData;

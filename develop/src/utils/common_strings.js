@@ -2,6 +2,10 @@
 * file to save common strings that are repeated along the app
 * */
 
+export const erase = {
+  "pt_PT" : "Erase"
+};
+
 export const ok = {
   "pt_PT" : "Ok"
 };

@@ -13,18 +13,20 @@ import {
   languageCode
 } from "../../utils/general_utils";
 import {
+  deleteAccount,
   exportMyData, exportWord,
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
 import {exportProfileExplanation} from "../../utils/messages_strings";
+import {erase} from "../../utils/common_strings";
 
 
-class ExportProfile extends React.Component {
+class DeleteAccount extends React.Component {
   constructor(props) {
     super(props);
 
     let parent = null;
-    const infoFormTitle = exportMyData[languageCode];
+    const infoFormTitle = deleteAccount[languageCode];
 
     if(this.props.user!=null){
       parent = this.props.user;
@@ -72,7 +74,7 @@ class ExportProfile extends React.Component {
                     </Col>
                   </Row>
                   <hr />
-                  <Button theme="accent" onClick={() => {}}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportWord[languageCode]}</Button>
+                  <Button theme="danger" onClick={() => {}}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>clear</span> {erase[languageCode]}</Button>
                 </Form>
               </Col>
             </Row>
@@ -89,4 +91,4 @@ class ExportProfile extends React.Component {
 
 
 
-export default ExportProfile;
+export default DeleteAccount;

@@ -13,6 +13,10 @@ export const profileSettingsPageTitle = {
   "pt_PT": "Definições avançadas"
 };
 
+export const profileSettingsAdminSectionTitle = {
+  "pt_PT": "Administração"
+};
+
 export const profileSettingsDataFormTitle = {
   "pt_PT" : "Dados da conta"
 };
@@ -34,7 +38,7 @@ export const profileMyChildren = {
 };
 
 export const profileSettings = {
-  "pt_PT" : "Definições de conta"
+  "pt_PT" : "Definições avançadas"
 };
 
 export const profileLogout = {
@@ -57,8 +61,16 @@ export const exportMyData = {
   "pt_PT" : "Exportar os meus dados"
 };
 
+export const exportAssocData = {
+  "pt_PT" : "Exportar dados globais da plataforma"
+};
+
 export const exportWord = {
   "pt_PT" : "Exportar"
+};
+
+export const deleteAccount = {
+  "pt_PT" : "Apagar conta"
 };
 
 
