@@ -76,7 +76,15 @@ exports.addCaso = functions.https.onRequest((request, response) => {
     
     if (request.query.privado === "true"){
         caso["membros"] = JSON.parse(request.query.membros);
-        caso["membros"].push(caso["autor"]);
+        let c = 0;
+        for (i = 0; i<caso["membros"].length; i++){
+            if (caso["membros"][i]["id"] === request.query.id_autor){
+                c = c + 1;
+            }
+        }
+        if (c === 0) {
+            caso["membros"].push(caso["autor"]);
+        }   
     }
     else{
         caso["membros"] = [caso["autor"]];
@@ -498,20 +506,21 @@ exports.removeAnexoCaso = functions.https.onRequest((request, response) => {
 /**
  * Esta função devolve uma lista de casos que serão disponíveis a um utilizador
  * Ou seja devolve os casos publicos juntamente com os privados a que um utilizador tem acesso
- * Leva como argumentos: id (id do utilizador), nome (nome do utilizador)
- * Devolve uma lista de casos que um utilizador tem acesso
+ * Leva como argumentos: id (id do utilizador), nome (nome do utilizador), foto (foto/endereço da foto do utilizador)
+ * Devolve uma lista de casos que um utilizador tem acesso 
  * No entanto a lista de casos têm apenas alguns atributos, não tem todos
- * Tem apenas os atributos titulo, descricao, privado, arquivado e o id do caso
+ * Tem apenas os atributos titulo, descricao, privado, arquivado e o id do caso 
  */
 exports.getUserAvailableCasos = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let user_id = request.query.id;
     let user_name = request.query.nome;
+    let user_photo = request.query.foto;
     let casosRef = db.collection('casos');
     let availableCases = [];
 
     let public_cases = casosRef.where('privado','==',false).get();
-    let private_cases = casosRef.where('privado','==',true).where('membros','array-contains',{'id':user_id,'nome':user_name}).get();
+    let private_cases = casosRef.where('privado','==',true).where('membros','array-contains',{'id':user_id,'nome':user_name, 'photo':user_photo}).get();
 
     Promise.all([public_cases, private_cases]).then((query_snapshots) => {
         let public_cases_array = query_snapshots[0].forEach((doc) => {
@@ -532,7 +541,7 @@ exports.getUserAvailableCasos = functions.https.onRequest((request, response) =>
         });
         let private_cases_array = query_snapshots[1].forEach((doc) => {
             let data = doc.data();
-            data["id"] = doc.id;
+            data["id"] = doc.id; 
             let caso = {};
             caso["id"] = doc.id;
             caso["descricao"] = doc.get("descricao");
