@@ -457,6 +457,127 @@ function updateParentEmail(currentEmail, newEmail) {
 
 
 /*
+* export PDF with parent data
+* */
+function exportParentToPDF(email){
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/exportSingleParentPDF?" +
+    "id=" +
+    encodeURIComponent(email);
+
+  const request = async () => {
+    let file = new Blob();
+    await fetch(uri)
+      .then((resp) => resp.blob()) // Transform the data into blob / file
+      .then(function (data) {
+        console.log("Export PDF success");
+        file = data;
+      })
+      .catch(function (error) {
+        console.log("Export error: " + error);
+      });
+
+    return file;
+  };
+
+  return request();
+}
+
+/*
+* export CSV with parent data
+* */
+function exportParentToCSV(email){
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/exportSingleParentCSV?" +
+    "id=" +
+    encodeURIComponent(email);
+
+  const request = async () => {
+    let file = new Blob();
+    await fetch(uri)
+      .then((resp) => resp.blob()) // Transform the data into blob / file
+      .then(function (data) {
+        console.log("Export CSV success");
+        file = data;
+      })
+      .catch(function (error) {
+        console.log("Export error: " + error);
+      });
+
+    return file;
+  };
+
+  return request();
+}
+
+/*
+* export all parents data to a CSV
+* */
+function exportAllParentsToCSV(){
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/exportParentCSV";
+
+  const request = async () => {
+    let file = new Blob();
+    await fetch(uri)
+      .then((resp) => resp.blob()) // Transform the data into blob / file
+      .then(function (data) {
+        console.log("Export parents CSV success");
+        file = data;
+      })
+      .catch(function (error) {
+        console.log("Export error: " + error);
+      });
+
+    return file;
+  };
+
+  return request();
+}
+
+/*
+* export all children data to a CSV
+* */
+function exportAllChildrenToCSV(){
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/exportEducandosCSV";
+
+  const request = async () => {
+    let file = new Blob();
+    await fetch(uri)
+      .then((resp) => resp.blob()) // Transform the data into blob / file
+      .then(function (data) {
+        console.log("Export children CSV success");
+        file = data;
+      })
+      .catch(function (error) {
+        console.log("Export error: " + error);
+      });
+
+    return file;
+  };
+
+  return request();
+}
+
+
+/*
  * send email to parent to notify it was imported to platform
  */
 async function sendChangeEmailAuth(nome, email) {
@@ -506,5 +627,9 @@ export {
   emailExistsInFBAuth,
   emailExistsInDB,
   updateParentEmail,
-  sendChangeEmailAuth
+  sendChangeEmailAuth,
+  exportParentToPDF,
+  exportParentToCSV,
+  exportAllParentsToCSV,
+  exportAllChildrenToCSV
 };

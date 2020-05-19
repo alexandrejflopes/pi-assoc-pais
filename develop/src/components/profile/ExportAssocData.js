@@ -10,7 +10,7 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode
+  languageCode, parentsParameters
 } from "../../utils/general_utils";
 import {
   exportAssocData,
@@ -21,6 +21,11 @@ import {
   exportAssocDataExplanation,
   exportProfileExplanation
 } from "../../utils/messages_strings";
+import {
+  exportAllParentsToCSV,
+  exportParentToCSV
+} from "../../firebase_scripts/profile_functions";
+import JSZip from "jszip";
 
 
 class ExportAssocData extends React.Component {
@@ -54,6 +59,21 @@ class ExportAssocData extends React.Component {
   }
 
   /*********************************** HANDLERS ***********************************/
+
+  exportParentData(){
+    let zip = new JSZip();
+
+    let filesUrlsArray = [];
+
+
+    exportAllParentsToCSV()
+      .then((file) => {
+        const url = window.URL.createObjectURL(new Blob([file]));
+        // save this blob URL
+        filesUrlsArray.push(url);
+
+      });
+  }
 
 
 

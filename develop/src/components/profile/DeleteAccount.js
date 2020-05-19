@@ -17,8 +17,12 @@ import {
   exportMyData, exportWord,
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
-import {exportProfileExplanation} from "../../utils/messages_strings";
+import {
+  deleteAccountExplanation,
+  exportProfileExplanation
+} from "../../utils/messages_strings";
 import {erase} from "../../utils/common_strings";
+import red from "@material-ui/core/colors/red";
 
 
 class DeleteAccount extends React.Component {
@@ -57,19 +61,19 @@ class DeleteAccount extends React.Component {
 
   render() {
     return (
-      <Card small className="mb-4">
-        <CardHeader className="border-bottom">
-          <h6 className="m-0">{this.state.title}</h6>
+      <Card small className="mb-4" >
+        <CardHeader className="border-bottom bg-danger">
+          <h6 className="m-0 text-white">{this.state.title}</h6>
         </CardHeader>
         <ListGroup flush>
           <ListGroupItem className="p-3">
             <Row>
               <Col>
                 <Form>
-                  <Row form>
-                    <Col md="12" className="form-group">
+                  <Row>
+                    <Col md="12">
                       <p>
-                        {exportProfileExplanation[languageCode]}
+                        {deleteAccountExplanation[languageCode]}
                       </p>
                     </Col>
                   </Row>

@@ -10,13 +10,17 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode
+  languageCode, parentsParameters
 } from "../../utils/general_utils";
 import {
   exportMyData, exportWord,
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
 import {exportProfileExplanation} from "../../utils/messages_strings";
+import {
+  exportParentToCSV,
+  exportParentToPDF
+} from "../../firebase_scripts/profile_functions";
 
 
 class ExportProfile extends React.Component {
@@ -36,6 +40,7 @@ class ExportProfile extends React.Component {
       dialogOpen : false,
     };
 
+    this.exportParentData = this.exportParentData.bind(this);
 
   }
 
@@ -50,6 +55,25 @@ class ExportProfile extends React.Component {
   }
 
   /*********************************** HANDLERS ***********************************/
+
+
+  exportParentData(){
+    const email = this.state.parent[parentsParameters.EMAIL[languageCode]];
+    const parentName = this.state.parent[parentsParameters.NAME[languageCode]];
+    console.log("email to export: " + email);
+    exportParentToCSV(email)
+      .then((file) => {
+        const url = window.URL.createObjectURL(new Blob([file]));
+        // creat anchor tag with download attr
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', "User" + parentName + ".csv");
+        link.setAttribute('display', "none");
+        document.body.appendChild(link);
+        // 4. Force download
+        link.click();
+      });
+  }
 
 
 
@@ -72,7 +96,7 @@ class ExportProfile extends React.Component {
                     </Col>
                   </Row>
                   <hr />
-                  <Button theme="accent" onClick={() => {}}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportWord[languageCode]}</Button>
+                  <Button theme="accent" onClick={this.exportParentData}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportWord[languageCode]}</Button>
                 </Form>
               </Col>
             </Row>

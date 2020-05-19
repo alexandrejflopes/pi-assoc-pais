@@ -3,7 +3,7 @@
 * */
 
 export const erase = {
-  "pt_PT" : "Erase"
+  "pt_PT" : "Apagar"
 };
 
 export const ok = {
@@ -69,6 +69,10 @@ export const signInWithGoogle = {
 
 export const hello = {
   "pt_PT" : "Olá"
+};
+
+export const deleteAccountPrompt = {
+  "pt_PT" : "Apagar conta?"
 };
 
 

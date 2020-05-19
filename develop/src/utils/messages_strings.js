@@ -109,7 +109,7 @@ const errorSignOut = {
 export const exportProfileExplanation = {
   "pt_PT" : "Pode descarregar uma cópia das suas informações detidas pela plataforma em qualquer altura. \n" +
     "Descarregar as suas informações requer que entre na sua conta e só o utilizador tenm acesso a este processo. " +
-    "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro PDF para o disco do seu dispositivo."
+    "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro CSV para o disco do seu dispositivo."
 };
 
 export const exportAssocDataExplanation = {
@@ -117,6 +117,15 @@ export const exportAssocDataExplanation = {
     "Descarregar as suas informações requer que entre na sua conta com previlégios adicionais, como órgão social, " +
     "e só o utilizador e outros órgãos sociais têm acesso a este processo. " +
     "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro para o disco do seu dispositivo."
+};
+
+export const deleteAccountExplanation = {
+  "pt_PT" : "Pode eliminar a sua conta da plataforma da associação de pais. Todos os seus dados serão apagados da plataforma, " +
+    "embora os órgãos sociais ainda possam mantê-los em formatos suplementares, pelo que deverá contactá-los caso queira " +
+    "abandonar definitivamente a associação.\n" +
+    "Depois da eliminação de conta não vai poder recuperar as suas informações, bem como mensagens ou outros conteúdos " +
+    "que partilhou na plataforma. Se desejar descarregar uma cópia das suas informações pode usar a função de exportar " +
+    "dados antes de apagar a sua conta."
 };
 
 // ------- ERRORS
@@ -188,6 +197,10 @@ export const confirmUpdateEmail = {
 export const confirmLogoutAndNewLink = {
   "pt_PT" : "Foi-lhe enviado um link para o novo " +
     " email para se autenticar.\nSe não o receber, proceda ao login normalmente, pedindo um novo link. \n"
+};
+
+export const confirmdeleteAccount = {
+  "pt_PT" : "Tem a certeza que pretender apagar a sua conta? Esta ação não pode ser revertida!"
 };
 
 // ------- SUCCESS
