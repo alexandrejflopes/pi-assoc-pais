@@ -1424,7 +1424,7 @@ exports.sendRegisterEmail = functions.https.onRequest((request, response) => {
     var actionCodeSettings = {
         // URL you want to redirect back to. The domain (www.example.com) for this
         // URL must be whitelisted in the Firebase Console.
-        url: 'https://www.google.com/',
+        url: auth_URL,
         // This must be true.
         handleCodeInApp: true,
     };
