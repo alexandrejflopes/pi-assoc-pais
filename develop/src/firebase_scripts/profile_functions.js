@@ -582,7 +582,7 @@ function deleteAccount(email){
     "https://us-central1-" +
     project_id +
     ".cloudfunctions.net/api/deleteAccount?" +
-    "id=" +
+    "email=" +
     encodeURIComponent(email);
 
   const request = async () => {
