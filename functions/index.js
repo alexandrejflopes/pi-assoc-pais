@@ -33,6 +33,7 @@ const {
   removeEducando,
   updateParent,
   deleteParent,
+  deleteAccount,
   approveParent,
   addFirstPayment,
   alterParentEmail,
@@ -90,6 +91,7 @@ app.get('/addEducando',addEducando);
 app.get('/removeEducando',removeEducando);
 app.get('/updateParent',updateParent);
 app.get('/deleteParent',deleteParent);
+app.get('/deleteAccount',deleteAccount);
 app.get('/approveParent',approveParent);
 app.get('/addFirstPayment',addFirstPayment);
 app.get('/alterParentEmail',alterParentEmail);

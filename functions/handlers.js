@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const json2csv = require("json2csv").parse;
+const pdfkit = require('pdfkit');
 
 admin.initializeApp();
 
@@ -812,6 +813,51 @@ exports.deleteParent = functions.https.onRequest((request, response) => {
                 return response.send(data);
             }).catch(err => {
                 console.log("Failed to delete -> ", err);
+                return response.status(405).send({"error" : err});
+            });
+            return data;
+        }
+    })
+    .catch(err => {
+        console.log("Failed to get doc -> ", err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função que elimina um parent e as suas informações de authenticação/ do Google Auth
+ * Leva como argumento o email do parent
+ * Return o documento removido
+ */
+exports.deleteAccount = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.email;
+    let docRef = db.collection('parents').doc(id);
+
+    docRef.get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            //console.log('Document data:', doc.data());
+            let data = doc.data();
+            data["id"] = doc.id;
+            db.collection('parents').doc(id).delete().then((parent)=>{
+                return admin.auth().getUserByEmail(id).then((userRecord) => {
+                    return admin.auth().deleteUser(userRecord.uid).then(() => {
+                        return response.send(data);
+                    })
+                    .catch(err => {
+                        console.log("Failed to delete auth record -> ", err);
+                        return response.status(405).send({"error" : err});
+                    });
+                })
+                .catch(err => {
+                    console.log("Failed to get auth record -> ", err);
+                    return response.status(405).send({"error" : err});
+                });
+            }).catch(err => {
+                console.log("Failed to delete database record -> ", err);
                 return response.status(405).send({"error" : err});
             });
             return data;
