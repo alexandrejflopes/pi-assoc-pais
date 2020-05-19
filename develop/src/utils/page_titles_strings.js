@@ -69,7 +69,7 @@ export const exportWord = {
   "pt_PT" : "Exportar"
 };
 
-export const deleteAccount = {
+export const deleteAccountSectionTitle = {
   "pt_PT" : "Apagar conta"
 };
 

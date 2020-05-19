@@ -10,17 +10,21 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode, parentsParameters
+  languageCode, parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
 import {
   exportMyData, exportWord,
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
-import {exportProfileExplanation} from "../../utils/messages_strings";
+import {
+  exportUserDataOnProcess,
+  exportProfileExplanation, exportUserDataSucess, exportUserDataError
+} from "../../utils/messages_strings";
 import {
   exportParentToCSV,
   exportParentToPDF
 } from "../../firebase_scripts/profile_functions";
+
 
 
 class ExportProfile extends React.Component {
@@ -61,8 +65,15 @@ class ExportProfile extends React.Component {
     const email = this.state.parent[parentsParameters.EMAIL[languageCode]];
     const parentName = this.state.parent[parentsParameters.NAME[languageCode]];
     console.log("email to export: " + email);
+
+    showToast(exportUserDataOnProcess[languageCode], 3000, toastTypes.INFO);
+
     exportParentToCSV(email)
       .then((file) => {
+        if(file==null){
+          showToast(exportUserDataError[languageCode], 8000, toastTypes.ERROR);
+          return;
+        }
         const url = window.URL.createObjectURL(new Blob([file]));
         // creat anchor tag with download attr
         const link = document.createElement('a');
@@ -72,6 +83,7 @@ class ExportProfile extends React.Component {
         document.body.appendChild(link);
         // 4. Force download
         link.click();
+        showToast(exportUserDataSucess[languageCode], 5000, toastTypes.SUCCESS);
       });
   }
 

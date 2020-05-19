@@ -113,10 +113,10 @@ export const exportProfileExplanation = {
 };
 
 export const exportAssocDataExplanation = {
-  "pt_PT" : "Pode descarregar uma cópia das suas informações detidas pela plataforma em qualquer altura. " +
+  "pt_PT" : "Pode descarregar uma cópia das informações relacionadas a membros e alunos detidas pela plataforma em qualquer altura. " +
     "Descarregar as suas informações requer que entre na sua conta com previlégios adicionais, como órgão social, " +
     "e só o utilizador e outros órgãos sociais têm acesso a este processo. " +
-    "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro para o disco do seu dispositivo."
+    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo."
 };
 
 export const deleteAccountExplanation = {
@@ -128,7 +128,35 @@ export const deleteAccountExplanation = {
     "dados antes de apagar a sua conta."
 };
 
+export const exportUserDataOnProcess = {
+  "pt_PT" : "A processar as suas informações."
+};
+
+export const exportAssocDataOnProcess = {
+  "pt_PT" : "A processar as informações da associação."
+};
+
+export const changeEmailOnProcess = {
+  "pt_PT" : "A proceder à mudança de email..."
+};
+
 // ------- ERRORS
+
+export const deleteAccountGenericErrorMsg = {
+  "pt_PT" : "Ocorreu um erro ao tentar eliminar a sua conta. Por favor, tente novamente mais tarde."
+};
+
+export const exportMembersDataError = {
+  "pt_PT" : "Ocorreu um erro a processar as informações dos membros da associação. Por favor, tente novamente mais tarde."
+};
+
+export const exportChildrenDataError = {
+  "pt_PT" : "Ocorreu um erro a processar as informações dos alunos. Por favor, tente novamente mais tarde."
+};
+
+export const exportUserDataError = {
+  "pt_PT" : "Ocorreu um erro a processar as suas informações. Por favor, tente novamente mais tarde."
+};
 
 export const emailAlreadyTaken = {
   "pt_PT" : "Houve um problema a atualizar o email. Por favor, tente novamente."
@@ -180,7 +208,7 @@ export const childDeleteError = {
 };
 
 
-// ------- CONFIRMATIONS
+// ------- CONFIRMATIONS / PROMPTS
 
 export const confirmDeleteChild = {
   "pt_PT" : "Tem a certeza que pretender eliminar este educando?\n" +
@@ -199,11 +227,28 @@ export const confirmLogoutAndNewLink = {
     " email para se autenticar.\nSe não o receber, proceda ao login normalmente, pedindo um novo link. \n"
 };
 
-export const confirmdeleteAccount = {
-  "pt_PT" : "Tem a certeza que pretender apagar a sua conta? Esta ação não pode ser revertida!"
+export const confirmDeleteAccount = {
+  "pt_PT" : "Deixará de ter acesso à plaforma através desta conta. Esta ação não pode ser revertida!"
+};
+
+export const confirmLogoutAfterDelete = {
+  "pt_PT" : "A sua conta foi apagada com sucesso. Será redirecionado para a página de início de sessão. \n" +
+    "Obrigado por ter usado a plataforma. Até breve!"
 };
 
 // ------- SUCCESS
+
+export const deleteAccountSuccess = {
+  "pt_PT" : "Conta eliminada com sucesso"
+};
+
+export const exportAssocDataSuccess = {
+  "pt_PT" : "Informações exportadas com sucesso."
+};
+
+export const exportUserDataSucess = {
+  "pt_PT" : "Informações exportadas com sucesso."
+};
 
 export const emailUpdateSuccess = {
   "pt_PT" : "Email atualizado com sucesso"

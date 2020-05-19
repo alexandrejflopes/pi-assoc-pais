@@ -33,7 +33,7 @@ import {
   parentUpdateSuccess,
   parentUpdateError,
   emailUpdateSuccess,
-  confirmLogoutAndNewLink
+  confirmLogoutAndNewLink, exportAssocDataOnProcess, changeEmailOnProcess
 } from "../../utils/messages_strings";
 import {firebase_auth, firebase} from "../../firebase-config";
 import {
@@ -127,6 +127,8 @@ class AdvancedSettings extends React.Component {
     else{
       //const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
       if(confirmation){
+
+        showToast(changeEmailOnProcess[languageCode], 3000, toastTypes.INFO);
 
         let FBuser = firebase_auth.currentUser;
         // in case of, for some reason, these don't match

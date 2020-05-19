@@ -10,7 +10,11 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode, parentsParameters
+  assocDataZipName,
+  languageCode,
+  membersChildrenDesignation,
+  membersDesignation,
+  parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
 import {
   exportAssocData,
@@ -18,15 +22,21 @@ import {
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
 import {
-  exportAssocDataExplanation,
-  exportProfileExplanation
+  exportAssocDataExplanation, exportAssocDataOnProcess, exportAssocDataSuccess,
+  exportChildrenDataError,
+  exportMembersDataError,
+  exportProfileExplanation,
+  exportUserDataError,
+  exportUserDataOnProcess,
+  exportUserDataSucess
 } from "../../utils/messages_strings";
 import {
+  exportAllChildrenToCSV,
   exportAllParentsToCSV,
   exportParentToCSV
 } from "../../firebase_scripts/profile_functions";
 import JSZip from "jszip";
-
+import { saveAs } from 'file-saver';
 
 class ExportAssocData extends React.Component {
   constructor(props) {
@@ -46,6 +56,9 @@ class ExportAssocData extends React.Component {
     };
 
 
+    this.exportAssocData = this.exportAssocData.bind(this);
+
+
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -60,17 +73,47 @@ class ExportAssocData extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
-  exportParentData(){
+  exportAssocData(){
     let zip = new JSZip();
+    const zipFileName = assocDataZipName[languageCode];
 
     let filesUrlsArray = [];
 
+    const parentsFileName = membersDesignation[languageCode] + ".csv";
+    const childrenFileName = membersChildrenDesignation[languageCode] + ".csv";
+
+    showToast(exportAssocDataOnProcess[languageCode], 3000, toastTypes.INFO);
 
     exportAllParentsToCSV()
-      .then((file) => {
-        const url = window.URL.createObjectURL(new Blob([file]));
-        // save this blob URL
+      .then((parentsFile) => {
+        if(parentsFile==null){
+          showToast(exportMembersDataError[languageCode], 8000, toastTypes.ERROR);
+          return;
+        }
+        const url = window.URL.createObjectURL(new Blob([parentsFile]));
+        // save parents blob URL
         filesUrlsArray.push(url);
+
+        zip.file(parentsFileName, parentsFile, {binary:true});
+
+        exportAllChildrenToCSV()
+          .then((childrenFile) => {
+            if(childrenFile==null){
+              showToast(exportChildrenDataError[languageCode], 8000, toastTypes.ERROR);
+              return;
+            }
+            const url = window.URL.createObjectURL(new Blob([childrenFile]));
+            // save children blob URL
+            filesUrlsArray.push(url);
+
+            zip.file(childrenFileName, childrenFile, {binary:true});
+
+            zip.generateAsync({type:'blob'}).then(function(content) {
+              saveAs(content, zipFileName);
+              showToast(exportAssocDataSuccess[languageCode], 5000, toastTypes.SUCCESS);
+            });
+
+          });
 
       });
   }
@@ -96,7 +139,7 @@ class ExportAssocData extends React.Component {
                     </Col>
                   </Row>
                   <hr />
-                  <Button theme="accent" onClick={() => {}}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportWord[languageCode]}</Button>
+                  <Button theme="accent" onClick={this.exportAssocData}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportWord[languageCode]}</Button>
                 </Form>
               </Col>
             </Row>

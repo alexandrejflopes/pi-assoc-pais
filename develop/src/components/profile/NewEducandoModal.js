@@ -79,8 +79,10 @@ class NewEducandoModal extends React.Component{
 
   handleChangePhoto(e) {
     const imageFile = e.target.files[0];
-    const imageTempUrl = URL.createObjectURL(imageFile);
-    this.setState({fileToUpload : imageFile, educandoFoto : imageTempUrl});
+    if(imageFile!=null){
+      const imageTempUrl = URL.createObjectURL(imageFile);
+      this.setState({fileToUpload : imageFile, educandoFoto : imageTempUrl});
+    }
   }
 
   addEducando(){

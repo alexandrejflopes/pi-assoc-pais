@@ -103,6 +103,21 @@ const newParametersEntities = {
   }
 };
 
+
+export const membersDesignation = {
+  "pt_PT" : "Membros"
+};
+
+export const membersChildrenDesignation = {
+  "pt_PT" : "Alunos"
+};
+
+export const assocDataZipName = {
+  "pt_PT" : "Assoc_Pais_Info"
+};
+
+
+
 const parentsParameters = {
   ASSOC_NUMBER : {
     "pt_PT": "Número de Sócio"
@@ -191,6 +206,9 @@ export const toastTypes = {
 
 
 
+
+
+
 // ---------------------------------------------- OBJECTS ---------------------------------------------
 
 
@@ -226,7 +244,6 @@ function showToast(message, duration, type) {
   });
 
 }
-
 
 function updateFirebaseUserPhoto(photo_url){
   const firebaseUser = firebase_auth.currentUser;

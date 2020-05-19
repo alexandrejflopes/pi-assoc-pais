@@ -48,7 +48,12 @@ class AknowledgementDialog extends React.Component {
   }
 
   handleOk(){
-    this.props.after(this.props.parent);
+    if(this.props.parent){
+      this.props.after(this.props.parent);
+    }
+    else{
+      this.props.after();
+    }
   }
 
 

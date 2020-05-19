@@ -287,9 +287,12 @@ class EducandosModal extends React.Component {
     //console.log("file: " + e.target.files[0].name);
     const imageFile = e.target.files[0];
     //console.log("imageFile: " + imageFile);
-    const imageTempUrl = URL.createObjectURL(imageFile);
-    //console.log("tempURL: " + imageTempUrl);
-    this.setState({fileToUpload : imageFile, newPhoto : imageTempUrl});
+    // in case the user cancels the input
+    if(imageFile!=null){
+      const imageTempUrl = URL.createObjectURL(imageFile);
+      //console.log("tempURL: " + imageTempUrl);
+      this.setState({fileToUpload : imageFile, newPhoto : imageTempUrl});
+    }
   }
 
   deleteEducando(){

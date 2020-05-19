@@ -1,7 +1,6 @@
 import {
   firebase_auth,
   firebaseConfig,
-  storage,
   firestore,
   storageRef,
 } from "../firebase-config";
@@ -13,10 +12,6 @@ import {
   parentsParameters,
   studentsParameters,
 } from "../utils/general_utils";
-import {
-  emailAlreadyTaken,
-  genericEmailUpdateErrorMsg
-} from "../utils/messages_strings";
 import {hello} from "../utils/common_strings";
 
 async function fetchUserDoc(email) {
@@ -501,7 +496,7 @@ function exportParentToCSV(email){
     encodeURIComponent(email);
 
   const request = async () => {
-    let file = new Blob();
+    let file = null;
     await fetch(uri)
       .then((resp) => resp.blob()) // Transform the data into blob / file
       .then(function (data) {
@@ -530,7 +525,7 @@ function exportAllParentsToCSV(){
     ".cloudfunctions.net/api/exportParentCSV";
 
   const request = async () => {
-    let file = new Blob();
+    let file = null;
     await fetch(uri)
       .then((resp) => resp.blob()) // Transform the data into blob / file
       .then(function (data) {
@@ -559,7 +554,7 @@ function exportAllChildrenToCSV(){
     ".cloudfunctions.net/api/exportEducandosCSV";
 
   const request = async () => {
-    let file = new Blob();
+    let file = null;
     await fetch(uri)
       .then((resp) => resp.blob()) // Transform the data into blob / file
       .then(function (data) {
@@ -578,27 +573,52 @@ function exportAllChildrenToCSV(){
 
 
 /*
- * send email to parent to notify it was imported to platform
- */
-async function sendChangeEmailAuth(nome, email) {
-
-  let message = hello[languageCode] + ",\n\n";
-
-  message.concat("Link para entrar com novo email:");
+* delete user account
+* */
+function deleteAccount(email){
 
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
     project_id +
-    ".cloudfunctions.net/api/sendNotificationEmail?" +
+    ".cloudfunctions.net/api/deleteAccount?" +
+    "id=" +
+    encodeURIComponent(email);
+
+  const request = async () => {
+    let deletedParent = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into blob / file
+      .then(function (data) {
+        console.log("Parent removed successfully");
+        deletedParent = data;
+      })
+      .catch(function (error) {
+        console.log("Delete account error: " + error);
+      });
+
+    return deletedParent;
+  };
+
+  return request();
+
+}
+
+/*
+ * send email to parent to notify it was imported to platform
+ */
+async function sendChangeEmailAuth(nome, email) {
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/sendAuthenticationEmailAfterEmailChange?" +
     "email=" +
-    email +
+    encodeURIComponent(email) +
     "&" +
     "nome=" +
-    nome +
-    "&" +
-    "message=" +
-    message;
+    encodeURIComponent(nome);
 
   window.localStorage.setItem("emailForSignIn", email);
 
@@ -631,5 +651,6 @@ export {
   exportParentToPDF,
   exportParentToCSV,
   exportAllParentsToCSV,
-  exportAllChildrenToCSV
+  exportAllChildrenToCSV,
+  deleteAccount
 };

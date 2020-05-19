@@ -15,7 +15,6 @@ import {
   Badge,
   Button,
 } from "shards-react";
-import { Redirect } from "react-router";
 
 import PageTitle from "../components/common/PageTitle";
 import {

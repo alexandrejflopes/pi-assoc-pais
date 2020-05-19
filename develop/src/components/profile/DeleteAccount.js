@@ -10,19 +10,28 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode
+  languageCode, parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
 import {
-  deleteAccount,
-  exportMyData, exportWord,
+  deleteAccountSectionTitle
 } from "../../utils/page_titles_strings";
-import {FormText} from "react-bootstrap";
 import {
+  confirmDeleteAccount,
+  confirmLogoutAfterDelete,
   deleteAccountExplanation,
-  exportProfileExplanation
+  deleteAccountGenericErrorMsg,
+  deleteAccountSuccess
 } from "../../utils/messages_strings";
-import {erase} from "../../utils/common_strings";
-import red from "@material-ui/core/colors/red";
+import {
+  deleteAccountPrompt,
+  erase
+} from "../../utils/common_strings";
+import {
+  deleteAccount,
+  userLogOut
+} from "../../firebase_scripts/profile_functions";
+import ConfirmationDialog from "../dialog/ConfirmationDialog";
+import AknowledgementDialog from "../dialog/AknowledgementDialog";
 
 
 class DeleteAccount extends React.Component {
@@ -30,7 +39,7 @@ class DeleteAccount extends React.Component {
     super(props);
 
     let parent = null;
-    const infoFormTitle = deleteAccount[languageCode];
+    const infoFormTitle = deleteAccountSectionTitle[languageCode];
 
     if(this.props.user!=null){
       parent = this.props.user;
@@ -40,8 +49,16 @@ class DeleteAccount extends React.Component {
       title: infoFormTitle,
       parent : parent,
       dialogOpen : false,
+      deleteAccountDialogOpen : false,
     };
 
+    this.deleteUserAccount = this.deleteUserAccount.bind(this);
+    this.finnishDeleteAccountFlow = this.finnishDeleteAccountFlow.bind(this);
+
+    this.closeDialog = this.closeDialog.bind(this);
+    this.openDialog = this.openDialog.bind(this);
+    this.closeSuccessDialog = this.closeSuccessDialog.bind(this);
+    this.openSuccessDialog = this.openSuccessDialog.bind(this);
 
   }
 
@@ -57,6 +74,62 @@ class DeleteAccount extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
+  deleteUserAccount(confirmation){
+    console.log("result dialog: " + confirmation);
+    this.closeDialog();
+    const this_ = this;
+
+    const email = this_.state.parent[parentsParameters.EMAIL[languageCode]];
+    console.log("email da conta a eliminar -> " + email);
+
+    if(confirmation){
+      deleteAccount(email)
+        .then((result) => {
+          if(result.error==null){
+            const upParentString = JSON.stringify(result);
+            console.log("deletedParent recebido depois do delete email -> " + upParentString);
+            this_.openSuccessDialog();
+          }
+          else{
+            console.log("result error: " + JSON.stringify(result));
+            showToast(deleteAccountGenericErrorMsg[languageCode], 5000, toastTypes.ERROR);
+          }
+        })
+        .catch((error) => {
+          if(Object.keys(error).length!==0){
+            console.log("update error: " + JSON.stringify(error));
+            showToast(deleteAccountGenericErrorMsg[languageCode], 5000, toastTypes.ERROR);
+          }
+        });
+
+    }
+    else{
+      this_.closeDialog();
+    }
+  }
+
+
+  finnishDeleteAccountFlow(){
+    userLogOut();
+  }
+
+  closeDialog() {
+    this.setState({dialogOpen : false});
+  }
+
+  openDialog() {
+    this.setState({dialogOpen : true});
+  }
+
+  closeSuccessDialog() {
+    //alert("close success");
+    this.setState({deleteAccountDialogOpen : false});
+  }
+
+  openSuccessDialog() {
+    //alert("abrir success");
+    this.setState({deleteAccountDialogOpen : true});
+  }
 
 
   render() {
@@ -78,12 +151,29 @@ class DeleteAccount extends React.Component {
                     </Col>
                   </Row>
                   <hr />
-                  <Button theme="danger" onClick={() => {}}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>clear</span> {erase[languageCode]}</Button>
+                  <Button theme="danger" onClick={this.openDialog}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>delete</span> {erase[languageCode]}</Button>
                 </Form>
               </Col>
             </Row>
           </ListGroupItem>
         </ListGroup>
+
+        {this.state.dialogOpen ?
+          <ConfirmationDialog
+            open={this.state.dialogOpen}
+            result={this.deleteUserAccount}
+            title={deleteAccountPrompt[languageCode]}
+            message={confirmDeleteAccount[languageCode]}/>
+          : null}
+
+        {this.state.deleteAccountDialogOpen ?
+          <AknowledgementDialog
+            open={this.state.deleteAccountDialogOpen}
+            after={this.finnishDeleteAccountFlow}
+            title={deleteAccountSuccess[languageCode]}
+            message={confirmLogoutAfterDelete[languageCode]}
+            parent={this}/>
+          : null}
 
       </Card>
 
