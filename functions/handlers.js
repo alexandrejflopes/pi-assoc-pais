@@ -1653,13 +1653,13 @@ exports.sendAuthenticationEmailAfterEmailChange = functions.https.onRequest((req
     var actionCodeSettings = {
         // URL you want to redirect back to. The domain (www.example.com) for this
         // URL must be whitelisted in the Firebase Console.
-        url: 'https://www.google.com/',
+        url: auth_URL,
         // This must be true.
         handleCodeInApp: true,
     };
     
     admin.auth().generateSignInWithEmailLink(email, actionCodeSettings).then(link => {
-        let message = "Olá, "+ nome +"\n\nRecebemos um pedido de mudança de email da sua conta da plataforma da sua associação de pais para este endereço. Por favor, clique no link abaixo para autenticar com este novo email.\n\nLink: "+ link +"\n\nSe considera que se trata de um erro, por favor ignore este email ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";
+        let message = "Olá, "+ nome +"\n\nRecebemos um pedido de mudança de email da sua conta da plataforma da sua associação de pais para este endereço. Por favor, clique no link abaixo para se autenticar com este novo email.\n\nLink: "+ link +"\n\nSe considera que se trata de um erro, por favor ignore este email ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";
 
         let subject = `Mudança de email - Autenticação para associação de pais - ${APP_NAME}!`;
 
