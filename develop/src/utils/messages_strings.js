@@ -93,6 +93,10 @@ const errorLoginGoogle = {
   "pt_PT": "Login com a Google falhou",
 };
 
+export const errorLoginFB = {
+  "pt_PT": "Login com o Facebook falhou",
+};
+
 const errorSignOut = {
   "pt_PT": "Erro ao fazer logout, tente novamente",
 };
@@ -141,6 +145,17 @@ export const changeEmailOnProcess = {
 };
 
 // ------- ERRORS
+
+export const linkAccountError = {
+  "pt_PT" : "Ocorreu um erro ao tentar associar a sua conta.\n As causas incluem: - A conta a associar já esta a ser " +
+    "usada;\n " +
+    " - Já tem associada uma conta deste serviço."
+};
+
+export const unlinkAccountError = {
+  "pt_PT" : "Ocorreu um erro ao tentar desassociar a sua conta. \n As causas incluem: - A conta a desassociar não está " +
+    "associada."
+};
 
 export const deleteAccountGenericErrorMsg = {
   "pt_PT" : "Ocorreu um erro ao tentar eliminar a sua conta. Por favor, tente novamente mais tarde."

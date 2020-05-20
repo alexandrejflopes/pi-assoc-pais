@@ -40,6 +40,7 @@ class ConfirmationDialog extends React.Component {
   /*********************************** HANDLERS ***********************************/
 
   closeDialog() {
+    this.reject();
     this.setState({open : false});
   }
 

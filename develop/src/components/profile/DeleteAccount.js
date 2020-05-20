@@ -76,8 +76,8 @@ class DeleteAccount extends React.Component {
 
   deleteUserAccount(confirmation){
     console.log("result dialog: " + confirmation);
-    this.closeDialog();
     const this_ = this;
+    this_.closeDialog();
 
     const email = this_.state.parent[parentsParameters.EMAIL[languageCode]];
     console.log("email da conta a eliminar -> " + email);
@@ -104,7 +104,7 @@ class DeleteAccount extends React.Component {
 
     }
     else{
-      this_.closeDialog();
+      //this_.closeDialog();
     }
   }
 

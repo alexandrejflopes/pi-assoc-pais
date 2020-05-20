@@ -64,8 +64,32 @@ export const signInWithLink = {
 };
 
 export const signInWithGoogle = {
-  "pt_PT" : "Entrar com conta Google"
+  "pt_PT" : "Entrar com Google"
 };
+
+export const signInWithFacebook = {
+  "pt_PT" : "Entrar com Facebook"
+};
+
+export const signInWithMicrosoft = {
+  "pt_PT" : "Entrar com Microsoft"
+};
+
+
+
+export const unlinkGoogle = {
+  "pt_PT" : "Desassociar Google"
+};
+
+export const unlinkFacebook = {
+  "pt_PT" : "Desassociar Facebook"
+};
+
+export const unlinkMicrosoft = {
+  "pt_PT" : "Desassociar Microsoft"
+};
+
+
 
 export const hello = {
   "pt_PT" : "Olá"
@@ -73,6 +97,15 @@ export const hello = {
 
 export const deleteAccountPrompt = {
   "pt_PT" : "Apagar conta?"
+};
+
+
+export const success_geral = {
+  "pt_PT" : "Sucesso"
+};
+
+export const error_geral = {
+  "pt_PT" : "Ocorreu um erro. Por favor, tente novamente."
 };
 
 

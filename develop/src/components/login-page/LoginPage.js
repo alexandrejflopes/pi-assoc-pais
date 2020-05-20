@@ -19,10 +19,15 @@ import CostumForm from "../../common/Form/form";
 import bg1 from "../../assets/mother.png";
 import { languageCode, parentsParameters } from "../../utils/general_utils";
 import {
+  errorLoginFB,
   errorLoginGoogle,
   errorNoLogedInUser,
 } from "../../utils/messages_strings";
-import {signInWithGoogle, signInWithLink} from "../../utils/common_strings";
+import {
+  signInWithFacebook,
+  signInWithGoogle,
+  signInWithLink, signInWithMicrosoft
+} from "../../utils/common_strings";
 
 class Login extends CostumForm {
   constructor(props) {
@@ -53,6 +58,7 @@ class Login extends CostumForm {
     };
 
     this.googleSignIn = this.googleSignIn.bind(this);
+    this.FBSignIn = this.FBSignIn.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -393,6 +399,123 @@ class Login extends CostumForm {
       });
   }
 
+  FBSignIn() {
+    const this_ = this;
+    var provider = new firebase.auth.FacebookAuthProvider();
+    firebase
+      .auth()
+      .signInWithPopup(provider)
+      .then(function (result) {
+        var email = result.user.email;
+
+        let uri =
+          "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+          "id=" +
+          email;
+        const request = async () => {
+          let resposta;
+          await fetch(uri)
+            .then((resp) => resp.json()) // Transform the data into json
+            .then(function (data) {
+              var dataDoc = data;
+
+              if (dataDoc === undefined || dataDoc.error) {
+                var message = errorNoLogedInUser[languageCode];
+                toast.configure();
+                toast(message, {
+                  transition: Bounce,
+                  closeButton: true,
+                  autoClose: 2000,
+                  position: "top-right",
+                  type: "warning",
+                });
+                //Sign out por precaução
+                firebase_auth
+                  .signOut()
+                  .then(function () {
+                    // Sign-out successful.
+                  })
+                  .catch(function (error) {});
+              } else {
+                if (email == dataDoc.Email && dataDoc["Validated"] == false) {
+                  var red;
+                  if (
+                    dataDoc[parentsParameters.PAYED_FEE[languageCode]] === false
+                  ) {
+                    red = (
+                      <Redirect
+                        to={{
+                          pathname: "/payment",
+                          state: { Email: dataDoc.Email, payment: false },
+                        }}
+                      />
+                    );
+                  } else {
+                    red = (
+                      <Redirect
+                        to={{
+                          pathname: "/payment",
+                          state: { Email: dataDoc.Email, payment: true },
+                        }}
+                      />
+                    );
+                  }
+                  //Redirecionar para página de pagamento
+                  this_.setState({ redirect: red });
+                } else if (
+                  email == dataDoc.Email &&
+                  dataDoc["Validated"] == true
+                ) {
+                  if (
+                    dataDoc.Admin != undefined &&
+                    dataDoc.Admin != null &&
+                    dataDoc.Admin === true
+                  ) {
+                    window.localStorage.setItem(
+                      "admin",
+                      dataDoc.Admin.toString()
+                    );
+                  }
+                  window.localStorage.setItem("email", dataDoc.Email);
+
+                  var red = (
+                    <Redirect
+                      to={{
+                        pathname: "/profile",
+                        state: {
+                          userEmail: email,
+                          userProvided: true,
+                        },
+                      }}
+                    />
+                  );
+                  this_.setState({ redirect: red });
+                }
+              }
+            })
+            .catch(function (error) {
+              console.log("error1");
+              alert(error);
+            });
+          return resposta;
+        };
+
+        var dados = request();
+      })
+      .catch(function (error) {
+        console.log(error);
+        var message = errorLoginFB[languageCode];
+        toast.configure();
+        toast(message, {
+          transition: Bounce,
+          closeButton: true,
+          autoClose: 2000,
+          position: "top-right",
+          type: "error",
+        });
+      });
+  }
+
   doSubmit = async (e) => {
     e.preventDefault();
 
@@ -594,31 +717,58 @@ class Login extends CostumForm {
                             )}
                           </Col>
 
-                          <Col md={12} style={{ textAlign: "center" }}>
+                          <Col md={12} style={{ textAlign: "center", margin : "3px" }}>
                             <Button
+                              color="info"
                               style={{
-                                background: "#34b4eb",
-                                color: "#fff",
                                 width: "200px",
                                 textAlign: "center",
-                                margin: "8px",
                               }}
                             >
-                              <i /> {signInWithLink[languageCode]}
+                              <i className="fas fa-envelope" style={{marginRight: "10px"}}/>
+                              {signInWithLink[languageCode]}
                             </Button>
                           </Col>
 
-                          <Col md={12} style={{ textAlign: "center" }}>
+                          <Col md={12} style={{ textAlign: "center", margin : "3px" }}>
                             <Button
+                              color="danger"
                               onClick={this.googleSignIn}
                               style={{
-                                background: "#34b4eb",
-                                color: "#fff",
                                 width: "200px",
                                 textAlign: "center",
                               }}
                             >
+                              <i className="fab fa-google" style={{marginRight: "10px"}}/>
                               {signInWithGoogle[languageCode]}
+                            </Button>
+                          </Col>
+
+                          <Col md={12} style={{ textAlign: "center" , margin : "3px"}}>
+                            <Button
+                              color="primary"
+                              onClick={this.FBSignIn}
+                              style={{
+                                width: "200px",
+                                textAlign: "center",
+                              }}
+                            >
+                              <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>
+                              {signInWithFacebook[languageCode]}
+                            </Button>
+                          </Col>
+
+                          <Col md={12} style={{ textAlign: "center", margin : "3px" }}>
+                            <Button
+                              color="success"
+                              onClick={() => {}}
+                              style={{
+                                width: "200px",
+                                textAlign: "center",
+                              }}
+                            >
+                              <i className="fab fa-microsoft" style={{marginRight: "10px"}}/>
+                              {signInWithMicrosoft[languageCode]}
                             </Button>
                           </Col>
 
