@@ -25,6 +25,7 @@ const {
   removeAnexoCaso,
   getUserAvailableCasos,
   getCaso,
+  updateTituloCaso,
   getParents,
   getParent,
   getEducandos,
@@ -83,6 +84,7 @@ app.get('/addAnexoCaso',addAnexoCaso);
 app.get('/removeAnexoCaso',removeAnexoCaso);
 app.get('/getUserAvailableCasos',getUserAvailableCasos);
 app.get('/getCaso',getCaso);
+app.get('/updateTituloCaso',updateTituloCaso);
 app.get('/getParents',getParents);
 app.get('/getParent',getParent);
 app.get('/getEducandos',getEducandos);

@@ -589,7 +589,23 @@ exports.getCaso = functions.https.onRequest((request, response) =>{
         return response.status(405).send({"error" : err});
     });
 });
+/**
+ * Função altera o titulo de um caso
+ * Leva como argumento um id de um caso (id) e o seu titulo novo (titulo).
+ * Devolve o update time
+ */
+exports.updateTituloCaso = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let id = request.query.id;
+    let titulo = request.query.titulo;
 
+    db.collection('casos').doc(id).update({"titulo":titulo}).then((caso) => {
+        return response.send(caso);
+    }).catch(err => {
+        console.log("Failed to update titulo -> ", err);
+        return response.status(405).send({"error" : err});
+    });
+})
 /**
  * Funções relacionadas com os pais/encarregados de educação
  */
