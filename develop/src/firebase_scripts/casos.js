@@ -1,6 +1,7 @@
 import { firestore, storageRef } from "../firebase-config";
 import React from "react";
 
+
 function addCasosExemplo() {
   let casosRef = firestore.collection("casos");
 
@@ -108,17 +109,9 @@ function initCasosExemplo() {
 }
 
 async function showAvailableCasos() {
-  var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
   // utilizador teste
-
-  var nome = "Diogo Gomes";
-  var id = "dgomes@pi-assoc-pais.com";
-  var foto = "";
-  if (currentUser != undefined) {
-    nome = currentUser.Nome;
-    id = currentUser.Email;
-    foto = currentUser.photo;
-  }
+  const nome = "Diogo Gomes";
+  const id = "dgomes@pi-assoc-pais.com";
 
   let uri =
     "https://us-central1-associacao-pais.cloudfunctions.net/api/getUserAvailableCasos?" +
@@ -126,22 +119,19 @@ async function showAvailableCasos() {
     id +
     "&" +
     "nome=" +
-    encodeURIComponent(nome) +
-    "&" +
-    "foto=" +
-    encodeURIComponent(foto);
-
-  console.log(uri);
+    nome;
 
   const request = async () => {
     let casos;
     await fetch(uri)
       .then((resp) => resp.json()) // Transform the data into json
       .then(function (data) {
+        console.log("Show casosdata -> ", data);
+        console.log("primeiro caso titulo -> ", data[0].titulo);
         casos = data;
       })
       .catch(function (error) {
-        console.log(error.toString());
+        console.log(error);
       });
 
     return casos;
@@ -200,5 +190,11 @@ async function addNewCaso() {
 }
 
 // ---------------- NOVAS VERSOES --------------
+
+
+
+
+
+
 
 export { initCasosExemplo, showAvailableCasos };

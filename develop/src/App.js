@@ -39,9 +39,7 @@ const updateInitialRoute = () => {
       return true;
     })
     .catch((err) => {
-      console.log("Error getting initial doc");
-      //alert(err);
-      return false;
+      alert(err);
     });
 };
 
@@ -60,10 +58,6 @@ class App extends React.Component {
        * atualizar para o resultado para o resultado da verificacao
        * neste caso, o resultado é sempre true, já que a verificacao atualizada
        * diretamente o path para o qual vamos fazer redirect */
-      if (result == false) {
-        //Wait x seconds and try again
-        self.componentDidMount();
-      }
       self.setState({ data: result });
     });
   }

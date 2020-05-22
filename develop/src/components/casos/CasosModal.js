@@ -15,14 +15,6 @@ import {
   FormTextarea,
   FormCheckbox,
 } from "shards-react";
-import {
-  languageCode,
-  parentsParameters,
-  showToast,
-  toastTypes,
-} from "../../utils/general_utils";
-import { Multiselect } from "multiselect-react-dropdown";
-import { addCasoError, sucessoGeral } from "../../utils/messages_strings";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
@@ -32,9 +24,23 @@ class CasosModal extends React.Component {
     super(props);
 
     this.state = {
-      membersComplete: [],
-      membrosSelected: [],
-      options: [],
+      members: [],
+      membersComponent: null,
+      membersCheckBoxStatus: null,
+      membrosList: [
+        <Fragment>
+          <FormGroup>
+            <label htmlFor="novoCasoMembroEmail1">Email</label>
+            <FormInput
+              id="novoCasoMembroEmail1"
+              type="email"
+              placeholder="socio@exemplo.pt"
+              required
+            />
+          </FormGroup>
+        </Fragment>,
+      ],
+      numMembros: 1,
       show: false,
       checkBoxStatus: false,
       caseTitle: "",
@@ -51,8 +57,6 @@ class CasosModal extends React.Component {
     this.handleChangeCheckBoxMembers = this.handleChangeCheckBoxMembers.bind(
       this
     );
-    this.onSelectMembro = this.onSelectMembro.bind(this);
-    this.onRemoveMembro = this.onRemoveMembro.bind(this);
     this.loadParents();
   }
 
@@ -77,31 +81,53 @@ class CasosModal extends React.Component {
 
     parentsCollection.get().then((querySnapshot) => {
       var membersArray = [];
-      var membersArrayComplete = [];
-      var options = [];
-
-      var index = 0;
       querySnapshot.forEach((doc) => {
+        console.log(JSON.stringify(doc.data()));
         if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
           if (
             doc.data()["Validated"] != undefined &&
             doc.data()["Validated"] != null &&
             doc.data()["Validated"].toString() != "false"
           ) {
-            membersArrayComplete.push({
-              nome: doc.data()["Nome"],
-              id: doc.data()["Email"],
-              photo: doc.data()["photo"],
-            });
-            options.push({ id: index, name: doc.data()["Nome"] });
-            index += 1;
+            membersArray.push(doc.data()["Nome"]);
           }
         }
       });
-      if (options.length != 0) {
+      if (membersArray.length != 0) {
+        var listCheckBoxesMembers = [];
+        var membersCheckBoxStatus = {};
+        for (var x = 0; x < membersArray.length; x++) {
+          var member = membersArray[x];
+          var idx = member.trim() + "CheckBox";
+          console.log(idx);
+          membersCheckBoxStatus[idx] = false;
+        }
         this.setState({
-          membersComplete: membersArrayComplete,
-          options: options,
+          membersCheckBoxStatus: membersCheckBoxStatus,
+        });
+
+        for (var i = 0; i < membersArray.length; i++) {
+          if (i == 0 || i % 2 == 0) {
+          }
+          var member = membersArray[i];
+          var idx = member.trim() + "CheckBox";
+          var checkBox = (
+            <FormGroup>
+              <FormCheckbox
+                id={idx}
+                onChange={this.handleChangeCheckBoxMembers}
+                isChecked={this.state.membersCheckBoxStatus[idx]}
+              >
+                {member}
+              </FormCheckbox>
+            </FormGroup>
+          );
+          listCheckBoxesMembers.push(checkBox);
+        }
+
+        this.setState({
+          members: membersArray,
+          membersComponent: listCheckBoxesMembers,
         });
       }
     });
@@ -135,36 +161,10 @@ class CasosModal extends React.Component {
     this.setState({ descricao: e.target.value });
   }
 
-  onSelectMembro(selectedList, selectedItem) {
-    var array = this.state.membrosSelected;
-    array.push(selectedItem.id);
-    this.setState({ membrosSelected: array });
-  }
-
-  onRemoveMembro(selectedList, removedItem) {
-    const { membrosSelected } = this.state;
-    var array = membrosSelected;
-
-    var index = array.indexOf(removedItem.id);
-    if (index !== -1) {
-      array.splice(index, 1);
-    }
-
-    this.setState({ membrosSelected: array });
-  }
-
   createCase() {
-    const {
-      checkBoxStatus,
-      caseTitle,
-      descricao,
-      membersComplete,
-      membrosSelected,
-    } = this.state;
-    const this_ = this;
+    const { checkBoxStatus, caseTitle, descricao } = this.state;
 
-    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
-
+    console.log(caseTitle);
     if (caseTitle === "") {
       var message = "Título do caso em falta!";
       toast.configure();
@@ -181,12 +181,6 @@ class CasosModal extends React.Component {
 
       if (checkBoxStatus) {
         privateVal = true;
-
-        var listaCompletaMembros = membersComplete;
-
-        for (var i = 0; i < membrosSelected.length; i++) {
-          listaMembros.push(listaCompletaMembros[membrosSelected[i]]);
-        }
       }
 
       let uri =
@@ -204,35 +198,35 @@ class CasosModal extends React.Component {
         privateVal +
         "&" +
         "nome_autor=" +
-        encodeURIComponent(currentUser.Nome) +
+        encodeURIComponent("Diogo Gomes") +
         "&" +
         "id_autor=" +
-        currentUser.Email +
-        "&" +
-        "foto_autor=" +
-        currentUser.photo;
+        "dgomes@pi-assoc-pais.com";
+
+      //TODO: Get firebase user
+      //console.log("URI novo caso -> " + uri);
 
       const request = async () => {
         await fetch(uri)
           .then(function (data) {
             console.log("Caso adicionado com sucesso.");
-            showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
-
-            this_.setState({ caseTitle: "", descricao: "" });
-            this_.closeModal();
-            this_.props.componentDidMount();
           })
           .catch(function (error) {
             console.log(error);
-            showToast(addCasoError[languageCode], 5000, toastTypes.ERROR);
           });
       };
 
       request();
+
+      //saveCaseToDB(json);
+      this.setState({ caseTitle: "", descricao: "" });
+      this.closeModal();
+      this.props.componentDidMount();
     }
   }
 
   render() {
+    //console.log("state a render -> " + JSON.stringify(this.state));
     return (
       <>
         <Button
@@ -302,20 +296,9 @@ class CasosModal extends React.Component {
                       </FormCheckbox>
                     </FormGroup>
 
-                    {this.state.checkBoxStatus ? (
-                      <FormGroup>
-                        <label htmlFor="membros">Membros</label>
-                        <Multiselect
-                          options={this.state.options} // Options to display in the dropdown
-                          onSelect={this.onSelectMembro} // Function will trigger on select event
-                          onRemove={this.onRemoveMembro}
-                          displayValue="name" // Property name to display in the dropdown options
-                          showCheckbox={true}
-                        />
-                      </FormGroup>
-                    ) : (
-                      ""
-                    )}
+                    {this.state.checkBoxStatus
+                      ? this.state.membersComponent
+                      : ""}
                   </Form>
                 </Col>
               </ListGroupItem>

@@ -1,16 +1,10 @@
 import React from "react";
 import { Container, Row, Col, CardHeader, Card } from "shards-react";
-import { Link, Redirect } from "react-router-dom";
-
-import PageTitle from "../components/common/PageTitle";
 
 import Quotas_Page from "../components/quotas-page/QuotasPage";
 
 const QuotasPage = (e) => (
   <Container fluid className="main-content-container px-4 pb-4">
-    <Row noGutters className="page-header py-4">
-      <PageTitle sm="4" title="Quotas" className="text-sm-left" />
-    </Row>
     <Row
       style={{
         display: "flex",
@@ -21,6 +15,10 @@ const QuotasPage = (e) => (
     >
       {/* Form */}
       <Col lg="9" md="12">
+        {/*<Card small>
+          <CardHeader className="border-bottom">
+            <h6 className="m-0">Quotas</h6>
+          </CardHeader></Card>*/}
         <Quotas_Page
           email={
             e.history.location.state

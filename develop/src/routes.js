@@ -18,8 +18,6 @@ import AssocConfiguration from "./views/AssocConfiguration";
 import LoginPage from "./views/Login";
 import PaymentPage from "./views/Payment";
 import Casos from "./views/Casos";
-import Cargos from "./views/Cargos";
-import CasoDetailed from "./views/CasoDetailed";
 import RegisterPage from "./views/Register";
 import QuotaPage from "./views/Quotas";
 import ApprovalPage from "./views/Approval";
@@ -81,14 +79,6 @@ export default [
     component: Casos,
   },
   {
-    path: "/caso/:id",
-    layout: window.localStorage.getItem("admin")
-      ? DefaultAdminLayout
-      : DefaultLayout,
-    component: CasoDetailed,
-  },
-
-  {
     path: "/assoc-config",
     layout: DefaultConfigLayout,
     component: AssocConfiguration,
@@ -147,17 +137,10 @@ export default [
     component: ProfileSettings,
   },
   {
-    path: "/cargos",
-    layout: window.localStorage.getItem("admin")
-      ? DefaultAdminLayout
-      : DefaultLayout,
-    component: Cargos,
-  },
-  {
     path: "/admin-settings",
     layout: window.localStorage.getItem("admin")
       ? DefaultAdminLayout
       : DefaultLayout,
     component: AdminSettings,
-  },
+  }
 ];
