@@ -18,7 +18,7 @@ import {
 import { toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Label, Input, FormText } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
 import MembersFileUpload from "../config-inicial/MembersFileUpload";
 import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
@@ -36,6 +36,7 @@ class Approval_Page extends Component {
       blocking: false,
       errors: {},
       timer: null,
+      redirect: null,
 
       extraParent: null,
       extraStudent: null,
@@ -50,8 +51,6 @@ class Approval_Page extends Component {
     this.reload = this.reload.bind(this);
     this.addStudent = this.addStudent.bind(this);
     this.getParentsToApprove = this.getParentsToApprove.bind(this);
-    this.getParentsToApprove();
-    this.renderExtra();
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -67,9 +66,26 @@ class Approval_Page extends Component {
   componentDidMount() {
     this._isMounted = true;
 
-    var timer = setInterval(() => this.deletePassedRegisters(), 1000 * 60 * 30);
-    this.setState({ timer: timer });
-    // const user = UsersService.getCurrentUser();
+    this.getParentsToApprove();
+    this.renderExtra();
+
+    //var timer = setInterval(() => this.deletePassedRegisters(), 1000 * 30 * 1);
+    //this.setState({ timer: timer });
+
+    const this_ = this;
+    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if (currentUser != null) {
+    } else {
+      //Redirect to login
+      var redirect = (
+        <Redirect
+          to={{
+            pathname: "/",
+          }}
+        />
+      );
+      this.setState({ redirect: redirect });
+    }
   }
 
   componentWillUnmount() {
@@ -79,35 +95,37 @@ class Approval_Page extends Component {
 
   deletePassedRegisters() {
     const { resgistosPorAprovar } = this.state;
+    const this_ = this;
 
-    for (var i = 0; i < resgistosPorAprovar.length; i++) {
-      var json = resgistosPorAprovar[i];
+    if (resgistosPorAprovar != null) {
+      for (var i = 0; i < resgistosPorAprovar.length; i++) {
+        var json = resgistosPorAprovar[i];
 
-      var data = json["Data inscricao"];
-      if (data != null) {
-        var date = new Date(data);
-        var days = 7;
-        var compareDate = new Date(date.getTime() + days * 86400000);
-        var today = new Date();
+        var data = json["Data inscricao"];
 
-        var bool = today;
+        if (data != null) {
+          var date = new Date(data._seconds * 1000);
+          var days = 7;
+          var compareDate = new Date(date.getTime() + days * 86400000);
+          var today = new Date();
 
-        if (compareDate.getTime() > today.getTime()) {
-          //Delete register from db
-          firestore
-            .collection("parents")
-            .doc(json["Email"])
-            .delete()
-            .then(function () {
-              console.log("Document successfully deleted!");
-            })
-            .catch(function (error) {
-              console.error("Error removing document: ", error);
-            });
+          if (compareDate.getTime() < today.getTime()) {
+            //Delete register from db
+            firestore
+              .collection("parents")
+              .doc(json["Email"])
+              .delete()
+              .then(function () {
+                console.log("Document successfully deleted!");
+                this_.reload();
+              })
+              .catch(function (error) {
+                console.error("Error removing document: ", error);
+              });
+          }
         }
       }
     }
-    this.reload();
   }
 
   /**
@@ -536,6 +554,10 @@ class Approval_Page extends Component {
                 : "A obter pedidos..."}
             </Row>
           </Col>
+          {this.state.redirect}
+          <Button theme="success" onClick={this.deletePassedRegisters}>
+            <i class="fas fa-sync-alt"></i>
+          </Button>
         </ListGroupItem>
       </ListGroup>
     );

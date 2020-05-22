@@ -10,6 +10,7 @@ import {
   FormInput,
 } from "shards-react";
 import { toast, Bounce } from "react-toastify";
+import { Link, Redirect } from "react-router-dom";
 
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 import PageTitle from "../common/PageTitle";
@@ -31,31 +32,10 @@ class Quotas_Page extends Component {
       email: email,
       nome: null,
       admin: null,
+      redirect: null,
     };
 
     const this_ = this;
-
-    if (email != null) {
-      let uri =
-        "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
-        "id=" +
-        email;
-      const request = async () => {
-        let resposta;
-        await fetch(uri)
-          .then((resp) => resp.json()) // Transform the data into json
-          .then(function (data) {
-            if (data.Nome != undefined && data.Nome != null) {
-              this_.setState({ nome: data.Nome.toString(), admin: data.Admin });
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-        return resposta;
-      };
-      request();
-    }
 
     this.getQuotas = this.getQuotas.bind(this);
     this.renderTableData = this.renderTableData.bind(this);
@@ -67,7 +47,49 @@ class Quotas_Page extends Component {
     );
     this.handleChangeNotas = this.handleChangeNotas.bind(this);
     this.commit = this.commit.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
     this.getQuotas();
+  }
+
+  componentDidMount() {
+    const this_ = this;
+    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if (currentUser != null) {
+      if (this_.state.email != null) {
+        let uri =
+          "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+          "id=" +
+          this_.state.email;
+        const request = async () => {
+          let resposta;
+          await fetch(uri)
+            .then((resp) => resp.json()) // Transform the data into json
+            .then(function (data) {
+              if (data.Nome != undefined && data.Nome != null) {
+                this_.setState({
+                  nome: data.Nome.toString(),
+                  admin: data.Admin,
+                });
+              }
+            })
+            .catch(function (error) {
+              //console.log(error);
+            });
+          return resposta;
+        };
+        request();
+      }
+    } else {
+      //Redirect to login
+      var redirect = (
+        <Redirect
+          to={{
+            pathname: "/",
+          }}
+        />
+      );
+      this.setState({ redirect: redirect });
+    }
   }
 
   commit() {
@@ -367,6 +389,7 @@ class Quotas_Page extends Component {
             <i /> Salvar alterações
           </Button>
         </Col>
+        {this.state.redirect}
       </Container>
     );
   }
