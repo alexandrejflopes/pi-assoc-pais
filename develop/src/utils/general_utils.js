@@ -23,6 +23,12 @@ export const regular_role = {
   "pt_PT" : "Associado(a)"
 };
 
+export const auth_providers_names = {
+  GOOGLE : "google.com",
+  FACEBOOK : "facebook.com",
+  PASSWORD : "password"
+};
+
 const membersCSVparamsIndexes = {
     assoc_num_index : 0,
     role_index : 1,

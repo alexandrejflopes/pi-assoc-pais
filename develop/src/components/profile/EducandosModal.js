@@ -23,14 +23,14 @@ import {
 import {
   changesCommitSuccess, childAddedError,
   childAddedSuccess, childAddPhotoError, childDeleteError,
-  childDeleteSuccess, childUpdateError, childUpdateSucess,
-  confirmDeleteChild,
+  childDeleteSuccess, childUpdateError, childUpdateSucess, confirmDeleteAccount,
+  confirmDeleteChild, confirmLogoutAfterDelete, deleteAccountSuccess,
   fillRequiredFieldMessage, parentUpdatePhotoError, parentUpdatePhotoSuccess,
   provideRequiredFieldsMessage,
   sameChildNameError
 } from "../../utils/messages_strings";
 import {
-  cancel, deleteChild,
+  cancel, deleteAccountPrompt, deleteChild, deleteChildPrompt,
   saveChanges,
   updateInfo,
 } from "../../utils/common_strings";
@@ -43,6 +43,8 @@ import {
   uploadProfilePhoto
 } from "../../firebase_scripts/profile_functions";
 import {firebase_auth, storage} from "../../firebase-config";
+import AknowledgementDialog from "../dialog/AknowledgementDialog";
+import ConfirmationDialog from "../dialog/ConfirmationDialog";
 
 class EducandosModal extends React.Component {
   constructor(props) {
@@ -65,10 +67,12 @@ class EducandosModal extends React.Component {
       newPhoto : this.props.educando[studentsParameters.PHOTO[languageCode]],
       fileToUpload : null,
       onSaveChangesButtonsDisabled : false,
-      onDeleteButtonsDisabled : false
+      onDeleteButtonsDisabled : false,
+      deleteChildDialogOpen : false
     };
 
-
+    this.openDialog = this.openDialog.bind(this);
+    this.closeDialog = this.closeDialog.bind(this);
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.closeModalAfterUpdate = this.closeModalAfterUpdate.bind(this);
@@ -297,29 +301,24 @@ class EducandosModal extends React.Component {
   handleChangeParam(e) {
     let educando = this.state.educando;
     let paramName = e.target.name;
-    //console.log("paramName to change: " + paramName);
     // update the param with the new value
     educando[paramName] = e.target.value;
-    //console.log("educando with new values: " + JSON.stringify(educando));
     this.setState({ educando: educando });
   }
 
   handleChangePhoto(e) {
-    //console.log("state antes: " + JSON.stringify(this.state));
-    //console.log("file: " + e.target.files[0].name);
     const imageFile = e.target.files[0];
-    //console.log("imageFile: " + imageFile);
     // in case the user cancels the input
     if(imageFile!=null){
       const imageTempUrl = URL.createObjectURL(imageFile);
-      //console.log("tempURL: " + imageTempUrl);
       this.setState({fileToUpload : imageFile, newPhoto : imageTempUrl});
     }
   }
 
-  deleteEducando(){
+  deleteEducando(confirmation){
     const this_ = this;
-    const confirmation = window.confirm(confirmDeleteChild[languageCode]);
+    this_.closeDialog();
+    //const confirmation = window.confirm(confirmDeleteChild[languageCode]);
     const photoUrl = this.state.educando[studentsParameters.PHOTO[languageCode]];
     if(confirmation){
       this_.disableButtonsWhileDeleting();
@@ -346,8 +345,18 @@ class EducandosModal extends React.Component {
                   showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
                 })
                 .catch((error) => {
+                  console.log("-----------------------------------------");
                   console.log("erro no delete: " + JSON.stringify(error));
-                  showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
+                  // proceed anyway
+                  const upParentString = JSON.stringify(updatedParent);
+                  console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+                  // update user data in localstorage
+                  window.localStorage.setItem("userDoc", upParentString);
+                  this_.closeModalAfterUpdate();
+                  this_.props.componentDidMount(true);
+                  showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                  console.log("-----------------------------------------");
+                  //showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
                   //this_.restoreOriginalPhoto();
                 });
             }
@@ -361,9 +370,6 @@ class EducandosModal extends React.Component {
               showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
             }
           }
-
-
-
         })
         .catch((error) => {
           showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
@@ -372,6 +378,14 @@ class EducandosModal extends React.Component {
     }
 
 
+  }
+
+  closeDialog() {
+    this.setState({deleteChildDialogOpen : false});
+  }
+
+  openDialog() {
+    this.setState({deleteChildDialogOpen : true});
   }
 
   showModal() {
@@ -701,13 +715,21 @@ class EducandosModal extends React.Component {
                 <Button style={{marginRight:"40px"}} theme="accent" onClick={this.editForm} disabled={this.state.onDeleteButtonsDisabled} >
                   {updateInfo[languageCode]}
                 </Button>
-                <Button style={{marginLeft:"40px"}} theme="danger" onClick={this.deleteEducando} disabled={this.state.onDeleteButtonsDisabled} >
+                <Button style={{marginLeft:"40px"}} theme="danger" onClick={this.openDialog} disabled={this.state.onDeleteButtonsDisabled} >
                   <i className="fa fa-trash mr-1" /> {deleteChild[languageCode]}
                 </Button>
               </Row>
             )}
           </Modal.Footer>
         </Modal>
+
+        {this.state.deleteChildDialogOpen ?
+          <ConfirmationDialog
+            open={this.state.deleteChildDialogOpen}
+            result={this.deleteEducando}
+            title={deleteChildPrompt[languageCode]}
+            message={confirmDeleteChild[languageCode]}/>
+          : null}
       </>
     );
   }

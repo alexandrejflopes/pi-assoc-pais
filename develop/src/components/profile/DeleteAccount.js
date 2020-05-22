@@ -90,8 +90,8 @@ class DeleteAccount extends React.Component {
           if(result.error==null){
             const upParentString = JSON.stringify(result);
             console.log("deletedParent recebido depois do delete email -> " + upParentString);
-            this_.openSuccessDialog();
             this_.deleteParentAndChildrenPhotos();
+            this_.openSuccessDialog();
           }
           else{
             console.log("result error: " + JSON.stringify(result));
@@ -145,18 +145,36 @@ class DeleteAccount extends React.Component {
     });
 
     // delete parent photo
-    let profilePhotoRef = storage.refFromURL(profilePhoto);
-    profilePhotoRef.delete().then();
+    try {
+      let profilePhotoRef = storage.refFromURL(profilePhoto);
+      profilePhotoRef.delete()
+        .then(() => {
+          console.log("foto de perfil eliminada com sucesso.");
+        })
+        .catch(() => {
+          console.log("erro a eliminar a foto de perfil eliminada");
+        });
+    }
+    catch (e) {
+      // nothing
+      console.log("NO PROFILE PHOTO! -> " + JSON.stringify(e));
+    }
 
     // delete children photos
     for(const i in childrenPhotos){
       const photo = childrenPhotos[i];
       try {
         let photoRef = storage.refFromURL(photo);
-        photoRef.delete().then();
+        photoRef.delete().then(() => {
+          console.log("foto " + i + " < " + photo + " > eliminada com sucesso.");
+        })
+          .catch(() => {
+            console.log("erro a eliminar a foto " + i + " <" + photo + ">");
+          });
       }
       catch (e) {
         // nothing
+        console.log("NO PHOTO! " + i + " < " + photo + " > -> " + JSON.stringify(e));
       }
     }
   }

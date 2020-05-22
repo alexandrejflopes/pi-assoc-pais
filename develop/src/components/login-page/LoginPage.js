@@ -754,7 +754,7 @@ class Login extends CostumForm {
                             </Button>
                           </Col>
 
-                          <Col md={12} style={{ textAlign: "center", margin : "3px" }}>
+                          {/*<Col md={12} style={{ textAlign: "center", margin : "3px" }}>
                             <Button
                               color="success"
                               onClick={() => {}}
@@ -766,7 +766,7 @@ class Login extends CostumForm {
                               <i className="fab fa-microsoft" style={{marginRight: "10px"}}/>
                               {signInWithMicrosoft[languageCode]}
                             </Button>
-                          </Col>
+                          </Col>*/}
 
                           <Col md={12} style={{ textAlign: "center" }}>
                             <br></br>

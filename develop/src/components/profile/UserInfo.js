@@ -68,7 +68,7 @@ class UserInfo extends React.Component {
         [parentsParameters.CITY[languageCode]] : false,
         [parentsParameters.ZIPCODE[languageCode]] : false,
         [parentsParameters.NIF[languageCode]] : false,
-        [parentsParameters.CC[languageCode]] : false
+        //[parentsParameters.CC[languageCode]] : false
       },
       oldParent: null,
     };
@@ -426,7 +426,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.CC[languageCode]]
                         }
                         onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.CC[languageCode]]}
+                        //invalid={this.state.feedbacks[parentsParameters.CC[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>

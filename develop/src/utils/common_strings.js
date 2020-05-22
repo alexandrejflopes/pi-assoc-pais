@@ -99,6 +99,10 @@ export const deleteAccountPrompt = {
   "pt_PT" : "Apagar conta?"
 };
 
+export const deleteChildPrompt = {
+  "pt_PT" : "Eliminar educando?"
+};
+
 
 export const success_geral = {
   "pt_PT" : "Sucesso"

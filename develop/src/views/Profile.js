@@ -67,6 +67,7 @@ class Profile extends React.Component {
   console.log("DID MOUNT!");
   const currentUser = firebase_auth.currentUser;
   const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+  console.log("localuser -> " + JSON.stringify(localUser));
 
   if(currentUser!=null){
     if(localUser!=null){

@@ -269,7 +269,7 @@ export const childDeleteError = {
 export const confirmDeleteChild = {
   pt_PT:
     "Tem a certeza que pretender eliminar este educando?\n" +
-    "Esta ação não é revertível, a menos que volte a adicionar o educando à plataforma.",
+    "Esta ação não é revertível.",
 };
 
 export const confirmUpdateEmail = {
@@ -302,6 +302,7 @@ export const confirmLogoutAfterDelete = {
 export const sucessoGeral = {
   pt_PT: "Sucesso",
 };
+
 export const deleteAccountSuccess = {
   pt_PT: "Conta eliminada com sucesso",
 };
