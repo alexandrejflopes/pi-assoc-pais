@@ -111,11 +111,8 @@ class Profile extends React.Component {
               const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
               console.log("currentUserPhotoUrl -> " + currentUserPhoto);
               console.log("resultUserPhoto -> " + resultUserPhoto);
-              if(currentUserPhoto!=null){
-                parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
-              }
               // ----------------------------------------------------------------------
-
+              parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
               // no error
               console.log("atualizar state com user doc recebido");
               console.log("parent com foto do provider -> " + JSON.stringify(parent));
