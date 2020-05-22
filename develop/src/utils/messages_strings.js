@@ -162,7 +162,7 @@ export const unlinkAccountError = {
 };
 
 export const deleteAccountGenericErrorMsg = {
-  "pt_PT" : "Ocorreu um erro ao tentar eliminar a sua conta. Por favor, tente novamente mais tarde."
+  "pt_PT" : "Ocorreu um erro ao tentar eliminar a sua conta. Pode ser necessário sair (logout) e voltar a entrar. Obrigado."
 };
 
 export const exportMembersDataError = {

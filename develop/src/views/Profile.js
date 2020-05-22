@@ -104,18 +104,21 @@ class Profile extends React.Component {
           .then((result) => {
             console.log("2. Result userDoc: " + JSON.stringify(result));
             if (result.error == null) {
-              // if the user has the default avatar and the firebase user has an avatar
-              // from its login provider, set that avatar to our user
-              const currentUserPhoto = currentUser.photoURL;
-              const resultUserPhoto = result[parentsParameters.PHOTO[languageCode]];
 
-              if(currentUserPhoto!=null && resultUserPhoto===defaultAvatar){
-                result[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
-              }
+              // TODO: check
+              let parent = result;
+              const currentUserPhoto = currentUser.photoURL;
+              const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
+              console.log("currentUserPhotoUrl -> " + currentUserPhoto);
+              console.log("resultUserPhoto -> " + resultUserPhoto);
+              // ----------------------------------------------------------------------
+              parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
               // no error
               console.log("atualizar state com user doc recebido");
-              this_.setState({ userDoc: result });
-              window.localStorage.setItem("userDoc", JSON.stringify(result));
+              console.log("parent com foto do provider -> " + JSON.stringify(parent));
+              this_.setState({ userDoc: parent });
+
+              window.localStorage.setItem("userDoc", JSON.stringify(parent));
               this_.saveNewParams();
               UserActions.componentDidMount();
             }

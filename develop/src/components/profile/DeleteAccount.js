@@ -10,7 +10,7 @@ import {
   Row
 } from "shards-react";
 import {
-  languageCode, parentsParameters, showToast, toastTypes
+  languageCode, parentsParameters, showToast, studentsParameters, toastTypes
 } from "../../utils/general_utils";
 import {
   deleteAccountSectionTitle
@@ -32,6 +32,7 @@ import {
 } from "../../firebase_scripts/profile_functions";
 import ConfirmationDialog from "../dialog/ConfirmationDialog";
 import AknowledgementDialog from "../dialog/AknowledgementDialog";
+import {storage} from "../../firebase-config";
 
 
 class DeleteAccount extends React.Component {
@@ -54,6 +55,7 @@ class DeleteAccount extends React.Component {
 
     this.deleteUserAccount = this.deleteUserAccount.bind(this);
     this.finnishDeleteAccountFlow = this.finnishDeleteAccountFlow.bind(this);
+    this.deleteParentAndChildrenPhotos = this.deleteParentAndChildrenPhotos.bind(this);
 
     this.closeDialog = this.closeDialog.bind(this);
     this.openDialog = this.openDialog.bind(this);
@@ -89,16 +91,17 @@ class DeleteAccount extends React.Component {
             const upParentString = JSON.stringify(result);
             console.log("deletedParent recebido depois do delete email -> " + upParentString);
             this_.openSuccessDialog();
+            this_.deleteParentAndChildrenPhotos();
           }
           else{
             console.log("result error: " + JSON.stringify(result));
-            showToast(deleteAccountGenericErrorMsg[languageCode], 5000, toastTypes.ERROR);
+            showToast(deleteAccountGenericErrorMsg[languageCode], 6000, toastTypes.ERROR);
           }
         })
         .catch((error) => {
           if(Object.keys(error).length!==0){
             console.log("update error: " + JSON.stringify(error));
-            showToast(deleteAccountGenericErrorMsg[languageCode], 5000, toastTypes.ERROR);
+            showToast(deleteAccountGenericErrorMsg[languageCode], 6000, toastTypes.ERROR);
           }
         });
 
@@ -129,6 +132,33 @@ class DeleteAccount extends React.Component {
   openSuccessDialog() {
     //alert("abrir success");
     this.setState({deleteAccountDialogOpen : true});
+  }
+
+  deleteParentAndChildrenPhotos(){
+    const profilePhoto = this.state.parent[parentsParameters.PHOTO[languageCode]];
+    const children = this.state.parent[parentsParameters.CHILDREN[languageCode]];
+
+    const childrenPhotos = children.map((child) => {
+      const final = [];
+      final.push(child[studentsParameters.PHOTO[languageCode]]);
+      return final;
+    });
+
+    // delete parent photo
+    let profilePhotoRef = storage.refFromURL(profilePhoto);
+    profilePhotoRef.delete().then();
+
+    // delete children photos
+    for(const i in childrenPhotos){
+      const photo = childrenPhotos[i];
+      try {
+        let photoRef = storage.refFromURL(photo);
+        photoRef.delete().then();
+      }
+      catch (e) {
+        // nothing
+      }
+    }
   }
 
 

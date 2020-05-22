@@ -49,21 +49,23 @@ class ParentPhotoModal extends React.Component {
 
   updatePhoto(){
 
+    const this_ = this;
+
     //console.log("state antes do update: " + JSON.stringify(this.state));
 
     // if the photo is the same, do nothing
-    if(this.state.newPhoto===this.state.originalPhoto){
+    if(this.state.newPhoto===this_.state.originalPhoto){
       this.closeModal();
       return;
     }
 
-    const originalPhotoURL = this.state.originalPhoto;
-    const newPhotoFile = this.state.fileToUpload;
+    const originalPhotoURL = this_.state.originalPhoto;
+    const newPhotoFile = this_.state.fileToUpload;
 
-    const closeModalAfterTheUpdate = this.closeModalAfterUpdate;
-    const myComponentDidMount = this.props.componentDidMount;
-    const setNewPhotoOnState = this.setNewPhoto;
-    const restorePhoto = this.restoreOriginalPhoto;
+    const closeModalAfterTheUpdate = this_.closeModalAfterUpdate;
+    const myComponentDidMount = this_.props.componentDidMount;
+    const setNewPhotoOnState = this_.setNewPhoto;
+    const restorePhoto = this_.restoreOriginalPhoto;
 
     /*
     * this will catch the error of trying to get the reference for the
@@ -81,26 +83,35 @@ class ParentPhotoModal extends React.Component {
               // get the download URL
               snapshot.ref.getDownloadURL().then(function (downloadURL) {
                 const newPhotoField = {[parentsParameters.PHOTO[languageCode]] : downloadURL};
+                const loggedUser = firebase_auth.currentUser;
 
-                updateParent(firebase_auth.currentUser.email, newPhotoField)
-                  .then((updatedParent) => {
-                    const upParentString = JSON.stringify(updatedParent);
-                    //console.log("updatedParent recebido depois do update foto -> " + upParentString);
-                    // update user data in localstorage
-                    window.localStorage.setItem("userDoc", upParentString);
-                    closeModalAfterTheUpdate();
-                    myComponentDidMount(true);
-                    setNewPhotoOnState(downloadURL);
-                    // TODO: update navbar instantaneously
-                    showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
-                  })
-                  .catch((error) => {
-                    if(Object.keys(error).length!==0){
-                      console.log("update error: " + JSON.stringify(error));
-                      showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                      restorePhoto();
-                    }
-                  });
+                loggedUser.updateProfile({
+                  photoURL: downloadURL
+                }).then(function() {
+                  updateParent(loggedUser.email, newPhotoField)
+                    .then((updatedParent) => {
+                      const upParentString = JSON.stringify(updatedParent);
+                      //console.log("updatedParent recebido depois do update foto -> " + upParentString);
+                      // update user data in localstorage
+                      window.localStorage.setItem("userDoc", upParentString);
+                      closeModalAfterTheUpdate();
+                      myComponentDidMount(true);
+                      setNewPhotoOnState(downloadURL);
+                      // TODO: update navbar instantaneously
+                      showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                    })
+                    .catch((error) => {
+                      if(Object.keys(error).length!==0){
+                        console.log("update error: " + JSON.stringify(error));
+                        showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+                        restorePhoto();
+                      }
+                    });
+                }).catch(function(error) {
+                  console.log("update error no firebase user: " + JSON.stringify(error));
+                  showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+                  restorePhoto();
+                });
 
               });
             })
@@ -124,33 +135,41 @@ class ParentPhotoModal extends React.Component {
           // get the download URL
           snapshot.ref.getDownloadURL().then(function (downloadURL) {
             const newPhotoField = {[parentsParameters.PHOTO[languageCode]] : downloadURL};
+            const loggedUser = firebase_auth.currentUser;
 
-            updateParent(firebase_auth.currentUser.email, newPhotoField)
-              .then((updatedParent) => {
-                const upParentString = JSON.stringify(updatedParent);
-                console.log("updatedParent recebido depois do update foto -> " + upParentString);
-                // update user data in localstorage
-                window.localStorage.setItem("userDoc", upParentString);
-                closeModalAfterTheUpdate();
-                myComponentDidMount(true);
-                setNewPhotoOnState();
-                // TODO: update navbar instantaneously
-                showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
-              })
-              .catch((error) => {
-                if(Object.keys(error).length!==0){
-                  console.log("update error: " + JSON.stringify(error));
-                  showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                  restorePhoto();
-                }
-              });
-
+            loggedUser.updateProfile({
+              photoURL: downloadURL
+            }).then(function() {
+              updateParent(firebase_auth.currentUser.email, newPhotoField)
+                .then((updatedParent) => {
+                  const upParentString = JSON.stringify(updatedParent);
+                  console.log("updatedParent recebido depois do update foto -> " + upParentString);
+                  // update user data in localstorage
+                  window.localStorage.setItem("userDoc", upParentString);
+                  closeModalAfterTheUpdate();
+                  myComponentDidMount(true);
+                  setNewPhotoOnState();
+                  // TODO: update navbar instantaneously
+                  showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                })
+                .catch((error) => {
+                  if(Object.keys(error).length!==0){
+                    console.log("update error: " + JSON.stringify(error));
+                    showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+                    restorePhoto();
+                  }
+                });
+            }).catch(function(error) {
+              console.log("update error no firebase user: " + JSON.stringify(error));
+              showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+              restorePhoto();
+            });
           });
         })
         .catch((error) => {
           console.log("Photo upload failed: " + JSON.stringify(error));
           showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-          this.restoreOriginalPhoto();
+          this_.restoreOriginalPhoto();
         });
     }
 
