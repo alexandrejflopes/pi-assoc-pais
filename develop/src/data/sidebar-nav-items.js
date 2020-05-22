@@ -41,21 +41,21 @@ export default function () {
       htmlBefore: '<i class="material-icons">person</i>',
       to: "/profile",
     },
-    {
+    /*{
       title: "Os meus educandos",
       htmlBefore: '<i class="material-icons">face</i>',
       to: "/user-profile-lite",
-    },
+    },*/
     {
       title: "Casos",
       htmlBefore: '<i class="material-icons">description</i>',
       to: "/casos",
-    } /*
+    }, /*
     {
       title: "Pedidos por Aprovar",
       htmlBefore: '<i class="material-icons">description</i>',
       to: "/approval",
-    }, 
+    },
     {
       title: "Ver Config Form",
       htmlBefore: '<i class="material-icons">settings</i>',
@@ -70,8 +70,7 @@ export default function () {
       title: "Ver Login Page",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/login",
-    },*/,
-    ,
+    },*/
     {
       title: "Quotas",
       htmlBefore: '<i class="material-icons">euro</i>',

@@ -20,14 +20,28 @@ import {
 import {
   saveChanges,
   cancel,
-  changeEmail
+  changeEmail, yes, no, attentionPrompt, updateEmailPrompt
 } from "../../utils/common_strings";
 import {
   profileSettingsDataFormTitle
 } from "../../utils/page_titles_strings";
 import {
-  provideRequiredFieldsMessage, confirmUpdateEmail
+  provideRequiredFieldsMessage,
+  confirmUpdateEmail,
+  genericEmailUpdateErrorMsg,
+  emailAlreadyTaken,
+  parentUpdateSuccess,
+  parentUpdateError,
+  emailUpdateSuccess,
+  confirmLogoutAndNewLink, exportAssocDataOnProcess, changeEmailOnProcess
 } from "../../utils/messages_strings";
+import {firebase_auth, firebase} from "../../firebase-config";
+import {
+  emailExistsInDB,
+  emailExistsInFBAuth, sendChangeEmailAuth, updateParentEmail, userLogOut
+} from "../../firebase_scripts/profile_functions";
+import ConfirmationDialog from "../dialog/ConfirmationDialog";
+import AknowledgementDialog from "../dialog/AknowledgementDialog";
 
 
 class AdvancedSettings extends React.Component {
@@ -52,6 +66,9 @@ class AdvancedSettings extends React.Component {
         [parentsParameters.EMAIL[languageCode]] : false,
       },
       oldParent: null,
+      dialogOpen : false,
+      emailUpdatedDialogOpen : false,
+      this_ : this
     };
 
     this.handleChangeParam = this.handleChangeParam.bind(this);
@@ -60,8 +77,12 @@ class AdvancedSettings extends React.Component {
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
     this.lockFormAfterUpdate = this.lockFormAfterUpdate.bind(this);
+    this.closeDialog = this.closeDialog.bind(this);
+    this.openDialog = this.openDialog.bind(this);
+    this.closeSuccessDialog = this.closeSuccessDialog.bind(this);
+    this.openSuccessDialog = this.openSuccessDialog.bind(this);
 
-    this.updateParent = this.updateParent.bind(this);
+    this.updateEmail = this.updateEmail.bind(this);
 
 
   }
@@ -78,16 +99,158 @@ class AdvancedSettings extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
-  updateParent(){
-    const validResult = this.validForm();
+
+  updateEmail(confirmation){
+
+    console.log("result dialog: " + confirmation);
+    this.closeDialog();
+
+    const this_ = this;
+    const validResult = this_.validForm();
+
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const userName = localUser[parentsParameters.NAME[languageCode]];
+
+    const currentEmail = localUser[parentsParameters.EMAIL[languageCode]];
+    const newEmail = this_.state.parent[parentsParameters.EMAIL[languageCode]];
+
+    console.log("currentEmail -> " + currentEmail);
+    console.log("newEmail -> " + newEmail);
+
     if(!validResult){
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
-    else{
-      const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
+    // if current and new email are the same, do nothing
+    else if(currentEmail===newEmail){
       this.cancelEditing();
     }
+    else{
+      //const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
+      if(confirmation){
+
+        showToast(changeEmailOnProcess[languageCode], 3000, toastTypes.INFO);
+
+        let FBuser = firebase_auth.currentUser;
+        // in case of, for some reason, these don't match
+        if(currentEmail!==FBuser.email){
+          showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+          this_.cancelEditing();
+          return;
+        }
+
+        // just to check if the current email exists in FB Auth
+        // if so, we can proceed
+        emailExistsInFBAuth(currentEmail)
+          .then((exists) => {
+            if(exists){
+              console.log("current existe na Auth");
+              // just to check if the current email exists in DB
+              // if so, we can proceed
+              emailExistsInDB(currentEmail)
+                .then((exists) => {
+                  if(exists){
+                    console.log("current existe na DB");
+
+                    // check if the new email exists in FB Auth (already taken)
+                    // if so, we cannot proceed
+                    emailExistsInFBAuth(newEmail)
+                      .then((exists) => {
+                        if(!exists){
+                          console.log("newEmail não existe na Auth");
+                          // just to check if the new email exists in DB (already taken)
+                          // if so, we cannot proceed
+                          emailExistsInDB(newEmail)
+                            .then((exists) => {
+                              if(!exists){
+                                console.log("newEmail não existe na DB");
+                                // if all conditions are set, then update email
+
+                                updateParentEmail(currentEmail, newEmail)
+                                  .then((result) => {
+                                    if(result.error==null){
+                                      const upParentString = JSON.stringify(result);
+                                      console.log("updatedParent recebido depois do update email -> " + upParentString);
+                                      // update user data in localstorage
+                                      window.localStorage.setItem("userDoc", upParentString);
+                                      this_.lockFormAfterUpdate();
+                                      this_.props.componentDidMount(true);
+                                      console.log("firebase user (não) atualizado: " + JSON.stringify(firebase_auth.currentUser));
+                                      //showToast(emailUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                                      this_.openSuccessDialog();
+                                    }
+                                    else{
+                                      console.log("result error: " + JSON.stringify(result));
+                                      showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                                      this_.cancelEditing();
+                                    }
+
+                                  })
+                                  .catch((error) => {
+                                    if(Object.keys(error).length!==0){
+                                      console.log("update error: " + JSON.stringify(error));
+                                      showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                                      this_.cancelEditing();
+                                    }
+                                  });
+                              }
+                              else{
+                                console.log("newEmail já existe na DB");
+                                showToast(emailAlreadyTaken[languageCode], 5000, toastTypes.ERROR);
+                                this_.cancelEditing();
+                              }
+                            })
+                            .catch(() => {
+                              console.log("generic error 6");
+                              showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                              this_.cancelEditing();
+                            });
+                        }
+                        else{
+                          console.log("newEmail já existe na Auth");
+                          showToast(emailAlreadyTaken[languageCode], 5000, toastTypes.ERROR);
+                          this_.cancelEditing();
+                        }
+                      })
+                      .catch(() => {
+                        console.log("generic error 5");
+                        showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                        this_.cancelEditing();
+                      });
+
+                  }
+                  else{
+                    console.log("generic error 4");
+                    showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                    this_.cancelEditing();
+                  }
+                })
+                .catch(() => {
+                  console.log("generic error 3");
+                  showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+                  this_.cancelEditing();
+                });
+            }
+            else{
+              console.log("generic error 2");
+              showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+              this_.cancelEditing();
+            }
+          })
+          .catch(() => {
+            console.log("generic error 1");
+            showToast(genericEmailUpdateErrorMsg[languageCode], 5000, toastTypes.ERROR);
+            this_.cancelEditing();
+          });
+      }
+      else{
+        this.closeDialog();
+        this_.cancelEditing();
+      }
+
+
+    }
   }
+
 
   lockFormAfterUpdate(){
     //this.resetFeedbacks();
@@ -171,6 +334,35 @@ class AdvancedSettings extends React.Component {
   }
 
 
+  closeDialog() {
+    this.setState({dialogOpen : false});
+  }
+
+  openDialog() {
+    this.setState({dialogOpen : true});
+  }
+
+  closeSuccessDialog() {
+    //alert("close success");
+    this.setState({emailUpdatedDialogOpen : false});
+  }
+
+  openSuccessDialog() {
+    //alert("abrir success");
+    this.setState({emailUpdatedDialogOpen : true});
+  }
+
+  finnishUpdateEmailFlow(parent){
+    const this_ = parent;
+    this_.closeSuccessDialog();
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    const userName = localUser[parentsParameters.NAME[languageCode]];
+    const newEmail = this_.state.parent[parentsParameters.EMAIL[languageCode]];
+    userLogOut();
+    sendChangeEmailAuth(userName, newEmail).then();
+  }
+
+
 
   render() {
     return (
@@ -204,7 +396,7 @@ class AdvancedSettings extends React.Component {
                   </Row>
                   <hr />
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateParent}>{saveChanges[languageCode]}</Button> </div>
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.openDialog}>{saveChanges[languageCode]}</Button> </div>
                     : <Button theme="accent" onClick={this.editForm}>{changeEmail[languageCode]}</Button>
                   }
                 </Form>
@@ -212,7 +404,26 @@ class AdvancedSettings extends React.Component {
             </Row>
           </ListGroupItem>
         </ListGroup>
+
+        {this.state.dialogOpen ?
+          <ConfirmationDialog
+            open={this.state.dialogOpen}
+            result={this.updateEmail}
+            title={updateEmailPrompt[languageCode]}
+            message={confirmUpdateEmail[languageCode]}/>
+          : null}
+
+        {this.state.emailUpdatedDialogOpen ?
+          <AknowledgementDialog
+            open={this.state.emailUpdatedDialogOpen}
+            after={this.finnishUpdateEmailFlow}
+            title={emailUpdateSuccess[languageCode]}
+            message={confirmLogoutAndNewLink[languageCode]}
+            parent={this}/>
+          : null}
+
       </Card>
+
     );
   }
 }

@@ -93,10 +93,56 @@ const errorLoginGoogle = {
   pt_PT: "Login com a Google falhou",
 };
 
+export const errorLoginFB = {
+  pt_PT: "Login com o Facebook falhou",
+};
+
 const errorSignOut = {
   pt_PT: "Erro ao fazer logout, tente novamente",
 };
+
+// ------------------ STRINGS RELATED TO PROFILE ------------------
+
 // -------------------------------------- OTHERS --------------------------------------
+
+// ------- INFOS
+
+export const exportProfileExplanation = {
+  pt_PT:
+    "Pode descarregar uma cópia das suas informações detidas pela plataforma em qualquer altura. \n" +
+    "Descarregar as suas informações requer que entre na sua conta e só o utilizador tenm acesso a este processo. " +
+    "Quando a sua cópia estiver concluída, vai ser descarregada automaticamente num ficheiro CSV para o disco do seu dispositivo.",
+};
+
+export const exportAssocDataExplanation = {
+  pt_PT:
+    "Pode descarregar uma cópia das informações relacionadas a membros e alunos detidas pela plataforma em qualquer altura. " +
+    "Descarregar as suas informações requer que entre na sua conta com previlégios adicionais, como órgão social, " +
+    "e só o utilizador e outros órgãos sociais têm acesso a este processo. " +
+    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
+};
+
+export const deleteAccountExplanation = {
+  pt_PT:
+    "Pode eliminar a sua conta da plataforma da associação de pais. Todos os seus dados serão apagados da plataforma, " +
+    "embora os órgãos sociais ainda possam mantê-los em formatos suplementares, pelo que deverá contactá-los caso queira " +
+    "abandonar definitivamente a associação.\n" +
+    "Depois da eliminação de conta não vai poder recuperar as suas informações, bem como mensagens ou outros conteúdos " +
+    "que partilhou na plataforma. Se desejar descarregar uma cópia das suas informações pode usar a função de exportar " +
+    "dados antes de apagar a sua conta.",
+};
+
+export const exportUserDataOnProcess = {
+  pt_PT: "A processar as suas informações.",
+};
+
+export const exportAssocDataOnProcess = {
+  pt_PT: "A processar as informações da associação.",
+};
+
+export const changeEmailOnProcess = {
+  pt_PT: "A proceder à mudança de email...",
+};
 
 // ------- ERRORS
 export const addCasoError = {
@@ -122,6 +168,52 @@ export const addDocError = {
 export const deleteCommentError = {
   pt_PT:
     "Houve um problema a eliminar o comentário. Por favor, tente novamente.",
+};
+
+export const childAddedError = {
+  pt_PT:
+    "Houve um problema a adicionar o seu educando. Por favor, tente novamente.",
+};
+
+export const linkAccountError = {
+  pt_PT:
+    "Ocorreu um erro ao tentar associar a sua conta.\n As causas incluem: - A conta a associar já esta a ser " +
+    "usada;\n " +
+    " - Já tem associada uma conta deste serviço.",
+};
+
+export const unlinkAccountError = {
+  pt_PT:
+    "Ocorreu um erro ao tentar desassociar a sua conta. \n As causas incluem: - A conta a desassociar não está " +
+    "associada.",
+};
+
+export const deleteAccountGenericErrorMsg = {
+  pt_PT:
+    "Ocorreu um erro ao tentar eliminar a sua conta. Pode ser necessário sair (logout) e voltar a entrar. Obrigado.",
+};
+
+export const exportMembersDataError = {
+  pt_PT:
+    "Ocorreu um erro a processar as informações dos membros da associação. Por favor, tente novamente mais tarde.",
+};
+
+export const exportChildrenDataError = {
+  pt_PT:
+    "Ocorreu um erro a processar as informações dos alunos. Por favor, tente novamente mais tarde.",
+};
+
+export const exportUserDataError = {
+  pt_PT:
+    "Ocorreu um erro a processar as suas informações. Por favor, tente novamente mais tarde.",
+};
+
+export const emailAlreadyTaken = {
+  pt_PT: "Houve um problema a atualizar o email. Por favor, tente novamente.",
+};
+
+export const genericEmailUpdateErrorMsg = {
+  pt_PT: "Houve um problema a atualizar o email. Por favor, tente novamente.",
 };
 
 export const childAddPhotoError = {
@@ -172,7 +264,7 @@ export const childDeleteError = {
     "Houve um problema a eliminar o seu educando. Por favor, tente novamente.",
 };
 
-// ------- CONFIRMATIONS
+// ------- CONFIRMATIONS / PROMPTS
 
 export const confirmDeleteChild = {
   pt_PT:
@@ -182,15 +274,48 @@ export const confirmDeleteChild = {
 
 export const confirmUpdateEmail = {
   pt_PT:
-    "Tem a certeza que pretender atualizar o seu email?\n" +
-    "Com esta alteração deixa de se conseguir autenticar com o email atual, passando a ser " +
-    "usado o novo para o efeito.",
+    "Ao alterar o seu email, deixa de se conseguir autenticar com o email atual, passando a ser " +
+    "usado o novo para o efeito.\n Após a atualização, irá sair da sua conta e receber um link " +
+    "no novo email para se autenticar com o mesmo.\n" +
+    "Deseja continuar?",
+};
+
+export const confirmLogoutAndNewLink = {
+  pt_PT:
+    "Foi-lhe enviado um link para o novo " +
+    " email para se autenticar.\nSe não o receber, proceda ao login normalmente, pedindo um novo link. \n",
+};
+
+export const confirmDeleteAccount = {
+  pt_PT:
+    "Deixará de ter acesso à plaforma através desta conta. Esta ação não pode ser revertida!",
+};
+
+export const confirmLogoutAfterDelete = {
+  pt_PT:
+    "A sua conta foi apagada com sucesso. Será redirecionado para a página de início de sessão. \n" +
+    "Obrigado por ter usado a plataforma. Até breve!",
 };
 
 // ------- SUCCESS
 
 export const sucessoGeral = {
   pt_PT: "Sucesso",
+};
+export const deleteAccountSuccess = {
+  pt_PT: "Conta eliminada com sucesso",
+};
+
+export const exportAssocDataSuccess = {
+  pt_PT: "Informações exportadas com sucesso.",
+};
+
+export const exportUserDataSucess = {
+  pt_PT: "Informações exportadas com sucesso.",
+};
+
+export const emailUpdateSuccess = {
+  pt_PT: "Email atualizado com sucesso",
 };
 
 export const parentUpdatePhotoSuccess = {

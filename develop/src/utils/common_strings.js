@@ -2,6 +2,15 @@
 * file to save common strings that are repeated along the app
 * */
 
+export const erase = {
+  "pt_PT" : "Apagar"
+};
+
+export const ok = {
+  "pt_PT" : "Ok"
+};
+
+
 export const yes = {
   "pt_PT" : "Sim"
 };
@@ -37,6 +46,66 @@ export const updateInfo = {
 
 export const deleteChild = {
   "pt_PT" : "Eliminar educando"
+};
+
+
+export const attentionPrompt = {
+  "pt_PT" : "IMPORTANTE"
+};
+
+
+export const updateEmailPrompt = {
+  "pt_PT" : "Atualizar email?"
+};
+
+
+export const signInWithLink = {
+  "pt_PT" : "Entrar com link"
+};
+
+export const signInWithGoogle = {
+  "pt_PT" : "Entrar com Google"
+};
+
+export const signInWithFacebook = {
+  "pt_PT" : "Entrar com Facebook"
+};
+
+export const signInWithMicrosoft = {
+  "pt_PT" : "Entrar com Microsoft"
+};
+
+
+
+export const unlinkGoogle = {
+  "pt_PT" : "Desassociar Google"
+};
+
+export const unlinkFacebook = {
+  "pt_PT" : "Desassociar Facebook"
+};
+
+export const unlinkMicrosoft = {
+  "pt_PT" : "Desassociar Microsoft"
+};
+
+
+
+export const hello = {
+  "pt_PT" : "Olá"
+};
+
+export const deleteAccountPrompt = {
+  "pt_PT" : "Apagar conta?"
+};
+
+
+export const success_geral = {
+  "pt_PT" : "Sucesso"
+};
+
+export const error_geral = {
+  "pt_PT" : "Ocorreu um erro. Por favor, tente novamente."
 };
 
 

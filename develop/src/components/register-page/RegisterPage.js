@@ -345,7 +345,6 @@ class Register_Page extends Component {
           const request = async () => {
             let resposta;
             await fetch(uri)
-              .then((resp) => resp.json()) // Transform the data into json
               .then(function (data) {
                 console.log("ShowEmaildata: ", data);
                 resposta = data;
@@ -976,8 +975,8 @@ class Register_Page extends Component {
                     });
                   }}
                   id="studentYear"
-                  type="text"
-                  placeholder="5º"
+                  type="number"
+                  placeholder="5"
                   required
                 />
                 <FormFeedback

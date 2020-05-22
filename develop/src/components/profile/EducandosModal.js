@@ -21,7 +21,7 @@ import {
   studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
-  changesCommitSuccess,
+  changesCommitSuccess, childAddedError,
   childAddedSuccess, childAddPhotoError, childDeleteError,
   childDeleteSuccess, childUpdateError, childUpdateSucess,
   confirmDeleteChild,
@@ -63,17 +63,24 @@ class EducandosModal extends React.Component {
         [studentsParameters.SCHOOL_YEAR[languageCode]] : false
       },
       newPhoto : this.props.educando[studentsParameters.PHOTO[languageCode]],
-      fileToUpload : null
+      fileToUpload : null,
+      onSaveChangesButtonsDisabled : false,
+      onDeleteButtonsDisabled : false
     };
 
 
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
+    this.closeModalAfterUpdate = this.closeModalAfterUpdate.bind(this);
     this.handleChangeParam = this.handleChangeParam.bind(this);
     this.handleChangePhoto = this.handleChangePhoto.bind(this);
 
     this.enableEditableInputs = this.enableEditableInputs.bind(this);
     this.disableEditableInputs = this.disableEditableInputs.bind(this);
+    this.disableButtonsWhileDeleting = this.disableButtonsWhileDeleting.bind(this);
+    this.enableButtonsWhileDeleting = this.enableButtonsWhileDeleting.bind(this);
+    this.disableButtonsAndInputsWhileUpdating = this.disableButtonsAndInputsWhileUpdating.bind(this);
+    this.enableButtonsAndInputsWhileUpdating = this.enableButtonsAndInputsWhileUpdating.bind(this);
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
     this.deleteEducando = this.deleteEducando.bind(this);
@@ -84,6 +91,7 @@ class EducandosModal extends React.Component {
 
   updateEducando(){
     const validResult = this.validForm();
+    const this_ = this;
     if(!validResult){
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
@@ -93,8 +101,7 @@ class EducandosModal extends React.Component {
         showToast(sameChildNameError[languageCode], 5000, toastTypes.ERROR);
       }
       else{
-        const closeModal = this.closeModal;
-        const myComponentDidMount = this.props.componentDidMount;
+        this_.disableButtonsAndInputsWhileUpdating();
         let myState = {...this.state};
 
         const originalPhotoURL = this.state.oldEducando[studentsParameters.PHOTO[languageCode]];
@@ -125,16 +132,23 @@ class EducandosModal extends React.Component {
 
                       updateEducando(firebase_auth.currentUser.email, updatedEducando, previousName)
                         .then((updatedParent) => {
-                          const upParentString = JSON.stringify(updatedParent);
-                          console.log("updatedParent recebido depois do update educando -> " + upParentString);
-                          // update user data in localstorage
-                          window.localStorage.setItem("userDoc", upParentString);
-                          closeModal();
-                          myComponentDidMount(true);
-                          showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);
+                          if(updatedParent.error!=null || Object.keys(updatedParent).length===0){
+                            showToast(childUpdateError[languageCode], 5000, toastTypes.ERROR);
+                            this_.enableButtonsWhileDeleting();
+                          }
+                          else{
+                            const upParentString = JSON.stringify(updatedParent);
+                            console.log("updatedParent recebido depois do update educando -> " + upParentString);
+                            // update user data in localstorage
+                            window.localStorage.setItem("userDoc", upParentString);
+                            this_.closeModalAfterUpdate();
+                            this_.props.componentDidMount(true);
+                            showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);
+                          }
                         })
                         .catch((error) => {
                           showToast(childUpdateError[languageCode], 5000, toastTypes.ERROR);
+                          this_.enableButtonsAndInputsWhileUpdating();
                         });
 
                     });
@@ -142,13 +156,13 @@ class EducandosModal extends React.Component {
                   .catch((error) => {
                     console.log("Logo upload failed: " + JSON.stringify(error));
                     showToast(childAddPhotoError[languageCode], 5000, toastTypes.ERROR);
-                    closeModal();
+                    this_.closeModal();
                   });
               })
               .catch(() => {
                 console.log("erro no delete");
                 showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                closeModal();
+                this_.closeModal();
               });
           }
           catch (e) {
@@ -164,16 +178,23 @@ class EducandosModal extends React.Component {
 
                   updateEducando(firebase_auth.currentUser.email, updatedEducando, previousName)
                     .then((updatedParent) => {
-                      const upParentString = JSON.stringify(updatedParent);
-                      console.log("updatedParent recebido depois do update educando -> " + upParentString);
-                      // update user data in localstorage
-                      window.localStorage.setItem("userDoc", upParentString);
-                      closeModal();
-                      myComponentDidMount(true);
-                      showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);
+                      if(updatedParent.error!=null || Object.keys(updatedParent).length===0){
+                        showToast(childUpdateError[languageCode], 5000, toastTypes.ERROR);
+                        this_.enableButtonsWhileDeleting();
+                      }
+                      else{
+                        const upParentString = JSON.stringify(updatedParent);
+                        console.log("updatedParent recebido depois do update educando -> " + upParentString);
+                        // update user data in localstorage
+                        window.localStorage.setItem("userDoc", upParentString);
+                        this_.closeModalAfterUpdate();
+                        this_.props.componentDidMount(true);
+                        showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);
+                      }
                     })
                     .catch((error) => {
                       showToast(childUpdateError[languageCode], 5000, toastTypes.ERROR);
+                      this_.enableButtonsAndInputsWhileUpdating();
                     });
 
                 });
@@ -181,7 +202,7 @@ class EducandosModal extends React.Component {
               .catch((error) => {
                 console.log("Logo upload failed: " + JSON.stringify(error));
                 showToast(childAddPhotoError[languageCode], 5000, toastTypes.ERROR);
-                closeModal();
+                this_.closeModal();
               });
           }
         }
@@ -193,12 +214,13 @@ class EducandosModal extends React.Component {
               console.log("updatedParent recebido depois do update educando -> " + upParentString);
               // update user data in localstorage
               window.localStorage.setItem("userDoc", upParentString);
-              closeModal();
-              myComponentDidMount(true);
+              this_.closeModalAfterUpdate();
+              this_.props.componentDidMount(true);
               showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);
             })
             .catch((error) => {
               showToast(childUpdateError[languageCode], 5000, toastTypes.ERROR);
+              this_.enableButtonsAndInputsWhileUpdating();
             });
         }
 
@@ -287,51 +309,65 @@ class EducandosModal extends React.Component {
     //console.log("file: " + e.target.files[0].name);
     const imageFile = e.target.files[0];
     //console.log("imageFile: " + imageFile);
-    const imageTempUrl = URL.createObjectURL(imageFile);
-    //console.log("tempURL: " + imageTempUrl);
-    this.setState({fileToUpload : imageFile, newPhoto : imageTempUrl});
+    // in case the user cancels the input
+    if(imageFile!=null){
+      const imageTempUrl = URL.createObjectURL(imageFile);
+      //console.log("tempURL: " + imageTempUrl);
+      this.setState({fileToUpload : imageFile, newPhoto : imageTempUrl});
+    }
   }
 
   deleteEducando(){
+    const this_ = this;
     const confirmation = window.confirm(confirmDeleteChild[languageCode]);
     const photoUrl = this.state.educando[studentsParameters.PHOTO[languageCode]];
     if(confirmation){
+      this_.disableButtonsWhileDeleting();
       deleteEducandoFromParent(firebase_auth.currentUser.email, this.state.educando[studentsParameters.NAME[languageCode]])
         .then((updatedParent) => {
+          if(updatedParent.error!=null || Object.keys(updatedParent).length===0){
+            showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
+            this_.enableButtonsWhileDeleting();
+          }
+          else{
+            // delete its photo from storage
+            try{
+              let photoRef = storage.refFromURL(photoUrl);
+              console.log("photoRef -> " + photoRef);
+              // delete current photo to save the new and not cluttering the storage
+              photoRef.delete()
+                .then(() => {
+                  const upParentString = JSON.stringify(updatedParent);
+                  console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+                  // update user data in localstorage
+                  window.localStorage.setItem("userDoc", upParentString);
+                  this_.closeModalAfterUpdate();
+                  this_.props.componentDidMount(true);
+                  showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                })
+                .catch((error) => {
+                  console.log("erro no delete: " + JSON.stringify(error));
+                  showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
+                  //this_.restoreOriginalPhoto();
+                });
+            }
+            catch(e){
+              const upParentString = JSON.stringify(updatedParent);
+              console.log("updatedParent recebido depois do delete educando -> " + upParentString);
+              // update user data in localstorage
+              window.localStorage.setItem("userDoc", upParentString);
+              this_.closeModalAfterUpdate();
+              this_.props.componentDidMount(true);
+              showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
+            }
+          }
 
-          // delete its photo from storage
-          try{
-            let photoRef = storage.refFromURL(photoUrl);
-            // delete current photo to save the new and not cluttering the storage
-            photoRef.delete()
-              .then(() => {
-                const upParentString = JSON.stringify(updatedParent);
-                console.log("updatedParent recebido depois do delete educando -> " + upParentString);
-                // update user data in localstorage
-                window.localStorage.setItem("userDoc", upParentString);
-                this.closeModal();
-                this.props.componentDidMount(true);
-                showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
-              })
-              .catch(() => {
-                console.log("erro no delete");
-                showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                this.restoreOriginalPhoto();
-              });
-          }
-          catch(e){
-            const upParentString = JSON.stringify(updatedParent);
-            console.log("updatedParent recebido depois do delete educando -> " + upParentString);
-            // update user data in localstorage
-            window.localStorage.setItem("userDoc", upParentString);
-            this.closeModal();
-            this.props.componentDidMount(true);
-            showToast(childDeleteSuccess[languageCode], 5000, toastTypes.SUCCESS);
-          }
+
 
         })
         .catch((error) => {
           showToast(childDeleteError[languageCode], 5000, toastTypes.ERROR);
+          this_.enableButtonsWhileDeleting();
         });
     }
 
@@ -339,14 +375,32 @@ class EducandosModal extends React.Component {
   }
 
   showModal() {
+    this.savePreviousChildData();
     this.setState({ show: true });
+    this.enableButtonsAndInputsWhileUpdating();
+    this.disableEditableInputs();
+    this.enableButtonsWhileDeleting();
   }
 
-  closeModal() {
+  closeModalAfterUpdate(){
+    this.setState({ show: false });
     this.disableEditableInputs();
+    this.setState({ editing: false });
     // save new educando data
     const educando = {...this.state.educando};
     this.setState({ oldEducando: educando, show : false, newPhoto : this.state.educando[studentsParameters.PHOTO[languageCode]], fileToUpload : null });
+    this.enableButtonsAndInputsWhileUpdating();
+    this.enableButtonsWhileDeleting();
+  }
+
+  closeModal() {
+    this.setState({ show: false });
+    this.disableEditableInputs();
+    this.setState({ editing: false });
+    this.resetFeedbacks();
+    this.restorePreviousChildData();
+    this.enableButtonsAndInputsWhileUpdating();
+    this.enableButtonsWhileDeleting();
   }
 
   savePreviousChildData() {
@@ -358,6 +412,7 @@ class EducandosModal extends React.Component {
   restorePreviousChildData() {
     const oldEducando = {...this.state.oldEducando};
     this.setState({ educando: oldEducando });
+    this.setState({ newPhoto: oldEducando[studentsParameters.PHOTO[languageCode]] });
     //console.log("educando restored: " + JSON.stringify(oldEducando));
   }
 
@@ -380,6 +435,24 @@ class EducandosModal extends React.Component {
     this.restorePreviousChildData();
     this.setState({ editing: false });
     this.disableEditableInputs();
+  }
+
+  disableButtonsAndInputsWhileUpdating(){
+    this.setState({ onSaveChangesButtonsDisabled: true });
+    this.disableEditableInputs();
+  }
+
+  enableButtonsAndInputsWhileUpdating(){
+    this.setState({ onSaveChangesButtonsDisabled: false });
+    this.enableEditableInputs();
+  }
+
+  disableButtonsWhileDeleting(){
+    this.setState({ onDeleteButtonsDisabled: true });
+  }
+
+  enableButtonsWhileDeleting(){
+    this.setState({ onDeleteButtonsDisabled: false });
   }
 
   renderExtra() {
@@ -519,7 +592,7 @@ class EducandosModal extends React.Component {
                       <Button
                         size="sm"
                         theme="light"
-                        id="add-photo-button"
+                        id="add-photo-button-existing-child"
                       >
                         <label htmlFor="file-upload-input" style={{cursor: "pointer", padding:"0px", margin : "0px"}}>
                           <span className="material-icons md-24">add_a_photo</span>
@@ -603,10 +676,10 @@ class EducandosModal extends React.Component {
           >
             {this.state.editing ? (
               <Row>
-                <Button style={{marginRight:"40px"}} theme="danger" onClick={this.cancelEditing}>
+                <Button style={{marginRight:"40px"}} theme="danger" onClick={this.cancelEditing} disabled={this.state.onSaveChangesButtonsDisabled} >
                   {cancel[languageCode]}
                 </Button>
-                <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.updateEducando}>
+                <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.updateEducando} disabled={this.state.onSaveChangesButtonsDisabled}>
                   {saveChanges[languageCode]}
                 </Button>
                 {/*<div>
@@ -625,10 +698,10 @@ class EducandosModal extends React.Component {
 
             ) : (
               <Row>
-                <Button style={{marginRight:"40px"}} theme="accent" onClick={this.editForm}>
+                <Button style={{marginRight:"40px"}} theme="accent" onClick={this.editForm} disabled={this.state.onDeleteButtonsDisabled} >
                   {updateInfo[languageCode]}
                 </Button>
-                <Button style={{marginLeft:"40px"}} theme="danger" onClick={this.deleteEducando}>
+                <Button style={{marginLeft:"40px"}} theme="danger" onClick={this.deleteEducando} disabled={this.state.onDeleteButtonsDisabled} >
                   <i className="fa fa-trash mr-1" /> {deleteChild[languageCode]}
                 </Button>
               </Row>
