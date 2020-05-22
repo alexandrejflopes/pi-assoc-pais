@@ -15,7 +15,7 @@ import {
   Badge,
   Button,
 } from "shards-react";
-import { Redirect } from "react-router";
+import { Link, Redirect } from "react-router-dom";
 
 import PageTitle from "../components/common/PageTitle";
 import {
@@ -78,6 +78,7 @@ class Casos extends React.Component {
         },
       ],
       casoDetail: null,
+      redirect: null,
     };
 
     this.closeCasoDetails = this.closeCasoDetails.bind(this);
@@ -86,17 +87,27 @@ class Casos extends React.Component {
   }
 
   componentDidMount() {
-    initCasosExemplo();
-    const self = this;
+    //initCasosExemplo();
+    const this_ = this;
 
-    const casosPromise = showAvailableCasos();
+    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if (currentUser != null) {
+      const casosPromise = showAvailableCasos();
 
-    casosPromise.then((result) => {
-      console.log("Result: " + JSON.stringify(result));
-      self.setState({ ListaCasos: result, Updated: true });
-    });
-
-    console.log("state -> ", self.state);
+      casosPromise.then((result) => {
+        this_.setState({ ListaCasos: result, Updated: true });
+      });
+    } else {
+      //Redirect to login
+      var redirect = (
+        <Redirect
+          to={{
+            pathname: "/",
+          }}
+        />
+      );
+      this.setState({ redirect: redirect });
+    }
   }
 
   closeCasoDetails() {
@@ -117,62 +128,25 @@ class Casos extends React.Component {
         console.log(
           "Caso escolhido: " + JSON.stringify(this.state.ListaCasos[i])
         );
-        var c = this.state.ListaCasos[i];
-        var caso = (
-          <Row>
-            <Card small className="card-post mb-4">
-              <CardBody>
-                <h5 className="card-title">{c.titulo}</h5>
-                <p
-                  className="card-text text-muted"
-                  style={{
-                    whiteSpace: "nowrap",
-                    width: "inherit",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {c.descricao}
-                </p>
-              </CardBody>
-              <CardBody>
-                <p
-                  className="card-text text-muted"
-                  style={{
-                    whiteSpace: "nowrap",
-                    width: "inherit",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {c.autor.nome}
-                </p>
-              </CardBody>
+        var caso = this.state.ListaCasos[i];
 
-              <CardFooter className="border-top d-flex">
-                <div className="my-auto ml-auto">
-                  <Button
-                    size="sm"
-                    theme="primary"
-                    id={"fechar"}
-                    onClick={this.closeCasoDetails}
-                  >
-                    <i className="fa fa-times mr-1" /> Fechar
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          </Row>
+        var red = (
+          <Redirect
+            to={{
+              pathname: "/caso/" + id,
+              state: { caso: caso },
+            }}
+          />
         );
 
-        this_.setState({ casoDetail: caso });
+        this.setState({ redirect: red });
       }
     }
     // });
   }
 
   render() {
-    console.log("state no render -> ", this.state);
+    //console.log("state no render -> ", this.state);
     const { ListaCasos } = this.state;
 
     if (this.state.Updated) {
@@ -193,63 +167,65 @@ class Casos extends React.Component {
 
           {/* First Row of Cases */}
           <Row>
-            {ListaCasos.map((post, idx) => (
-              <Col lg="4" key={idx}>
-                <Card small className="card-post mb-4">
-                  <CardBody>
-                    <h5 className="card-title">{post.titulo}</h5>
-                    <p
-                      className="card-text text-muted"
-                      style={{
-                        whiteSpace: "nowrap",
-                        width: "inherit",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {post.descricao}
-                    </p>
-                  </CardBody>
-                  <CardFooter className="border-top d-flex">
-                    <div className="card-post__author d-flex">
-                      <a
-                        href="#"
-                        className="card-post__author-avatar card-post__author-avatar--small"
-                        style={{
-                          backgroundImage: `url('https://i.pravatar.cc/128')`,
-                        }}
-                      >
-                        Written by James Khan
-                      </a>
-                      <div className="d-flex flex-column justify-content-center ml-3">
-                        <span className="card-post__author-name">
-                          {post.autor.nome}
-                        </span>
-                        <small className="text-muted">
-                          {" "}
-                          {post.data_criacao
-                            ? dateFormat(
-                                new Date(post.data_criacao._seconds * 1000),
-                                "dd-mm-yyyy, h:MM:ss TT"
-                              )
-                            : "-"}
-                        </small>
-                      </div>
-                    </div>
-                    <div className="my-auto ml-auto">
-                      <Button
-                        size="sm"
-                        theme="primary"
-                        id={`${post.id}`}
-                        onClick={this.showCasoDetails}
-                      >
-                        <i className="fa fa-search mr-1" /> Ver mais
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </Col>
-            ))}
+            {ListaCasos != null
+              ? ListaCasos.map((post, idx) => (
+                  <Col lg="4" key={idx}>
+                    <Card small className="card-post mb-4">
+                      <CardBody>
+                        <h5 className="card-title">{post.titulo}</h5>
+                        <p
+                          className="card-text text-muted"
+                          style={{
+                            whiteSpace: "nowrap",
+                            width: "inherit",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {post.descricao}
+                        </p>
+                      </CardBody>
+                      <CardFooter className="border-top d-flex">
+                        <div className="card-post__author d-flex">
+                          <img
+                            className="card-post__author-avatar card-post__author-avatar--small"
+                            src={
+                              post.autor.photo
+                                ? post.autor.photo
+                                : "https://www.gravatar.com/avatar/2c5fa499f927cb256c8da6bc60fb7937?d=mp"
+                            }
+                          ></img>
+                          <div className="d-flex flex-column justify-content-center ml-3">
+                            <span className="card-post__author-name">
+                              {post.autor.nome}
+                            </span>
+                            <small className="text-muted">
+                              {" "}
+                              {post.data_criacao
+                                ? dateFormat(
+                                    new Date(post.data_criacao._seconds * 1000),
+                                    "dd-mm-yyyy, h:MM:ss TT"
+                                  )
+                                : "-"}
+                            </small>
+                          </div>
+                        </div>
+                        <div className="my-auto ml-auto">
+                          <Button
+                            size="sm"
+                            theme="primary"
+                            id={`${post.id}`}
+                            onClick={this.showCasoDetails}
+                          >
+                            <i className="fa fa-search mr-1" /> Ver mais
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                    {this.state.redirect}
+                  </Col>
+                ))
+              : ""}
           </Row>
 
           {this.state.casoDetail}
@@ -278,6 +254,7 @@ class Casos extends React.Component {
           >
             <h2>A obter casos...</h2>
           </Row>
+          {this.state.redirect}
         </Container>
       );
     }
