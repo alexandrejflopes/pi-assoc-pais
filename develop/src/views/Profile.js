@@ -11,7 +11,11 @@ import {
   mapParamsToInputType,
 } from "../firebase_scripts/profile_functions";
 import { firebase_auth } from "../firebase-config";
-import { languageCode, parentsParameters } from "../utils/general_utils";
+import {
+  defaultAvatar,
+  languageCode,
+  parentsParameters
+} from "../utils/general_utils";
 import { profilePageTitle } from "../utils/page_titles_strings";
 import { loadingInfo } from "../utils/messages_strings";
 import UserActions from "../components/layout/MainNavbar/NavbarNav/UserActions";
@@ -55,13 +59,14 @@ class Profile extends React.Component {
         this.setState({userDoc : localUser});
       }
     }
-    //this._isMounted = true;
-    const this_ = this;
 
-    console.log("DID MOUNT!");
 
-    const currentUser = firebase_auth.currentUser;
-    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+  //this._isMounted = true;
+  const this_ = this;
+
+  console.log("DID MOUNT!");
+  const currentUser = firebase_auth.currentUser;
+  const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
   if(currentUser!=null){
     if(localUser!=null){
@@ -99,6 +104,14 @@ class Profile extends React.Component {
           .then((result) => {
             console.log("2. Result userDoc: " + JSON.stringify(result));
             if (result.error == null) {
+              // if the user has the default avatar and the firebase user has an avatar
+              // from its login provider, set that avatar to our user
+              const currentUserPhoto = currentUser.photoURL;
+              const resultUserPhoto = result[parentsParameters.PHOTO[languageCode]];
+
+              if(currentUserPhoto!=null && resultUserPhoto===defaultAvatar){
+                result[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
+              }
               // no error
               console.log("atualizar state com user doc recebido");
               this_.setState({ userDoc: result });

@@ -14,6 +14,8 @@ import {
 } from "../utils/general_utils";
 import {hello} from "../utils/common_strings";
 
+import { v4 as uuidv4 } from 'uuid';
+
 async function fetchUserDoc(email) {
   console.log("profile email to fetch: " + email);
 
@@ -225,13 +227,15 @@ function updateParent(parentEmail, parentDoc) {
 }
 
 function uploadProfilePhoto(photoFile) {
-  const newPhotoPath = "profilePhotos/" + photoFile.name;
+  // unique file name
+  const newPhotoPath = "profilePhotos/" + uuidv4() + "-" + photoFile.name;
   const newPhotoRef = storageRef.child(newPhotoPath);
   return newPhotoRef.put(photoFile);
 }
 
 function uploadChildPhoto(photoFile) {
-  const newPhotoPath = "childPhotos/" + photoFile.name;
+  // unique file name
+  const newPhotoPath = "childPhotos/" + uuidv4() + "-" + photoFile.name;
   const newPhotoRef = storageRef.child(newPhotoPath);
   return newPhotoRef.put(photoFile);
 }

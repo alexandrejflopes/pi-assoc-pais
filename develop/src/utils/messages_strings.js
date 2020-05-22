@@ -146,6 +146,10 @@ export const changeEmailOnProcess = {
 
 // ------- ERRORS
 
+export const childAddedError = {
+  "pt_PT" : "Houve um problema a adicionar o seu educando. Por favor, tente novamente."
+};
+
 export const linkAccountError = {
   "pt_PT" : "Ocorreu um erro ao tentar associar a sua conta.\n As causas incluem: - A conta a associar já esta a ser " +
     "usada;\n " +

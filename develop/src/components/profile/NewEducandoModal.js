@@ -17,6 +17,7 @@ import {
   studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
+  childAddedError,
   childAddedSuccess, childAddPhotoError,
   fillRequiredFieldMessage, parentUpdatePhotoError, parentUpdatePhotoSuccess,
   provideRequiredFieldsMessage, sameChildNameError
@@ -61,7 +62,8 @@ class NewEducandoModal extends React.Component{
         [studentsParameters.SCHOOL_YEAR[languageCode]] : false
       },
       originalPhoto : defaultAvatar,
-      fileToUpload : null
+      fileToUpload : null,
+      onCreateButtonDisabled : false,
     };
 
     this.showModal = this.showModal.bind(this);
@@ -75,6 +77,9 @@ class NewEducandoModal extends React.Component{
     this.validForm = this.validForm.bind(this);
     this.resetFeedbacks = this.resetFeedbacks.bind(this);
 
+    this.disableCreateButtonAndInputs = this.disableCreateButtonAndInputs.bind(this);
+    this.enableCreateButtonAndInputs = this.enableCreateButtonAndInputs.bind(this);
+
   }
 
   handleChangePhoto(e) {
@@ -85,7 +90,9 @@ class NewEducandoModal extends React.Component{
     }
   }
 
+
   addEducando(){
+    const this_ = this;
     const validResult = this.validForm();
     if(!validResult){
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
@@ -96,15 +103,14 @@ class NewEducandoModal extends React.Component{
         showToast(sameChildNameError[languageCode], 5000, toastTypes.ERROR);
       }
       else{
-        const closeModal = this.closeModal;
-        const myComponentDidMount = this.props.componentDidMount;
+        this_.disableCreateButtonAndInputs();
         let myState = {...this.state};
 
         // if photo changed, upload it as well
         if(this.state.educandoFoto!==this.state.originalPhoto){
           const newPhotoFile = this.state.fileToUpload;
-
           const uploadTask = uploadChildPhoto(newPhotoFile);
+
           uploadTask
             .then((snapshot) => {
               // Handle successful uploads on complete
@@ -112,31 +118,45 @@ class NewEducandoModal extends React.Component{
               snapshot.ref.getDownloadURL().then(function (downloadURL) {
                 addEducandoToParent(firebase_auth.currentUser.email, myState.educando, downloadURL)
                   .then((updatedParent) => {
-                    const upParentString = JSON.stringify(updatedParent);
-                    console.log("updatedParent recebido depois do update -> " + upParentString);
-                    // update user data in localstorage
-                    window.localStorage.setItem("userDoc", upParentString);
-                    closeModal();
-                    myComponentDidMount(true);
-                    showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                    if(updatedParent.error!=null || Object.keys(updatedParent).length===0){
+                      showToast(childAddedError[languageCode], 5000, toastTypes.ERROR);
+                      this_.enableCreateButtonAndInputs();
+                    }
+                    else{
+                      const upParentString = JSON.stringify(updatedParent);
+                      console.log("updatedParent recebido depois do update -> " + upParentString);
+                      // update user data in localstorage
+                      window.localStorage.setItem("userDoc", upParentString);
+                      this_.closeModal();
+                      this_.props.componentDidMount(true);
+                      showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                    }
+
                   });
               });
             })
             .catch((error) => {
               console.log("Photo upload failed: " + JSON.stringify(error));
               showToast(childAddPhotoError[languageCode], 5000, toastTypes.ERROR);
+              this_.enableCreateButtonAndInputs();
             });
         }
         else{
           addEducandoToParent(firebase_auth.currentUser.email, myState.educando, myState.educandoFoto)
             .then((updatedParent) => {
-              const upParentString = JSON.stringify(updatedParent);
-              console.log("updatedParent recebido depois do update -> " + upParentString);
-              // update user data in localstorage
-              window.localStorage.setItem("userDoc", upParentString);
-              closeModal();
-              myComponentDidMount(true);
-              showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+              if(updatedParent.error!=null || Object.keys(updatedParent).length===0){
+                showToast(childAddedError[languageCode], 5000, toastTypes.ERROR);
+                this_.enableCreateButtonAndInputs();
+              }
+              else{
+                const upParentString = JSON.stringify(updatedParent);
+                console.log("updatedParent recebido depois do update -> " + upParentString);
+                // update user data in localstorage
+                window.localStorage.setItem("userDoc", upParentString);
+                this_.closeModal();
+                this_.props.componentDidMount(true);
+                showToast(childAddedSuccess[languageCode], 5000, toastTypes.SUCCESS);
+              }
             });
         }
       }
@@ -230,17 +250,30 @@ class NewEducandoModal extends React.Component{
 
   showModal() {
     this.setState({ show: true });
+    this.enableCreateButtonAndInputs(); // just in case
   }
 
   closeModal() {
     this.resetState();
     this.setState({ show: false });
+    this.enableCreateButtonAndInputs();
   }
 
   resetState(){
     this.setState(this.initial);
     console.log("state inicial antes do reset -> " + JSON.stringify(this.initial));
     console.log("state depois do reset -> " + JSON.stringify(this.state));
+  }
+
+
+  disableCreateButtonAndInputs(){
+    this.setState({ onCreateButtonDisabled: true });
+    this.setState({ disabled: true });
+  }
+
+  enableCreateButtonAndInputs(){
+    this.setState({ onCreateButtonDisabled: false });
+    this.setState({ disabled: false });
   }
 
 
@@ -280,6 +313,7 @@ class NewEducandoModal extends React.Component{
               onChange={this.handleChangeParam}
               invalid={this.state.feedbacks[param]}
               required
+              disabled={this.state.disabled ? "disabled" : ""}
             />
             <FormFeedback
               id={feedbackIdx}
@@ -345,7 +379,8 @@ class NewEducandoModal extends React.Component{
                       <Button
                         size="sm"
                         theme="light"
-                        id="add-photo-button"
+                        id="add-photo-button-new-child"
+                        disabled={this.state.onCreateButtonDisabled}
                       >
                         <label htmlFor="file-upload-input" style={{cursor: "pointer", padding:"0px", margin : "0px"}}>
                           <span className="material-icons md-24">add_a_photo</span>
@@ -356,7 +391,8 @@ class NewEducandoModal extends React.Component{
                         type="file"
                         accept="image/png, image/jpeg"
                         style={{display: "none", margin: "0px"}}
-                        onChange={this.handleChangePhoto}/>
+                        onChange={this.handleChangePhoto}
+                        disabled={this.state.disabled ? "disabled" : ""}/>
                     </Row>
                   </Row>
 
@@ -374,6 +410,7 @@ class NewEducandoModal extends React.Component{
                         onChange={this.handleChangeParam}
                         invalid={this.state.feedbacks[studentsParameters.NAME[languageCode]]}
                         required
+                        disabled={this.state.disabled ? "disabled" : ""}
                       />
                       <FormFeedback
                         id="childNameFeedback"
@@ -397,6 +434,7 @@ class NewEducandoModal extends React.Component{
                         onChange={this.handleChangeParam}
                         invalid={this.state.feedbacks[studentsParameters.SCHOOL_YEAR[languageCode]]}
                         required
+                        disabled={this.state.disabled ? "disabled" : ""}
                       />
                       <FormFeedback
                         id="childSchoolYearFeedback"
@@ -417,7 +455,7 @@ class NewEducandoModal extends React.Component{
           <Modal.Footer
             style={{ justifyContent: "left", flexDirection: "column" }}
           >
-            <Button variant="primary" onClick={this.addEducando}>
+            <Button variant="primary" onClick={this.addEducando} disabled={this.state.onCreateButtonDisabled}>
               {submitChild[languageCode]}
             </Button>
           </Modal.Footer>

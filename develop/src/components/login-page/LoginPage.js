@@ -17,7 +17,11 @@ import { toast, Bounce } from "react-toastify";
 //import * as UsersService from "../../services/users/api_user";
 import CostumForm from "../../common/Form/form";
 import bg1 from "../../assets/mother.png";
-import { languageCode, parentsParameters } from "../../utils/general_utils";
+import {
+  languageCode,
+  parentsParameters,
+  showToast, toastTypes
+} from "../../utils/general_utils";
 import {
   errorLoginFB,
   errorLoginGoogle,
@@ -88,15 +92,7 @@ class Login extends CostumForm {
             var dataDoc = data;
             console.log(data);
             if (dataDoc === undefined) {
-              var message = errorNoLogedInUser[languageCode];
-              toast.configure();
-              toast(message, {
-                transition: Bounce,
-                closeButton: true,
-                autoClose: 2000,
-                position: "top-right",
-                type: "warning",
-              });
+              showToast(errorNoLogedInUser[languageCode], 3000, toastTypes.WARNING);
             } else {
               if (email === dataDoc.Email && dataDoc["Validated"] === false) {
                 var red;
@@ -646,7 +642,7 @@ class Login extends CostumForm {
                 );
                 this_.setState({ msg: mensagem });
               } else {
-                alert("Falha no login! Valores inseridos estão errados");
+                showToast(errorNoLogedInUser[languageCode], 3000, toastTypes.WARNING);
               }
             }
           })
