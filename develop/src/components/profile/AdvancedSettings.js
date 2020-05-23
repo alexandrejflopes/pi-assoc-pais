@@ -122,7 +122,7 @@ class AdvancedSettings extends React.Component {
     }
     // if current and new email are the same, do nothing
     else if(currentEmail===newEmail){
-      this.cancelEditing();
+      this_.cancelEditing();
     }
     else{
       //const confirmation = window.confirm(confirmUpdateEmail[languageCode]);
@@ -137,6 +137,8 @@ class AdvancedSettings extends React.Component {
           this_.cancelEditing();
           return;
         }
+
+        this_.disableEditableInputs();
 
         // just to check if the current email exists in FB Auth
         // if so, we can proceed
@@ -243,7 +245,7 @@ class AdvancedSettings extends React.Component {
           });
       }
       else{
-        this.closeDialog();
+        this_.closeDialog();
         this_.cancelEditing();
       }
 
@@ -396,7 +398,7 @@ class AdvancedSettings extends React.Component {
                   </Row>
                   <hr />
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.openDialog}>{saveChanges[languageCode]}</Button> </div>
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing} disabled={this.state.disabled}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.openDialog} disabled={this.state.disabled}>{saveChanges[languageCode]}</Button> </div>
                     : <Button theme="accent" onClick={this.editForm}>{changeEmail[languageCode]}</Button>
                   }
                 </Form>

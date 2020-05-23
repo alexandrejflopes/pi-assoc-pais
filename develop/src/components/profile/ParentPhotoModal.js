@@ -34,7 +34,8 @@ class ParentPhotoModal extends React.Component {
       show: false,
       newPhoto : this.props.photo,
       originalPhoto : this.props.photo,
-      fileToUpload : null
+      fileToUpload : null,
+      onSavePhotoButtonsDisabled : false
     };
 
     this.showModal = this.showModal.bind(this);
@@ -45,12 +46,14 @@ class ParentPhotoModal extends React.Component {
     this.updatePhoto = this.updatePhoto.bind(this);
     this.setNewPhoto = this.setNewPhoto.bind(this);
 
+    this.enableButtonsWhileUpdating = this.enableButtonsWhileUpdating.bind(this);
+    this.disableButtonsWhileUpdating = this.disableButtonsWhileUpdating.bind(this);
+
   }
 
   updatePhoto(){
-
     const this_ = this;
-
+    this_.disableButtonsWhileUpdating();
     //console.log("state antes do update: " + JSON.stringify(this.state));
 
     // if the photo is the same, do nothing
@@ -105,12 +108,14 @@ class ParentPhotoModal extends React.Component {
                         console.log("update error: " + JSON.stringify(error));
                         showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
                         restorePhoto();
+                        this_.enableButtonsWhileUpdating();
                       }
                     });
                 }).catch(function(error) {
                   console.log("update error no firebase user: " + JSON.stringify(error));
                   showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
                   restorePhoto();
+                  this_.enableButtonsWhileUpdating();
                 });
 
               });
@@ -118,13 +123,15 @@ class ParentPhotoModal extends React.Component {
             .catch((error) => {
               console.log("Logo upload failed: " + JSON.stringify(error));
               showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-              this.restoreOriginalPhoto();
+              this_.restoreOriginalPhoto();
+              this_.enableButtonsWhileUpdating();
             });
         })
         .catch(() => {
           console.log("erro no delete");
           showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
           this.restoreOriginalPhoto();
+          this_.enableButtonsWhileUpdating();
         });
     }
     catch (e) {
@@ -157,12 +164,14 @@ class ParentPhotoModal extends React.Component {
                     console.log("update error: " + JSON.stringify(error));
                     showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
                     restorePhoto();
+                    this_.enableButtonsWhileUpdating();
                   }
                 });
             }).catch(function(error) {
               console.log("update error no firebase user: " + JSON.stringify(error));
               showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
               restorePhoto();
+              this_.enableButtonsWhileUpdating();
             });
           });
         })
@@ -170,6 +179,7 @@ class ParentPhotoModal extends React.Component {
           console.log("Photo upload failed: " + JSON.stringify(error));
           showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
           this_.restoreOriginalPhoto();
+          this_.enableButtonsWhileUpdating();
         });
     }
 
@@ -186,29 +196,39 @@ class ParentPhotoModal extends React.Component {
 
 
   showModal() {
+    this.enableButtonsWhileUpdating();
     this.setState({ show: true });
   }
 
   closeModal() {
     this.restoreOriginalPhoto();
     this.setState({ show: false });
+    this.enableButtonsWhileUpdating();
   }
 
   closeModalAfterUpdate() {
     this.setState({ show: false , fileToUpload : null});
+    this.enableButtonsWhileUpdating();
   }
 
 
   restoreOriginalPhoto() {
     const originalPhoto = this.state.originalPhoto;
     this.setState({ newPhoto: originalPhoto });
-    //console.log("first photo restored: " + JSON.stringify(originalPhoto));
   }
 
 
   setNewPhoto(newPhotoURL){
     this.setState({ originalPhoto: newPhotoURL });
     this.setState({ newPhoto: newPhotoURL });
+  }
+
+  disableButtonsWhileUpdating(){
+    this.setState({ onSavePhotoButtonsDisabled: true });
+  }
+
+  enableButtonsWhileUpdating(){
+    this.setState({ onSavePhotoButtonsDisabled: false });
   }
 
 
@@ -274,6 +294,7 @@ class ParentPhotoModal extends React.Component {
                     size="sm"
                     theme="light"
                     id="add-photo-button"
+                    disabled={this.state.onSavePhotoButtonsDisabled}
                   >
                     <label htmlFor="file-upload-input" style={{cursor: "pointer", padding:"0px", margin : "0px"}}>
                       <span className="material-icons md-24">add_a_photo</span>
@@ -284,7 +305,8 @@ class ParentPhotoModal extends React.Component {
                     type="file"
                     accept="image/png, image/jpeg"
                     style={{display: "none", margin: "0px"}}
-                    onChange={this.handleChangePhoto}/>
+                    onChange={this.handleChangePhoto}
+                    disabled={this.state.onSavePhotoButtonsDisabled}/>
                 </Row>
               </Row>
             </Col>
@@ -294,10 +316,10 @@ class ParentPhotoModal extends React.Component {
             style={{ justifyContent: "left", flexDirection: "column" }}
           >
             <Row>
-              <Button style={{marginRight:"40px"}} theme="danger" onClick={this.closeModal}>
+              <Button style={{marginRight:"40px"}} theme="danger" onClick={this.closeModal} disabled={this.state.onSavePhotoButtonsDisabled}>
                 {cancel[languageCode]}
               </Button>
-              <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.updatePhoto}>
+              <Button style={{marginLeft:"40px"}} className="float-right" theme="success" onClick={this.updatePhoto} disabled={this.state.onSavePhotoButtonsDisabled}>
                 {saveChanges[languageCode]}
               </Button>
             </Row>

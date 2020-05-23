@@ -56,6 +56,7 @@ class DeleteAccount extends React.Component {
     this.deleteUserAccount = this.deleteUserAccount.bind(this);
     this.finnishDeleteAccountFlow = this.finnishDeleteAccountFlow.bind(this);
     this.deleteParentAndChildrenPhotos = this.deleteParentAndChildrenPhotos.bind(this);
+    this.deletePhoto = this.deletePhoto.bind(this);
 
     this.closeDialog = this.closeDialog.bind(this);
     this.openDialog = this.openDialog.bind(this);
@@ -134,6 +135,24 @@ class DeleteAccount extends React.Component {
     this.setState({deleteAccountDialogOpen : true});
   }
 
+  async deletePhoto(photoURL){
+    // delete parent photo
+    try {
+      let photoRef = storage.refFromURL(photoURL.toString());
+      photoRef.delete()
+        .then(() => {
+          console.log("foto < " + photoURL + " > eliminada com sucesso.");
+        })
+        .catch(() => {
+          console.log("erro a eliminar a foto < " + photoURL + " >");
+        });
+    }
+    catch (e) {
+      // nothing
+      console.log("NO PHOTO! < " + photoURL + " > -> " + JSON.stringify(e));
+    }
+  }
+
   deleteParentAndChildrenPhotos(){
     const profilePhoto = this.state.parent[parentsParameters.PHOTO[languageCode]];
     const children = this.state.parent[parentsParameters.CHILDREN[languageCode]];
@@ -145,37 +164,12 @@ class DeleteAccount extends React.Component {
     });
 
     // delete parent photo
-    try {
-      let profilePhotoRef = storage.refFromURL(profilePhoto);
-      profilePhotoRef.delete()
-        .then(() => {
-          console.log("foto de perfil eliminada com sucesso.");
-        })
-        .catch(() => {
-          console.log("erro a eliminar a foto de perfil eliminada");
-        });
-    }
-    catch (e) {
-      // nothing
-      console.log("NO PROFILE PHOTO! -> " + JSON.stringify(e));
-    }
+    this.deletePhoto(profilePhoto).then(r => {});
 
     // delete children photos
     for(const i in childrenPhotos){
       const photo = childrenPhotos[i];
-      try {
-        let photoRef = storage.refFromURL(photo);
-        photoRef.delete().then(() => {
-          console.log("foto " + i + " < " + photo + " > eliminada com sucesso.");
-        })
-          .catch(() => {
-            console.log("erro a eliminar a foto " + i + " <" + photo + ">");
-          });
-      }
-      catch (e) {
-        // nothing
-        console.log("NO PHOTO! " + i + " < " + photo + " > -> " + JSON.stringify(e));
-      }
+      this.deletePhoto(photo).then(r => {});
     }
   }
 

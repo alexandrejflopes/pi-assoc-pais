@@ -23,24 +23,37 @@ class SidebarMainNavbar extends React.Component {
   }
 
   componentDidMount() {
-    const promise = getAssocDoc();
+    const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
 
-    console.log("promise -> " + promise);
+    if(localAssocDoc!=null){
+      this.setState({
+        assocLogoUrl: localAssocDoc["Logótipo"],
+        assocName: localAssocDoc["Nome da Associação de Pais"]
+      });
+    }
+    else{
+      const promise = getAssocDoc();
 
-    promise.then(doc => {
+      console.log("promise -> " + promise);
+
+      promise.then(doc => {
         if (!doc.exists) {
           console.log('No assotiation document found!');
-        } else {
+        }
+        else {
           const data = doc.data();
+          window.localStorage.setItem("assocDoc", JSON.stringify(data));
           this.setState({
             assocLogoUrl: data["Logótipo"],
             assocName: data["Nome da Associação de Pais"]
           });
         }
       })
-      .catch(err => {
-        console.log('Error getting document', err);
-      });
+        .catch(err => {
+          console.log('Error getting document', err);
+        });
+    }
+
   }
 
   render() {

@@ -8,16 +8,20 @@ import { Redirect } from "react-router-dom";
 import {
   fetchUserDoc,
   getNewParams,
-  mapParamsToInputType,
+  mapParamsToInputType, updateParent,
 } from "../firebase_scripts/profile_functions";
 import { firebase_auth } from "../firebase-config";
 import {
   defaultAvatar,
   languageCode,
-  parentsParameters
+  parentsParameters, showToast, toastTypes
 } from "../utils/general_utils";
 import { profilePageTitle } from "../utils/page_titles_strings";
-import { loadingInfo } from "../utils/messages_strings";
+import {
+  loadingInfo,
+  parentUpdatePhotoError,
+  parentUpdatePhotoSuccess
+} from "../utils/messages_strings";
 import UserActions from "../components/layout/MainNavbar/NavbarNav/UserActions";
 
 class Profile extends React.Component {
@@ -96,7 +100,7 @@ class Profile extends React.Component {
           this_.saveNewParams();
           this_.setState({ userDoc: localUser });
       }
-      }
+    }
     else {
         console.log("não há user no LS, buscar novo");
         const userPromise = fetchUserDoc(this_.state.userEmail);
@@ -112,8 +116,21 @@ class Profile extends React.Component {
               const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
               console.log("currentUserPhotoUrl -> " + currentUserPhoto);
               console.log("resultUserPhoto -> " + resultUserPhoto);
+
               if(currentUserPhoto!=null){
-                parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
+                if(currentUserPhoto!==resultUserPhoto){
+                  parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
+                  const photoField = {[parentsParameters.PHOTO[languageCode]] : currentUserPhoto};
+                  updateParent(currentUser.email, photoField)
+                    .then(() => {
+                      console.log("updated parent with provider photo in DB")
+                    })
+                    .catch((error) => {
+                      if(Object.keys(error).length!==0){
+                        console.log("update error: " + JSON.stringify(error));
+                      }
+                    });
+                }
               }
               // ----------------------------------------------------------------------
 

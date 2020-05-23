@@ -14,13 +14,18 @@ import {
   Row
 } from "shards-react";
 import {
+  assocParameters,
   languageCode, newParametersEntities,
   notAvailableDesignation,
   parentsParameters, showToast, studentsParameters, toastTypes
 } from "../../utils/general_utils";
 import {saveChanges, cancel, updateProfile} from "../../utils/common_strings";
-import {profileInfoFormTitle} from "../../utils/page_titles_strings";
 import {
+  assocDataInfoFormTitle,
+  profileInfoFormTitle
+} from "../../utils/page_titles_strings";
+import {
+  assocDataUpdateError, assocDataUpdateSuccess,
   changesCommitSuccess,
   childDeleteError,
   childDeleteSuccess,
@@ -36,41 +41,44 @@ import UserOverview from "./UserOverview";
 import UsersOverview from "../blog/UsersOverview";
 import UserActions from "../layout/MainNavbar/NavbarNav/UserActions";
 import {validZip} from "../../firebase_scripts/installation";
+import {
+  getAssocDoc,
+  updateAssocDoc
+} from "../../firebase_scripts/get_assoc_info";
 
 
-class UserInfo extends React.Component {
+class AssocDataInfo extends React.Component {
   constructor(props) {
     super(props);
 
-    let parent, newParamsTypesD = null;
-    const noValueString = notAvailableDesignation[languageCode];
-    const infoFormTitle = profileInfoFormTitle[languageCode];
+    let assoc = null;
+    const infoFormTitle = assocDataInfoFormTitle[languageCode];
 
-    if(this.props.userD!=null){
-      parent = this.props.userD;
-      newParamsTypesD = this.props.newParamsTypesD;
+    if(this.props.assoc!=null){
+      assoc = this.props.assoc;
     }
 
     //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
     this.state = {
       title: infoFormTitle,
-      parent : parent,
+      assocDoc : assoc,
       editing : false,
       disabled: true,
-      newParamsTypesD : newParamsTypesD,
       // feedbacks
       feedbacks : {
-        [parentsParameters.NAME[languageCode]] : false,
-        //[parentsParameters.EMAIL[languageCode]] : false,
-        [parentsParameters.PHONE[languageCode]] : false,
-        [parentsParameters.JOB[languageCode]] : false,
-        [parentsParameters.STREET[languageCode]] : false,
-        [parentsParameters.CITY[languageCode]] : false,
-        [parentsParameters.ZIPCODE[languageCode]] : false,
-        [parentsParameters.NIF[languageCode]] : false,
-        //[parentsParameters.CC[languageCode]] : false
+        [assocParameters.ZIP[languageCode]] : false,
+        [assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]] : false,
+        [assocParameters.DESCRIPTION[languageCode]] : false,
+        [assocParameters.EMAIL[languageCode]] : false,
+        [assocParameters.IBAN[languageCode]] : false,
+        [assocParameters.CITY[languageCode]] : false,
+        [assocParameters.LOGO[languageCode]] : false,
+        [assocParameters.STREET[languageCode]] : false,
+        [assocParameters.NAME[languageCode]] : false,
+        [assocParameters.FEE[languageCode]] : false,
+        [assocParameters.PHONE[languageCode]] : false,
       },
-      oldParent: null,
+      oldAssocData: null,
       onUpdateButtonsDisabled : false
     };
 
@@ -83,7 +91,7 @@ class UserInfo extends React.Component {
     this.cancelEditing = this.cancelEditing.bind(this);
     this.lockFormAfterSubmit = this.lockFormAfterSubmit.bind(this);
 
-    this.updateParent = this.updateParent.bind(this);
+    this.updateAssoc = this.updateAssoc.bind(this);
 
 
   }
@@ -100,7 +108,7 @@ class UserInfo extends React.Component {
 
   /*********************************** HANDLERS ***********************************/
 
-  updateParent(){
+  updateAssoc(){
     const this_ = this;
     const validResult = this_.validForm();
     if(!validResult){
@@ -111,21 +119,31 @@ class UserInfo extends React.Component {
       this_.disableUpdateButtons();
       //this.cancelEditing();
       //showToast(changesCommitSuccess[languageCode], 5000, toastTypes.SUCCESS);
-      updateParent(firebase_auth.currentUser.email, this.state.parent)
-        .then((updatedParent) => {
-          const upParentString = JSON.stringify(updatedParent);
-          console.log("updatedParent recebido depois do update info -> " + upParentString);
-          // update user data in localstorage
-          window.localStorage.setItem("userDoc", upParentString);
-          this_.lockFormAfterSubmit();
-          this_.props.componentDidMount(true);
-          // TODO: update navbar instantaneously
-          showToast(parentUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+      updateAssocDoc(this.state.assocDoc)
+        .then(() => {
+          getAssocDoc()
+            .then(doc => {
+              if (!doc.exists) {
+                console.log('No assotiation document found!');
+              }
+              else {
+                const assocData = doc.data();
+                // update assoc data in localstorage
+                window.localStorage.setItem("assocDoc", JSON.stringify(assocData));
+                console.log("assocData recebida depois do update info -> " + JSON.stringify(assocData));
+                this_.lockFormAfterSubmit();
+                // TODO: update navbar instantaneously with photo
+                showToast(assocDataUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
+              }
+            })
+            .catch(err => {
+              console.log('Error getting document', err);
+            });
         })
         .catch((error) => {
           if(Object.keys(error).length!==0){
             console.log("update error: " + JSON.stringify(error));
-            showToast(parentUpdateError[languageCode], 5000, toastTypes.ERROR);
+            showToast(assocDataUpdateError[languageCode], 5000, toastTypes.ERROR);
             this_.cancelEditing();
             this_.enableUpdateButtons();
           }
@@ -139,8 +157,8 @@ class UserInfo extends React.Component {
     this.enableUpdateButtons();
     this.setState({ editing: false });
     // save new parent data
-    const parent = {...this.state.parent};
-    this.setState({ oldParent: parent });
+    const assocDoc = {...this.state.assocDoc};
+    this.setState({ oldAssocData: assocDoc });
   }
 
   disableUpdateButtons(){
@@ -160,16 +178,16 @@ class UserInfo extends React.Component {
     let allValid = true;
 
     for(let field in this.state.feedbacks){
-      const value = this.state.parent[field];
+      const value = this.state.assocDoc[field];
       if(value==null || value.trim()===""){
         changedFeedbacks[field] = true;
         allValid = false;
       }
     }
 
-    const zip = this.state.parent[parentsParameters.ZIPCODE[languageCode]];
+    const zip = this.state.assocDoc[assocParameters.ZIP[languageCode]];
     if(!validZip(zip)){
-      changedFeedbacks[parentsParameters.ZIPCODE[languageCode]] = true;
+      changedFeedbacks[assocParameters.ZIP[languageCode]] = true;
       allValid = false;
       showToast(invalidZipMessage[languageCode], 5000, toastTypes.ERROR);
     }
@@ -189,25 +207,25 @@ class UserInfo extends React.Component {
   }
 
   handleChangeParam(e) {
-    let parent = this.state.parent;
+    let assocDoc = this.state.assocDoc;
     let paramName = e.target.name;
-    //console.log("paramName to change: " + paramName);
+    console.log("paramName to change: " + paramName);
     // update the param with the new value
-    parent[paramName] = e.target.value;
-    //console.log("parent with new values: " + JSON.stringify(parent));
-    this.setState({ parent: parent });
+    assocDoc[paramName] = e.target.value;
+    //console.log("assocDoc with new values: " + JSON.stringify(parent));
+    this.setState({ assocDoc: assocDoc });
   }
 
   savePreviousParentData() {
-    const parent = {...this.state.parent};
-    this.setState({ oldParent: parent });
-    //console.log("parent saved: " + JSON.stringify(parent));
+    const assocDoc = {...this.state.assocDoc};
+    this.setState({ oldAssocData: assocDoc });
+    //console.log("assocDoc saved: " + JSON.stringify(parent));
   };
 
   restorePreviousParentData() {
-    const oldParent = {...this.state.oldParent};
-    this.setState({ parent: oldParent });
-    //console.log("parent restored: " + JSON.stringify(oldParent));
+    const oldAssocData = {...this.state.oldAssocData};
+    this.setState({ assocDoc: oldAssocData });
+    console.log("assocDoc restored: " + JSON.stringify(oldAssocData));
   };
 
   enableEditableInputs() {
@@ -230,58 +248,6 @@ class UserInfo extends React.Component {
     this.disableEditableInputs();
   }
 
-  renderExtra() {
-    let extraInputs = [];
-
-    const parentParamsTypes = this.state.newParamsTypesD[newParametersEntities.parent[languageCode]];
-
-    if(parentParamsTypes!=null){ // is null when there are no parent parameters
-      for (let param in parentParamsTypes) {
-        if (this.state.parent[param] == null /*in case of a child param*/)
-          continue;
-
-        const idx = "parent" + param;
-        const type = parentParamsTypes[param].type;
-        const step = parentParamsTypes[param].step;
-
-        // add feedback control variable
-        let updatedFeedbacks = {...this.state.feedbacks};
-        updatedFeedbacks[param] = false;
-        this.state.feedbacks = updatedFeedbacks;
-        const feedbackIdx = "child" + param + "Feedback";
-
-        const newInput = (
-          <FormGroup>
-            <label htmlFor={idx}>{param}</label>
-            <FormInput
-              id={idx}
-              type={type}
-              step={step}
-              name={param}
-              placeholder=""
-              value={this.state.parent[param]}
-              onChange={this.handleChangeParam}
-              required
-              disabled={this.state.disabled ? "disabled" : ""}
-              invalid={this.state.feedbacks[param]}
-            />
-            <FormFeedback
-              id={feedbackIdx}
-              valid={false}
-              style={{ display: "none" }}
-            >
-              {fillRequiredFieldMessage[languageCode]}
-            </FormFeedback>
-          </FormGroup>
-        );
-        extraInputs.push(newInput);
-      }
-    }
-
-
-    return extraInputs;
-  }
-
 
   render() {
     return (
@@ -297,19 +263,19 @@ class UserInfo extends React.Component {
                   <Row form>
                     {/* First Name */}
                     <Col md="12" className="form-group">
-                      <label htmlFor="parentName">{parentsParameters.NAME[languageCode]}</label>
+                      <label htmlFor="assocName">{assocParameters.NAME[languageCode]}</label>
                       <FormInput
                         required
                         id="feName"
-                        name={parentsParameters.NAME[languageCode]}
-                        placeholder={parentsParameters.NAME[languageCode]}
+                        name={assocParameters.NAME[languageCode]}
+                        placeholder={assocParameters.NAME[languageCode]}
                         value={
-                          this.state.parent[
-                            parentsParameters.NAME[languageCode]
+                          this.state.assocDoc[
+                            assocParameters.NAME[languageCode]
                             ]
                         }
                         onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.NAME[languageCode]]}
+                        invalid={this.state.feedbacks[assocParameters.NAME[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -468,4 +434,4 @@ class UserInfo extends React.Component {
 
 
 
-export default UserInfo;
+export default AssocDataInfo;

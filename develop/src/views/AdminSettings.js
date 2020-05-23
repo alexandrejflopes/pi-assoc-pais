@@ -11,6 +11,8 @@ import {
 } from "../utils/page_titles_strings";
 import { loadingInfo } from "../utils/messages_strings";
 import ExportAssocData from "../components/profile/ExportAssocData";
+import {getAssocDoc} from "../firebase_scripts/get_assoc_info";
+import AssocDataInfo from "../components/profile/AssocDataInfo";
 
 class AdminSettings extends React.Component {
   constructor(props) {
@@ -28,7 +30,8 @@ class AdminSettings extends React.Component {
 
     this.state = {
       userEmail: userEmail,
-      userDoc: userDoc
+      userDoc: userDoc,
+      assocDoc : null
     };
 
 
@@ -44,6 +47,32 @@ class AdminSettings extends React.Component {
       if(localUser!=null){
         this.setState({userDoc : localUser});
       }
+    }
+
+    const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+    if(localAssocDoc!=null){
+      this.setState({
+        assocDoc: localAssocDoc
+      });
+    }
+    else{
+      const promise = getAssocDoc();
+      promise
+        .then(doc => {
+          if (!doc.exists) {
+            console.log('No assotiation document found!');
+          }
+          else {
+            const data = doc.data();
+            window.localStorage.setItem("assocDoc", JSON.stringify(data));
+            this.setState({
+              assocDoc: localAssocDoc
+            });
+          }
+      })
+        .catch(err => {
+          console.log('Error getting document', err);
+        });
     }
   }
 
@@ -109,6 +138,11 @@ class AdminSettings extends React.Component {
                   user={this.state.userDoc}
                 />
               </Col>
+              {/*<Col lg="6" md="12">
+                <AssocDataInfo
+                  assoc={this.state.assocDoc}
+                />
+              </Col>*/}
             </Row>
           </Container>
         );

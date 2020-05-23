@@ -172,7 +172,7 @@ class Login extends CostumForm {
         closeButton: true,
         autoClose: 10000,
         position: "top-right",
-        type: "success",
+        type: "info",
       });
 
       firebase

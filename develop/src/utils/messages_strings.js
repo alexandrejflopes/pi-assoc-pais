@@ -122,6 +122,14 @@ export const exportAssocDataExplanation = {
     "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
 };
 
+// TODO: check export to ZIP
+export const exportAssocCasosExplanation = {
+  pt_PT:
+    "Pode descarregar uma cópia de todos os casos criados pelos utilizadores da plataforma, incluindo comentários, " +
+    "membros (no caso de casos privados) e informações sobre os documentos associados aos casos. " +
+    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo."
+};
+
 export const deleteAccountExplanation = {
   pt_PT:
     "Pode eliminar a sua conta da plataforma da associação de pais. Todos os seus dados serão apagados da plataforma, " +
@@ -145,6 +153,7 @@ export const changeEmailOnProcess = {
 };
 
 // ------- ERRORS
+
 export const addCasoError = {
   pt_PT: "Houve um problema a guardar o caso. Por favor, tente novamente.",
 };
@@ -264,6 +273,11 @@ export const childDeleteError = {
     "Houve um problema a eliminar o seu educando. Por favor, tente novamente.",
 };
 
+export const assocDataUpdateError = {
+  pt_PT:
+    "Houve um problema a atualizar as informações. Por favor, tente novamente.",
+};
+
 // ------- CONFIRMATIONS / PROMPTS
 
 export const confirmDeleteChild = {
@@ -361,6 +375,10 @@ export const childDeleteSuccess = {
 
 const errorNoLogedInUser = {
   pt_PT: "Utilizador não registado!",
+};
+
+export const assocDataUpdateSuccess = {
+  pt_PT: "Informações da associação atualizadas com sucesso.",
 };
 
 export {

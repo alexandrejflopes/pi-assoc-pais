@@ -73,6 +73,42 @@ const notAvailableDesignation = {
   "pt_PT" : "ND" // nao determinado/disponivel
 };
 
+export const assocParameters = {
+  ZIP : {
+    "pt_PT": "Código Postal"
+  },
+  DAYS_TO_DELETE_REGISTRATION : {
+    "pt_PT": "DeleteRegistosSemPagar"
+  },
+  DESCRIPTION : {
+    "pt_PT": "Descrição"
+  },
+  EMAIL : {
+    "pt_PT": "Email da Associação"
+  },
+  IBAN : {
+    "pt_PT": "IBAN"
+  },
+  CITY : {
+    "pt_PT": "Localidade"
+  },
+  LOGO : {
+    "pt_PT": "Logótipo"
+  },
+  STREET : {
+    "pt_PT": "Morada"
+  },
+  NAME : {
+    "pt_PT": "Nome da Associação de Pais"
+  },
+  FEE : {
+    "pt_PT": "Quota"
+  },
+  PHONE : {
+    "pt_PT": "Telemóvel"
+  },
+};
+
 const newParametersTypes = {
   TEXT : {
     "pt_PT" : "texto"
