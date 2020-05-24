@@ -10,6 +10,11 @@ const loadingInfo = {
 
 // ------------------ STRINGS RELATED TO FORMS ------------------
 
+export const daysToDeleteRegistTipMessage = {
+  pt_PT:
+    "Número de dias após o qual os pedidos de registo não aprovados e sem quota paga são eliminados automaticamente."
+};
+
 const jsonParamsErrorMessage = {
   pt_PT:
     "O ficheiro JSON fornecido é inválido!\n" +
@@ -83,6 +88,12 @@ const paramsJsonFileTipMessage = {
     "Por favor, forneça um ficheiro em formato JSON com os parâmetros relacionados com o contexto " +
     "da associação e que não estão cobertos por este formulário. Pode fornecer parâmetros para os membros " +
     "da associação, para os educandos ou ambos.\nPara mais informações, consulte o manual de utilização da plataforma.",
+};
+
+export const cargosFileTipMessage = {
+  pt_PT:
+    "Por favor, forneça um ficheiro em formato .txt com os cargos distintos da associação separados por vírgulas.\n" +
+    "Para mais informações, consulte o manual de utilização da plataforma.",
 };
 
 const fillRequiredFieldMessage = {

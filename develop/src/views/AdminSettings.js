@@ -95,7 +95,6 @@ class AdminSettings extends React.Component {
 
 
   render() {
-    console.log("assocDoc Admin Settings -> " + JSON.stringify(this.state.assocDoc));
     if (this.state.userEmail == null || firebase_auth.currentUser == null) {
       return <Redirect to="/login" />;
     }

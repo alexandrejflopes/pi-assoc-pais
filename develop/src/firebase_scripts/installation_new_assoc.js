@@ -98,7 +98,12 @@ function getFormElementsAndValues() {
 
       if (labelHtmlFor === inputId) {
         if (labelText.includes("(") || labelText.includes("/")) {
-          labelText = labelText.split(" ")[0];
+          if(labelText.trim()==="Valor da Quota (€)"){
+            labelText = "Quota";
+          }
+          else{
+            labelText = labelText.split(" ")[0];
+          }
         }
         submittedInputs[labelText] = input;
 
@@ -107,6 +112,7 @@ function getFormElementsAndValues() {
     }
   }
 
+  submittedInputs["DeleteRegistosSemPagar"] = "7";
 
   return submittedInputs;
 }

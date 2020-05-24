@@ -278,7 +278,7 @@ class AssocLogoModal extends React.Component {
                   backgroundImage: "url(" + this.state.newPhoto + ")",
                   backgroundPosition : "center",
                   borderRadius: "2%",
-                  backgroundSize: "cover",
+                  backgroundSize: "contain",
                   backgroundRepeat: "no-repeat",
                 }}>
                 </div>

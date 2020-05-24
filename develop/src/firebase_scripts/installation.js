@@ -659,6 +659,30 @@ function setupCSVData(fileString, parents) {
   return rowsData;
 }
 
+// ------------------------------------------------------------
+// PROCESS ROLES
+
+function setupTXTRolesData(fileString){
+  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
+  //console.log("allLines -> ", allLines);
+
+  // if there's no information in the file, it's invalid
+  if(allLines.length<=1){
+    console.log("sem dados nas linhas do txt");
+    throw "Too few data in TXT file to process"
+  }
+
+  let cargos = [];
+
+  for(let i = 0; i < allLines.length; i++){
+    let cargosNaLinha = allLines[i].split(/[,]+/).filter((item) => item).map(s => s.trim()); // remove empty strings and trailing spaces
+    cargos = cargos.concat(cargosNaLinha); // add this roles to the main array
+  }
+
+  return cargos;
+
+}
+
 // --------- USER
 /*
  * send email to parent to notify it was imported to platform
@@ -779,15 +803,23 @@ function getFormElementsAndValues() {
       let labelHtmlFor = label.htmlFor;
       let inputId = input.id;
 
+      // TODO: alterações feitas aqui
       if (labelHtmlFor === inputId) {
         if (labelText.includes("(") || labelText.includes("/")) {
-          labelText = labelText.split(" ")[0];
+          if(labelText.trim()==="Valor da Quota (€)"){
+            labelText = "Quota";
+          }
+          else{
+            labelText = labelText.split(" ")[0];
+          }
         }
         submittedInputs[labelText] = input;
         break;
       }
     }
   }
+
+  submittedInputs["DeleteRegistosSemPagar"] = "7";
 
   return submittedInputs;
 }

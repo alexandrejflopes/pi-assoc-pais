@@ -15,8 +15,14 @@ import {
 import AssocLogoUpload from "./AssocLogoUpload";
 import NewParamsFileUpload from "./NewParamsFileUpload";
 import {install} from "../../firebase_scripts/installation_new_assoc";
-import {languageCode} from "../../utils/general_utils";
-import {aboutYouTipMessage, paramsJsonFileTipMessage, assocLogoFormatsTipMessage} from "../../utils/messages_strings";
+import {assocParameters, languageCode} from "../../utils/general_utils";
+import {
+  aboutYouTipMessage,
+  paramsJsonFileTipMessage,
+  assocLogoFormatsTipMessage,
+  cargosFileTipMessage
+} from "../../utils/messages_strings";
+import CargosFileUpload from "./CargosFileUpload";
 
 class ConfigFormNew extends Component {
 
@@ -26,7 +32,8 @@ class ConfigFormNew extends Component {
     this.state = {
       about: false,
       logo: false,
-      jsonParams: false
+      jsonParams: false,
+      cargosFile : false
     };
   }
 
@@ -112,12 +119,12 @@ class ConfigFormNew extends Component {
               <Row form>
                 <Col md="6" className="form-group">
                   <label htmlFor="configAssocLocalidade">Localidade</label>
-                  <FormInput id="configAssocLocalidade" />
+                  <FormInput id="configAssocLocalidade" placeholder="Aveiro" />
                   <FormFeedback id="configAssocLocalidadeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
                 <Col md="6" className="form-group">
                   <label htmlFor="configAssocZip">Código Postal</label>
-                  <FormInput id="configAssocZip" />
+                  <FormInput id="configAssocZip" placeholder="1234-567"/>
                   <FormFeedback id="configAssocZipFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
               </Row>
@@ -152,13 +159,22 @@ class ConfigFormNew extends Component {
               </Row>
 
               <Row form>
-                <Col md="12">
+                <Col md="6">
                   <FormGroup>
                     <label htmlFor="configAssocIBAN">IBAN (opcional)</label>
                     <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72"/>
                     <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                   </FormGroup>
-
+                </Col>
+                <Col md="6" className="form-group">
+                  <label htmlFor="configAssocFee">Valor da Quota (€)</label>
+                  <FormInput
+                    required
+                    type="number"
+                    id="configAssocFee"
+                    placeholder="5"
+                  />
+                  <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
               </Row>
 
@@ -185,7 +201,6 @@ class ConfigFormNew extends Component {
                     <AssocLogoUpload/>
                   </FormGroup>
                 </Col>
-
                 <Col md="6">
                   <FormGroup>
                     <label htmlFor="configAssocNewParams">Parâmetros particulares do contexto da Associação <span id="jsonParamsTooltip" className="material-icons" style={{fontSize:"100%"}}>info</span></label>
@@ -198,6 +213,22 @@ class ConfigFormNew extends Component {
                       {paramsJsonFileTipMessage[languageCode]}
                     </Tooltip>
                     <NewParamsFileUpload />
+                  </FormGroup>
+                </Col>
+              </Row>
+              <Row form>
+                <Col md="6">
+                  <FormGroup>
+                    <label htmlFor="configAssocCargos">Cargos da Associação <span id="cargosFileTooltip" className="material-icons" style={{fontSize:"100%"}}>info</span></label>
+                    <Tooltip
+                      open={this.state.cargosFile}
+                      target="#cargosFileTooltip"
+                      toggle={() => this.toggle("cargosFile")}
+                      style={{fontSize:"120%"}}
+                    >
+                      {cargosFileTipMessage[languageCode]}
+                    </Tooltip>
+                    <CargosFileUpload />
                   </FormGroup>
                 </Col>
               </Row>

@@ -8,7 +8,7 @@ import {
   FormInput, FormTextarea,
   ListGroup,
   ListGroupItem,
-  Row
+  Row, Tooltip
 } from "shards-react";
 import {
   assocParameters,
@@ -24,8 +24,12 @@ import {
   assocDataInfoFormTitle
 } from "../../utils/page_titles_strings";
 import {
-  assocDataUpdateError, assocDataUpdateSuccess,
-  invalidZipMessage, loadingInfo,
+  assocDataUpdateError,
+  assocDataUpdateSuccess,
+  assocLogoFormatsTipMessage,
+  daysToDeleteRegistTipMessage,
+  invalidZipMessage,
+  loadingInfo,
   provideRequiredFieldsMessage
 } from "../../utils/messages_strings";
 import {validZip} from "../../firebase_scripts/installation";
@@ -59,19 +63,22 @@ class AssocDataInfo extends React.Component {
       feedbacks : {
         [assocParameters.ZIP[languageCode]] : false,
         [assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]] : false,
-        [assocParameters.DESCRIPTION[languageCode]] : false,
+        //[assocParameters.DESCRIPTION[languageCode]] : false,
         [assocParameters.EMAIL[languageCode]] : false,
-        [assocParameters.IBAN[languageCode]] : false,
-        [assocParameters.CITY[languageCode]] : false,
-        [assocParameters.LOGO[languageCode]] : false,
-        [assocParameters.STREET[languageCode]] : false,
+        //[assocParameters.IBAN[languageCode]] : false,
+        //[assocParameters.CITY[languageCode]] : false,
+        //[assocParameters.LOGO[languageCode]] : false,
+        //[assocParameters.STREET[languageCode]] : false,
         [assocParameters.NAME[languageCode]] : false,
         [assocParameters.FEE[languageCode]] : false,
-        [assocParameters.PHONE[languageCode]] : false,
+        //[assocParameters.PHONE[languageCode]] : false,
       },
       oldAssocData: null,
-      onUpdateButtonsDisabled : false
+      onUpdateButtonsDisabled : false,
+      daysForRegistrationsTooltip : false
     };
+
+    this.toggle = this.toggle.bind(this);
 
     this.handleChangeParam = this.handleChangeParam.bind(this);
     this.enableEditableInputs = this.enableEditableInputs.bind(this);
@@ -86,6 +93,8 @@ class AssocDataInfo extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
 
   }
+
+
 
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount(updating) {
@@ -129,6 +138,11 @@ class AssocDataInfo extends React.Component {
   }
 
   /*********************************** HANDLERS ***********************************/
+  toggle(pos) {
+    const newState = {};
+    newState[pos] = !this.state[pos];
+    this.setState({ ...this.state, ...newState });
+  }
 
   updateAssoc(){
     const this_ = this;
@@ -200,19 +214,32 @@ class AssocDataInfo extends React.Component {
     let allValid = true;
 
     for(let field in this.state.feedbacks){
+      console.log("field -> " + field);
+      if(field===assocParameters.ZIP[languageCode]){
+        console.log("skipping zip");
+        continue; // zip will be checked after this loop
+      }
       const value = this.state.assocDoc[field];
-      if(value==null || value.trim()===""){
+      console.log("value -> " + value);
+      if(value==null || value.toString().trim()===""){
         changedFeedbacks[field] = true;
         allValid = false;
       }
     }
 
     const zip = this.state.assocDoc[assocParameters.ZIP[languageCode]];
-    if(!validZip(zip)){
-      changedFeedbacks[assocParameters.ZIP[languageCode]] = true;
-      allValid = false;
-      showToast(invalidZipMessage[languageCode], 5000, toastTypes.ERROR);
+    console.log("zip to validate -> " + zip);
+    // if zip if provided, validate it
+    if(zip != null && zip.trim()!==""){
+      console.log("zip length: " + zip.length);
+      console.log("zip trim length: " + zip.trim().length);
+      if(!validZip(zip)){
+        changedFeedbacks[assocParameters.ZIP[languageCode]] = true;
+        allValid = false;
+        showToast(invalidZipMessage[languageCode], 5000, toastTypes.ERROR);
+      }
     }
+
 
     this.state.feedbacks = changedFeedbacks;
     this.forceUpdate();
@@ -320,7 +347,7 @@ class AssocDataInfo extends React.Component {
                               backgroundImage: "url(" + this.state.assocDoc[assocParameters.LOGO[languageCode]] + ")",
                               backgroundPosition : "center",
                               borderRadius: "2%",
-                              backgroundSize: "cover",
+                              backgroundSize: "contain",
                               backgroundRepeat: "no-repeat",
                             }}>
                           </div>
@@ -351,7 +378,7 @@ class AssocDataInfo extends React.Component {
                           {/* Descricao Textarea */}
                           <label htmlFor="assocDesc">{assocParameters.DESCRIPTION[languageCode]}</label>
                           <FormTextarea
-                            required
+                            //required
                             id="assocDesc"
                             name={assocParameters.DESCRIPTION[languageCode]}
                             placeholder={assocParameters.DESCRIPTION[languageCode]}
@@ -359,7 +386,7 @@ class AssocDataInfo extends React.Component {
                               this.state.assocDoc[assocParameters.DESCRIPTION[languageCode]]
                             }
                             onChange={this.handleChangeParam}
-                            invalid={this.state.feedbacks[assocParameters.DESCRIPTION[languageCode]]}
+                            //invalid={this.state.feedbacks[assocParameters.DESCRIPTION[languageCode]]}
                             disabled={this.state.disabled ? "disabled" : ""}
                           />
                         </Col>
@@ -373,7 +400,7 @@ class AssocDataInfo extends React.Component {
                         <Col md="12" className="form-group">
                           <label htmlFor="assocStreet">{assocParameters.STREET[languageCode]}</label>
                           <FormInput
-                            required
+                            //required
                             id="assocStreet"
                             name={assocParameters.STREET[languageCode]}
                             placeholder={assocParameters.STREET[languageCode]}
@@ -381,7 +408,7 @@ class AssocDataInfo extends React.Component {
                               this.state.assocDoc[assocParameters.STREET[languageCode]]
                             }
                             onChange={this.handleChangeParam}
-                            invalid={this.state.feedbacks[assocParameters.STREET[languageCode]]}
+                            //invalid={this.state.feedbacks[assocParameters.STREET[languageCode]]}
                             disabled={this.state.disabled ? "disabled" : ""}
                           />
                         </Col>
@@ -391,7 +418,7 @@ class AssocDataInfo extends React.Component {
                         <Col md="8" className="form-group">
                           <label htmlFor="assocCity">{assocParameters.CITY[languageCode]}</label>
                           <FormInput
-                            required
+                            //required
                             id="assocCity"
                             name={assocParameters.CITY[languageCode]}
                             placeholder={assocParameters.CITY[languageCode]}
@@ -399,7 +426,7 @@ class AssocDataInfo extends React.Component {
                               this.state.assocDoc[assocParameters.CITY[languageCode]]
                             }
                             onChange={this.handleChangeParam}
-                            invalid={this.state.feedbacks[assocParameters.CITY[languageCode]]}
+                            //invalid={this.state.feedbacks[assocParameters.CITY[languageCode]]}
                             disabled={this.state.disabled ? "disabled" : ""}
                           />
                         </Col>
@@ -407,7 +434,7 @@ class AssocDataInfo extends React.Component {
                         <Col md="4" className="form-group">
                           <label htmlFor="assocZipCode">{assocParameters.ZIP[languageCode]}</label>
                           <FormInput
-                            required
+                            //required
                             id="assocZipCode"
                             name={assocParameters.ZIP[languageCode]}
                             placeholder={assocParameters.ZIP[languageCode]}
@@ -441,7 +468,7 @@ class AssocDataInfo extends React.Component {
                         <Col md="6" className="form-group">
                           <label htmlFor="assocPhone">Contacto telefónico</label>
                           <FormInput
-                            required
+                            //required
                             type="tel"
                             id="assocPhone"
                             name={assocParameters.PHONE[languageCode]}
@@ -450,7 +477,7 @@ class AssocDataInfo extends React.Component {
                               this.state.assocDoc[assocParameters.PHONE[languageCode]]
                             }
                             onChange={this.handleChangeParam}
-                            invalid={this.state.feedbacks[assocParameters.PHONE[languageCode]]}
+                            //invalid={this.state.feedbacks[assocParameters.PHONE[languageCode]]}
                             disabled={this.state.disabled ? "disabled" : ""}
                           />
                         </Col>
@@ -459,7 +486,7 @@ class AssocDataInfo extends React.Component {
                         <Col md="12" className="form-group">
                           <label htmlFor="assocIBAN">{assocParameters.IBAN[languageCode]}</label>
                           <FormInput
-                            required
+                            //required
                             id="assocIBAN"
                             name={assocParameters.IBAN[languageCode]}
                             placeholder={assocParameters.IBAN[languageCode]}
@@ -467,14 +494,14 @@ class AssocDataInfo extends React.Component {
                               this.state.assocDoc[assocParameters.IBAN[languageCode]]
                             }
                             onChange={this.handleChangeParam}
-                            invalid={this.state.feedbacks[assocParameters.IBAN[languageCode]]}
+                            //invalid={this.state.feedbacks[assocParameters.IBAN[languageCode]]}
                             disabled={this.state.disabled ? "disabled" : ""}
                           />
                         </Col>
                       </Row>
                       <Row form>
                         <Col md="5" className="form-group">
-                          <label htmlFor="assocFee">Valor da Quota</label>
+                          <label htmlFor="assocFee">Valor da Quota (€)</label>
                           <FormInput
                             required
                             type="number"
@@ -490,7 +517,15 @@ class AssocDataInfo extends React.Component {
                           />
                         </Col>
                         <Col md="7" className="form-group">
-                          <label htmlFor="assocDeleteDays">Dias de persistência dos pedidos de registo</label>
+                          <label htmlFor="assocDeleteDays">Dias de persistência dos pedidos de registo <span id="assocDeleteDaysTooltip" className="material-icons" style={{fontSize:"100%"}}>info</span></label>
+                          <Tooltip
+                            open={this.state.daysForRegistrationsTooltip}
+                            target="#assocDeleteDaysTooltip"
+                            toggle={() => this.toggle("daysForRegistrationsTooltip")}
+                            style={{fontSize:"120%"}}
+                          >
+                            {daysToDeleteRegistTipMessage[languageCode]}
+                          </Tooltip>
                           <FormInput
                             required
                             type="number"
@@ -501,7 +536,7 @@ class AssocDataInfo extends React.Component {
                               this.state.assocDoc[assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]]
                             }
                             onChange={this.handleChangeParam}
-                            //invalid={this.state.feedbacks[assocParameters.CC[languageCode]]}
+                            invalid={this.state.feedbacks[assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]]}
                             disabled={this.state.disabled ? "disabled" : ""}
                           />
                         </Col>
