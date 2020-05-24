@@ -50,6 +50,7 @@ async function fetchUserDoc(email) {
 function userLogOut() {
   window.localStorage.removeItem("userDoc");
   window.localStorage.removeItem("newParamsInputTypes");
+  window.localStorage.removeItem("assocDoc");
   //window.localStorage.removeItem("emailForSignIn");
   firebase_auth
     .signOut()
@@ -236,6 +237,13 @@ function uploadProfilePhoto(photoFile) {
 function uploadChildPhoto(photoFile) {
   // unique file name
   const newPhotoPath = "childPhotos/" + uuidv4() + "-" + photoFile.name;
+  const newPhotoRef = storageRef.child(newPhotoPath);
+  return newPhotoRef.put(photoFile);
+}
+
+function uploadAssocLogo(photoFile) {
+  // unique file name
+  const newPhotoPath = "logo/" + uuidv4() + "-" + photoFile.name;
   const newPhotoRef = storageRef.child(newPhotoPath);
   return newPhotoRef.put(photoFile);
 }
@@ -656,5 +664,6 @@ export {
   exportParentToCSV,
   exportAllParentsToCSV,
   exportAllChildrenToCSV,
-  deleteAccount
+  deleteAccount,
+  uploadAssocLogo
 };

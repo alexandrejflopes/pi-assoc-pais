@@ -35,45 +35,55 @@ class AdminSettings extends React.Component {
     };
 
 
-    this.componentDidMount = this.componentDidMount.bind(this);
+      //this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  componentDidMount(updating) {
-    //this._isMounted = true;
+  componentDidMount() {
+    this._isMounted = true;
 
-    if(updating){
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if(localUser!=null){
+      this.setState({userDoc : localUser});
+    }
+
+    console.log("atualizei-me!");
+    /*if(updating){
       const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
       if(localUser!=null){
         this.setState({userDoc : localUser});
       }
+      const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+      if(localAssocDoc!=null){
+        this.setState({assocDoc: localAssocDoc});
+      }
     }
 
-    const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
-    if(localAssocDoc!=null){
-      this.setState({
-        assocDoc: localAssocDoc
-      });
-    }
     else{
-      const promise = getAssocDoc();
-      promise
-        .then(doc => {
-          if (!doc.exists) {
-            console.log('No assotiation document found!');
-          }
-          else {
-            const data = doc.data();
-            window.localStorage.setItem("assocDoc", JSON.stringify(data));
-            this.setState({
-              assocDoc: localAssocDoc
-            });
-          }
-      })
-        .catch(err => {
-          console.log('Error getting document', err);
-        });
-    }
+      const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+      if(localAssocDoc!=null){
+        this.setState({assocDoc: localAssocDoc});
+      }
+      else{
+        const promise = getAssocDoc();
+        promise
+          .then(doc => {
+            if (!doc.exists) {
+              console.log('No assotiation document found!');
+            }
+            else {
+              const data = doc.data();
+              window.localStorage.setItem("assocDoc", JSON.stringify(data));
+              this.setState({
+                assocDoc: localAssocDoc
+              });
+            }
+          })
+          .catch(err => {
+            console.log('Error getting document', err);
+          });
+      }
+    }*/
   }
 
   componentWillUnmount() {
@@ -85,11 +95,11 @@ class AdminSettings extends React.Component {
 
 
   render() {
-
+    console.log("assocDoc Admin Settings -> " + JSON.stringify(this.state.assocDoc));
     if (this.state.userEmail == null || firebase_auth.currentUser == null) {
       return <Redirect to="/login" />;
     }
-    else if (this.state.userDoc == null || Object.keys(this.state.userDoc).length === 0) {
+    else if (this.state.userDoc == null || Object.keys(this.state.userDoc).length === 0 /*|| this.state.assocDoc == null*/) {
       return (
         <Container fluid className="main-content-container px-4">
           {/*<Row noGutters className="page-header py-4">
@@ -133,16 +143,19 @@ class AdminSettings extends React.Component {
               />
             </Row>
             <Row>
+              <Col lg="12" md="12">
+                <AssocDataInfo
+                  //assoc={this.state.assocDoc}
+                  //componentDidMount={this.componentDidMount}
+                />
+              </Col>
+            </Row>
+            <Row>
               <Col lg="6" md="12">
                 <ExportAssocData
                   user={this.state.userDoc}
                 />
               </Col>
-              {/*<Col lg="6" md="12">
-                <AssocDataInfo
-                  assoc={this.state.assocDoc}
-                />
-              </Col>*/}
             </Row>
           </Container>
         );

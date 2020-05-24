@@ -278,6 +278,11 @@ export const assocDataUpdateError = {
     "Houve um problema a atualizar as informações. Por favor, tente novamente.",
 };
 
+export const assocUpdateLogoError = {
+  pt_PT:
+    "Houve um problema a atualizar o logótipo. Por favor, tente novamente.",
+};
+
 // ------- CONFIRMATIONS / PROMPTS
 
 export const confirmDeleteChild = {
@@ -380,6 +385,11 @@ const errorNoLogedInUser = {
 export const assocDataUpdateSuccess = {
   pt_PT: "Informações da associação atualizadas com sucesso.",
 };
+
+export const assocUpdateLogoSuccess = {
+  pt_PT: "Logótipo atualizado com sucesso.",
+};
+
 
 export {
   loadingInfo,

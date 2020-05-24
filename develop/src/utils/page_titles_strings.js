@@ -85,6 +85,10 @@ export const assocDataInfoFormTitle = {
   "pt_PT" : "Dados da associação"
 };
 
+export const newAssocLogoModalTitle = {
+  "pt_PT" : "Logótipo"
+};
+
 
 
 

@@ -1,50 +1,41 @@
-import React from "react";
+import React, {Component as SidebarMainNavbar} from "react";
 import {
   Button,
   Card,
   CardHeader,
-  Col,
-  Form,
-  FormFeedback,
-  FormGroup,
-  FormInput,
-  FormTextarea,
+  Col, Container,
+  Form, FormFeedback, FormGroup,
+  FormInput, FormTextarea,
   ListGroup,
   ListGroupItem,
   Row
 } from "shards-react";
 import {
   assocParameters,
-  languageCode, newParametersEntities,
-  notAvailableDesignation,
-  parentsParameters, showToast, studentsParameters, toastTypes
+  languageCode, parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
-import {saveChanges, cancel, updateProfile} from "../../utils/common_strings";
 import {
-  assocDataInfoFormTitle,
-  profileInfoFormTitle
+  saveChanges,
+  cancel,
+  updateProfile,
+  updateAssocData
+} from "../../utils/common_strings";
+import {
+  assocDataInfoFormTitle
 } from "../../utils/page_titles_strings";
 import {
   assocDataUpdateError, assocDataUpdateSuccess,
-  changesCommitSuccess,
-  childDeleteError,
-  childDeleteSuccess,
-  fillRequiredFieldMessage,
-  invalidZipMessage,
-  parentUpdateError,
-  parentUpdateSuccess,
+  invalidZipMessage, loadingInfo,
   provideRequiredFieldsMessage
 } from "../../utils/messages_strings";
-import {firebase_auth} from "../../firebase-config";
-import {updateParent} from "../../firebase_scripts/profile_functions";
-import UserOverview from "./UserOverview";
-import UsersOverview from "../blog/UsersOverview";
-import UserActions from "../layout/MainNavbar/NavbarNav/UserActions";
 import {validZip} from "../../firebase_scripts/installation";
 import {
   getAssocDoc,
   updateAssocDoc
 } from "../../firebase_scripts/get_assoc_info";
+import AssocLogoModal from "./AssocLogoModal";
+import {firebase_auth} from "../../firebase-config";
+import {Redirect} from "react-router-dom";
 
 
 class AssocDataInfo extends React.Component {
@@ -54,11 +45,11 @@ class AssocDataInfo extends React.Component {
     let assoc = null;
     const infoFormTitle = assocDataInfoFormTitle[languageCode];
 
-    if(this.props.assoc!=null){
+    /*if(this.props.assoc!=null){
       assoc = this.props.assoc;
-    }
+    }*/
 
-    //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
+
     this.state = {
       title: infoFormTitle,
       assocDoc : assoc,
@@ -92,14 +83,45 @@ class AssocDataInfo extends React.Component {
     this.lockFormAfterSubmit = this.lockFormAfterSubmit.bind(this);
 
     this.updateAssoc = this.updateAssoc.bind(this);
-
+    this.componentDidMount = this.componentDidMount.bind(this);
 
   }
 
   /*********************************** LIFECYCLE ***********************************/
-  componentDidMount() {
-    this._isMounted = true;
+  componentDidMount(updating) {
+    //this._isMounted = true;
+    if(updating){
+      const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+      if(localAssocDoc!=null){
+        this.setState({assocDoc: localAssocDoc});
+      }
+    }
 
+    else{
+      const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+      if(localAssocDoc!=null){
+        this.setState({assocDoc: localAssocDoc});
+      }
+      else{
+        const promise = getAssocDoc();
+        promise
+          .then(doc => {
+            if (!doc.exists) {
+              console.log('No assotiation document found!');
+            }
+            else {
+              const data = doc.data();
+              window.localStorage.setItem("assocDoc", JSON.stringify(data));
+              this.setState({
+                assocDoc: localAssocDoc
+              });
+            }
+          })
+          .catch(err => {
+            console.log('Error getting document', err);
+          });
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -132,7 +154,7 @@ class AssocDataInfo extends React.Component {
                 window.localStorage.setItem("assocDoc", JSON.stringify(assocData));
                 console.log("assocData recebida depois do update info -> " + JSON.stringify(assocData));
                 this_.lockFormAfterSubmit();
-                // TODO: update navbar instantaneously with photo
+                // TODO: update navbar instantaneously with logo
                 showToast(assocDataUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
               }
             })
@@ -156,7 +178,7 @@ class AssocDataInfo extends React.Component {
     this.disableEditableInputs();
     this.enableUpdateButtons();
     this.setState({ editing: false });
-    // save new parent data
+    // save new assoc data
     const assocDoc = {...this.state.assocDoc};
     this.setState({ oldAssocData: assocDoc });
   }
@@ -212,17 +234,17 @@ class AssocDataInfo extends React.Component {
     console.log("paramName to change: " + paramName);
     // update the param with the new value
     assocDoc[paramName] = e.target.value;
-    //console.log("assocDoc with new values: " + JSON.stringify(parent));
+    //console.log("assocDoc with new values: " + JSON.stringify(assocDoc));
     this.setState({ assocDoc: assocDoc });
   }
 
-  savePreviousParentData() {
+  savePreviousAssocData() {
     const assocDoc = {...this.state.assocDoc};
     this.setState({ oldAssocData: assocDoc });
-    //console.log("assocDoc saved: " + JSON.stringify(parent));
+    //console.log("assocDoc saved: " + JSON.stringify(assocDoc));
   };
 
-  restorePreviousParentData() {
+  restorePreviousAssocData() {
     const oldAssocData = {...this.state.oldAssocData};
     this.setState({ assocDoc: oldAssocData });
     console.log("assocDoc restored: " + JSON.stringify(oldAssocData));
@@ -237,19 +259,40 @@ class AssocDataInfo extends React.Component {
   }
 
   editForm(){
-    this.savePreviousParentData();
+    this.savePreviousAssocData();
     this.setState({editing : true});
     this.enableEditableInputs();
   }
 
   cancelEditing() {
-    this.restorePreviousParentData();
+    this.restorePreviousAssocData();
     this.setState({ editing: false });
     this.disableEditableInputs();
   }
 
 
   render() {
+    if (this.state.assocDoc == null) {
+      return (
+        <Container fluid className="main-content-container px-4">
+          <Row
+            fluid
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignContent: "center",
+              alignItems: "center",
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <h2>{loadingInfo[languageCode]}</h2>
+          </Row>
+        </Container>
+      );
+    }
     return (
       <Card small className="mb-4">
         <CardHeader className="border-bottom">
@@ -261,164 +304,215 @@ class AssocDataInfo extends React.Component {
               <Col>
                 <Form>
                   <Row form>
-                    {/* First Name */}
-                    <Col md="12" className="form-group">
-                      <label htmlFor="assocName">{assocParameters.NAME[languageCode]}</label>
-                      <FormInput
-                        required
-                        id="feName"
-                        name={assocParameters.NAME[languageCode]}
-                        placeholder={assocParameters.NAME[languageCode]}
-                        value={
-                          this.state.assocDoc[
-                            assocParameters.NAME[languageCode]
-                            ]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[assocParameters.NAME[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
+                    {/* COLUNA DA ESQUERDA */}
+                    <Col md="5" className="form-group" style={{paddingRight:"10px"}}>
+                      <Row>
+                        <Col md="12" className="form-group">
+                          <label htmlFor="assocLogo">{assocParameters.LOGO[languageCode]}</label>
+                        </Col>
+                      </Row>
+                      <Row form >
+                        <Col lg="12" md="12">
+                          <div id="assocLogo"
+                            style={{
+                              width: "100%",
+                              height: "120px",
+                              backgroundImage: "url(" + this.state.assocDoc[assocParameters.LOGO[languageCode]] + ")",
+                              backgroundPosition : "center",
+                              borderRadius: "2%",
+                              backgroundSize: "cover",
+                              backgroundRepeat: "no-repeat",
+                            }}>
+                          </div>
+                        </Col>
+                        <Col lg="12" md="12">
+                          <div className="d-flex p-2 justify-content-center">
+                            <AssocLogoModal photo={this.state.assocDoc[assocParameters.LOGO[languageCode]]} componentDidMount={this.componentDidMount}/>
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row form>
+                        <Col md="12" className="form-group">
+                          <label htmlFor="assocName">{assocParameters.NAME[languageCode]}</label>
+                          <FormInput
+                            required
+                            id="assocName"
+                            name={assocParameters.NAME[languageCode]}
+                            placeholder={assocParameters.NAME[languageCode]}
+                            value={this.state.assocDoc[assocParameters.NAME[languageCode]]}
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.NAME[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
+                      <Row form>
+                        <Col md="12" className="form-group">
+                          {/* Descricao Textarea */}
+                          <label htmlFor="assocDesc">{assocParameters.DESCRIPTION[languageCode]}</label>
+                          <FormTextarea
+                            required
+                            id="assocDesc"
+                            name={assocParameters.DESCRIPTION[languageCode]}
+                            placeholder={assocParameters.DESCRIPTION[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.DESCRIPTION[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.DESCRIPTION[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
                     </Col>
-                    {/* Email */}
-                    {/*<Col md="6" className="form-group">
-                      <label htmlFor="parentEmail">{parentsParameters.EMAIL[languageCode]}</label>
-                      <FormInput
-                        required
-                        type="email"
-                        id="parentEmail"
-                        name={parentsParameters.EMAIL[languageCode]}
-                        placeholder={parentsParameters.EMAIL[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.EMAIL[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.EMAIL[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>*/}
-                  </Row>
-                  <Row form>
-                    {/* Phone */}
-                    <Col md="6" className="form-group">
-                      <label htmlFor="parentPhone">{parentsParameters.PHONE[languageCode]}</label>
-                      <FormInput
-                        required
-                        type="tel"
-                        id="parentPhone"
-                        name={parentsParameters.PHONE[languageCode]}
-                        placeholder={parentsParameters.PHONE[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.PHONE[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.PHONE[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                    {/* Job */}
-                    <Col md="6" className="form-group">
-                      <label htmlFor="parentJob">{parentsParameters.JOB[languageCode]}</label>
-                      <FormInput
-                        id="parentJob"
-                        name={parentsParameters.JOB[languageCode]}
-                        placeholder={parentsParameters.JOB[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.JOB[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.JOB[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                  </Row>
-                  <Row form>
-                    {/* Address | Street */}
-                    <Col md="6" className="form-group">
-                      <label htmlFor="parentStreet">{parentsParameters.STREET[languageCode]}</label>
-                      <FormInput
-                        required
-                        id="parentStreet"
-                        name={parentsParameters.STREET[languageCode]}
-                        placeholder={parentsParameters.STREET[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.STREET[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.STREET[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                    {/* City */}
-                    <Col md="4" className="form-group">
-                      <label htmlFor="parentCity">{parentsParameters.CITY[languageCode]}</label>
-                      <FormInput
-                        required
-                        id="parentCity"
-                        name={parentsParameters.CITY[languageCode]}
-                        placeholder={parentsParameters.CITY[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.CITY[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.CITY[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                    {/* Zip Code */}
-                    <Col md="2" className="form-group">
-                      <label htmlFor="parentZipCode">{parentsParameters.ZIPCODE[languageCode]}</label>
-                      <FormInput
-                        required
-                        id="parentZipCode"
-                        name={parentsParameters.ZIPCODE[languageCode]}
-                        placeholder={parentsParameters.ZIPCODE[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.ZIPCODE[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.ZIPCODE[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                  </Row>
-                  <Row form>
-                    {/* Finance number */}
-                    <Col md="6" className="form-group">
-                      <label htmlFor="parentNIF">{parentsParameters.NIF[languageCode]}</label>
-                      <FormInput
-                        required
-                        id="parentNIF"
-                        name={parentsParameters.NIF[languageCode]}
-                        placeholder={parentsParameters.NIF[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.NIF[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.NIF[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                    {/* Citizen Card */}
-                    <Col md="6" className="form-group">
-                      <label htmlFor="parentCC">{parentsParameters.CC[languageCode]}</label>
-                      <FormInput
-                        id="parentCC"
-                        name={parentsParameters.CC[languageCode]}
-                        placeholder={parentsParameters.CC[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.CC[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        //invalid={this.state.feedbacks[parentsParameters.CC[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>
-                  </Row>
-                  <hr />
-                  {this.renderExtra()}
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing} disabled={this.state.onUpdateButtonsDisabled}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateParent} disabled={this.state.onUpdateButtonsDisabled}>{saveChanges[languageCode]}</Button> </div>
-                    : <Button theme="accent" onClick={this.editForm}>{updateProfile[languageCode]}</Button>
+                    {/* COLUNA DA DIREITA */}
+                    <Col md="7" className="form-group">
+                      <Row form>
+                        {/* Address | Street */}
+                        <Col md="12" className="form-group">
+                          <label htmlFor="assocStreet">{assocParameters.STREET[languageCode]}</label>
+                          <FormInput
+                            required
+                            id="assocStreet"
+                            name={assocParameters.STREET[languageCode]}
+                            placeholder={assocParameters.STREET[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.STREET[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.STREET[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
+                      <Row form>
+                        {/* City */}
+                        <Col md="8" className="form-group">
+                          <label htmlFor="assocCity">{assocParameters.CITY[languageCode]}</label>
+                          <FormInput
+                            required
+                            id="assocCity"
+                            name={assocParameters.CITY[languageCode]}
+                            placeholder={assocParameters.CITY[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.CITY[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.CITY[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                        {/* Zip Code */}
+                        <Col md="4" className="form-group">
+                          <label htmlFor="assocZipCode">{assocParameters.ZIP[languageCode]}</label>
+                          <FormInput
+                            required
+                            id="assocZipCode"
+                            name={assocParameters.ZIP[languageCode]}
+                            placeholder={assocParameters.ZIP[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.ZIP[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.ZIP[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
+                      <Row form>
+                        <Col md="6" className="form-group">
+                          <label htmlFor="assocEmail">{assocParameters.EMAIL[languageCode]}</label>
+                          <FormInput
+                            required
+                            type="email"
+                            id="assocEmail"
+                            name={assocParameters.EMAIL[languageCode]}
+                            placeholder={assocParameters.EMAIL[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.EMAIL[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.EMAIL[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                        {/* Phone */}
+                        <Col md="6" className="form-group">
+                          <label htmlFor="assocPhone">Contacto telefónico</label>
+                          <FormInput
+                            required
+                            type="tel"
+                            id="assocPhone"
+                            name={assocParameters.PHONE[languageCode]}
+                            placeholder={assocParameters.PHONE[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.PHONE[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.PHONE[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
+                      <Row form>
+                        <Col md="12" className="form-group">
+                          <label htmlFor="assocIBAN">{assocParameters.IBAN[languageCode]}</label>
+                          <FormInput
+                            required
+                            id="assocIBAN"
+                            name={assocParameters.IBAN[languageCode]}
+                            placeholder={assocParameters.IBAN[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.IBAN[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.IBAN[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
+                      <Row form>
+                        <Col md="5" className="form-group">
+                          <label htmlFor="assocFee">Valor da Quota</label>
+                          <FormInput
+                            required
+                            type="number"
+                            id="assocFee"
+                            name={assocParameters.FEE[languageCode]}
+                            placeholder={assocParameters.FEE[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.FEE[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            invalid={this.state.feedbacks[assocParameters.FEE[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                        <Col md="7" className="form-group">
+                          <label htmlFor="assocDeleteDays">Dias de persistência dos pedidos de registo</label>
+                          <FormInput
+                            required
+                            type="number"
+                            id="assocDeleteDays"
+                            name={assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]}
+                            placeholder={assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]}
+                            value={
+                              this.state.assocDoc[assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]]
+                            }
+                            onChange={this.handleChangeParam}
+                            //invalid={this.state.feedbacks[assocParameters.CC[languageCode]]}
+                            disabled={this.state.disabled ? "disabled" : ""}
+                          />
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+
+                  <hr />
+
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing} disabled={this.state.onUpdateButtonsDisabled}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateAssoc} disabled={this.state.onUpdateButtonsDisabled}>{saveChanges[languageCode]}</Button> </div>
+                    : <Button theme="accent" onClick={this.editForm}>{updateAssocData[languageCode]}</Button>
                   }
                 </Form>
               </Col>

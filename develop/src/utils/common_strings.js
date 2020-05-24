@@ -31,6 +31,10 @@ export const updateProfile = {
   "pt_PT" : "Atualizar perfil"
 };
 
+export const updateAssocData = {
+  "pt_PT" : "Atualizar informações da associação"
+};
+
 export const close = {
   "pt_PT" : "Fechar"
 };
