@@ -56,6 +56,7 @@ const {
   sendPositionEmail,
   sendAuthenticationEmailAfterEmailChange,
   sendRegisterEliminationEmail,
+  sendAccountEliminationEmail,
   exportParentCSV,
   exportEducandosCSV,
   exportSingleParentCSV,
@@ -63,7 +64,9 @@ const {
   getParentsNewParams,
   getEducandosNewParams,
   getAllNewParams,
-  exportCasoPdf
+  exportCasoPdf,
+  exportCasosPDF,
+  updateDadosAssociacao
 } = require('./handlers');
 
 
@@ -115,6 +118,7 @@ app.get('/sendNotificationEmail',sendNotificationEmail);
 app.get('/sendPositionEmail',sendPositionEmail);
 app.get('/sendAuthenticationEmailAfterEmailChange',sendAuthenticationEmailAfterEmailChange);
 app.get('/sendRegisterEliminationEmail',sendRegisterEliminationEmail);
+app.get('/sendAccountEliminationEmail',sendAccountEliminationEmail);
 app.get('/exportParentCSV',exportParentCSV);
 app.get('/exportEducandosCSV',exportEducandosCSV);
 app.get('/exportSingleParentCSV',exportSingleParentCSV);
@@ -123,6 +127,8 @@ app.get('/getParentsNewParams',getParentsNewParams);
 app.get('/getEducandosNewParams',getEducandosNewParams);
 app.get('/getAllNewParams',getAllNewParams);
 app.get('/exportCasoPdf',exportCasoPdf);
+app.get('/exportCasosPDF',exportCasosPDF);
+app.get('/updateDadosAssociacao',updateDadosAssociacao);
 
 // URL de base para os requests: https://us-central1-associacao-pais.cloudfunctions.net/api
 exports.api = functions.https.onRequest(app);

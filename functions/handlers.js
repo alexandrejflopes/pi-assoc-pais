@@ -1707,7 +1707,23 @@ exports.sendRegisterEliminationEmail = functions.https.onRequest((request, respo
     response.status(204).send();
     return sendEmail(email, subject, message)
 });
+/**
+ * Função envia um email enviado quando um utilizador elimina a sua conta 
+ * Leva como argumentos email (do utilizador) e nome .
+ * Devolve uma mensagem vazia sem conteúdo.
+ * O email demora um pouco a chegar, mesmo a respoesta já tendo sido enviada (assíncrona)
+ */
+exports.sendAccountEliminationEmail = functions.https.onRequest((request, response) => {
+    let email = request.query.email;
+    let nome = request.query.nome;
 
+    let message = "Olá, "+ nome +"\n\nA sua conta na plataforma da sua associação de pais foi eliminada com sucesso, bem como todos os seus dados. Obrigado por ser nosso utilizador.\n\nSe considera que este email não é dirigido a si, por favor ignore este email. Se acha que foi um erro, por favor, volte a registar-se ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa\n";    
+    
+    let subject = `Eliminação de conta - Associação de pais - ${APP_NAME}!`;
+    
+    response.status(204).send();
+    return sendEmail(email, subject, message)
+});
 /**
  * Função auxiliar utilizada para enviar emails
  */
@@ -1957,33 +1973,104 @@ exports.exportCasoPdf = functions.https.onRequest((request, response) => {
             );
             response.set("Content-Type", "application/pdf");
             pdf.pipe(response);
-            pdf.fontSize(25).text('Caso: '+doc.get("titulo")+'\n\n');
-            pdf.fontSize(14).text('Autor: '+doc.get("autor")["nome"]+'\n\nEmail: '+doc.get("autor")["id"]+'\n\n');
-            let tc =  doc.get("data_criacao").toDate();
-            //let tc = new Date();
-            pdf.fontSize(14).text('Data criação: '+tc+'\n\n');
-            pdf.fontSize(14).text('Data criação (UTC): '+tc.getUTCDate()+'/'+(tc.getUTCMonth()+1)+'/'+tc.getUTCFullYear()+' '+tc.getUTCHours()+':'+tc.getUTCMinutes()+':'+tc.getUTCSeconds()+'\n\n');
-            pdf.fontSize(14).text('Descrição:\n'+doc.get("descricao")+'\n\n');
-            pdf.fontSize(14).text('Arquivado: '+(doc.get("arquivado") ? 'Sim' : 'Não')+'\n\n');
-            pdf.fontSize(14).text('Privado: '+(doc.get("privado") ? 'Sim' : 'Não')+'\n\n');
-            pdf.fontSize(14).text('Membros: \n');
-            for(i = 0;i<doc.get("membros").length;i++) {
-                pdf.fontSize(14).text('-> Nome: '+doc.get("membros")[i]["nome"]+' ; Email: '+doc.get("membros")[i]["id"]+'\n');
-            }
-            pdf.fontSize(14).text('\nObservações: \n');
-            for(i = 0;i<doc.get("observacoes").length;i++) {
-                let to = doc.get("observacoes")[i]["tempo"].toDate();
-                pdf.fontSize(14).text('-> Obs. '+i+': \n');
-                pdf.fontSize(14).text('     Nome: '+doc.get("observacoes")[i]["user"]["nome"]+' ; Email: '+doc.get("observacoes")[i]["user"]["id"]+' \n');
-                pdf.fontSize(14).text('     Editado: '+(doc.get("observacoes")[i]["editado"] ? 'Sim' : 'Não')+'\n');
-                pdf.fontSize(14).text('     Data (UTC): '+to.getUTCDate()+'/'+(to.getUTCMonth()+1)+'/'+to.getUTCFullYear()+' '+to.getUTCHours()+':'+to.getUTCMinutes()+':'+to.getUTCSeconds()+'\n');
-                pdf.fontSize(14).text('     Conteúdo: '+doc.get("observacoes")[i]["conteudo"]+'\n');
-            }
+            convertCasoToPDF(pdf, doc);
             return pdf.end();
         }
     })
     .catch((err) => {
         console.log('Error exporting data', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Função que exporta um PDF com todos os casos da base de dados.
+ */
+exports.exportCasosPDF = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    db.collection('casos').get().then((snapshot) => {
+        const pdf = new pdfkit();
+        response.setHeader(
+            "Content-disposition",
+            "attachment; filename=Casos.pdf"
+        );
+        response.set("Content-Type", "application/pdf");
+        pdf.pipe(response);
+        snapshot.forEach((doc) => {
+            convertCasoToPDF(pdf, doc);
+        });
+        return pdf.end();
+    })
+    .catch((err) => {
+        console.log('Error exporting caso documents', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+
+async function convertCasoToPDF(pdf, doc){
+    pdf.fontSize(25).text('Caso: '+doc.get("titulo")+'\n\n');
+    pdf.fontSize(14).text('Autor: '+doc.get("autor")["nome"]+'\n\nEmail: '+doc.get("autor")["id"]+'\n\n');
+    let tc =  doc.get("data_criacao").toDate();
+    //let tc = new Date();
+    pdf.fontSize(14).text('Data criação (UTC): '+tc.getUTCDate()+'/'+(tc.getUTCMonth()+1)+'/'+tc.getUTCFullYear()+' '+tc.getUTCHours()+':'+tc.getUTCMinutes()+':'+tc.getUTCSeconds()+'\n\n');
+    pdf.fontSize(14).text('Descrição:\n'+doc.get("descricao")+'\n\n');
+    pdf.fontSize(14).text('Arquivado: '+(doc.get("arquivado") ? 'Sim' : 'Não')+'\n\n');
+    pdf.fontSize(14).text('Privado: '+(doc.get("privado") ? 'Sim' : 'Não')+'\n\n');
+    pdf.fontSize(14).text('Membros: \n');
+    for(i = 0;i<doc.get("membros").length;i++) {
+        pdf.fontSize(14).text('-> Nome: '+doc.get("membros")[i]["nome"]+' ; Email: '+doc.get("membros")[i]["id"]+'\n');
+    }
+    pdf.fontSize(14).text('\nObservações: \n');
+    for(i = 0;i<doc.get("observacoes").length;i++) {
+        let to = doc.get("observacoes")[i]["tempo"].toDate();
+        pdf.fontSize(14).text('-> Obs. '+i+': \n');
+        pdf.fontSize(14).text('     Nome: '+doc.get("observacoes")[i]["user"]["nome"]+' ; Email: '+doc.get("observacoes")[i]["user"]["id"]+' \n');
+        pdf.fontSize(14).text('     Editado: '+(doc.get("observacoes")[i]["editado"] ? 'Sim' : 'Não')+'\n');
+        pdf.fontSize(14).text('     Data (UTC): '+to.getUTCDate()+'/'+(to.getUTCMonth()+1)+'/'+to.getUTCFullYear()+' '+to.getUTCHours()+':'+to.getUTCMinutes()+':'+to.getUTCSeconds()+'\n');
+        pdf.fontSize(14).text('     Conteúdo: '+doc.get("observacoes")[i]["conteudo"]+'\n');
+    }
+    pdf.fontSize(14).text('\n\n');
+}
+
+/**
+ * Função serve para alterar um número arbitrário de atributos do documento de parameters da coleção initialConfigs
+ * Isto significa que permite um Overwrite completo do documento
+ * Leva como argumento um doc que corresponde a um ficheiro na forma JSON.
+ * Esse doc vai ser utilizado para fazer update aos atributos do documento.
+ * Todos os atributos presentes nesse doc vão ser atualizados para o valor lá presente. No caso de existirem
+ * atributos do documento parent da base de dados que não estão no doc, eles vão se manter inalterados.
+ * Ou seja, os atributos que vão ser atualizados são os do doc enviado como argumento.
+ * Warning : Os nomes dos atributos enviados no doc têm de ser os mesmos que têm na base de dados, se não vão ser criados atributos
+ * novos com esses nomes no documento do parent.
+ * Devolve o documento inteiro de parameters depois do update
+ */
+exports.updateDadosAssociacao = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+
+    let doc = JSON.parse(request.query.doc);
+
+    let docRef = db.collection('initialConfigs').doc("parameters");
+
+    docRef.update(doc).then((parent)=>{
+        docRef.get().then(doc => {
+            if (!doc.exists) {
+                console.log('No such document!');
+                return response.status(404).send({"error":"No such document"});
+            }
+            else {
+                //console.log('Document data:', doc.data());
+                let data = doc.data();
+                data["id"] = doc.id;
+                return response.send(data);
+            }
+        })
+        .catch(err => {
+            console.log("Failed to get doc -> ", err);
+            return response.status(405).send({"error" : err});
+        });
+        return parent;
+    }).catch(err => {
+        console.log("Failed to update -> ", err);
         return response.status(405).send({"error" : err});
     });
 });
