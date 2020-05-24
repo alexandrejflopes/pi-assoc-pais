@@ -4,10 +4,12 @@ const nodemailer = require('nodemailer');
 const json2csv = require("json2csv").parse;
 const pdfkit = require('pdfkit');
 
+const { 
+    APP_NAME,
+    auth_URL
+} = require('./handlers');
+
 admin.initializeApp();
-
-
-const auth_URL = "http://localhost:3000/login"; // https://www.google.com/
 
 
 // Configure the email transport using the default SMTP transport and a GMail account.
@@ -28,8 +30,6 @@ auth: {
 },
 });
 
-// Nome da aplicação
-const APP_NAME = 'associacao-pais';
 
 /**
  * Funções relacionadas com os casos.
