@@ -14,6 +14,7 @@ import {
   CardFooter,
   Badge,
   Button,
+  FormCheckbox,
 } from "shards-react";
 import { Link, Redirect } from "react-router-dom";
 
@@ -23,6 +24,8 @@ import {
   showAvailableCasos,
 } from "../firebase_scripts/casos";
 import CasosModal from "../components/casos/CasosModal";
+
+import { languageCode, seeMoreButton } from "../utils/general_utils";
 var dateFormat = require("dateformat");
 
 class Casos extends React.Component {
@@ -79,10 +82,13 @@ class Casos extends React.Component {
       ],
       casoDetail: null,
       redirect: null,
+      ListaCasosPrivados: [],
+      showPrivateCasos: false,
     };
 
     this.closeCasoDetails = this.closeCasoDetails.bind(this);
     this.showCasoDetails = this.showCasoDetails.bind(this);
+    this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
@@ -95,7 +101,25 @@ class Casos extends React.Component {
       const casosPromise = showAvailableCasos();
 
       casosPromise.then((result) => {
-        this_.setState({ ListaCasos: result, Updated: true });
+        console.log(result);
+        var publicCases = [];
+        var privateCases = [];
+        if (result != null) {
+          for (var i = 0; i < result.length; i++) {
+            var case_selected = result[i];
+            if (case_selected.privado == true) {
+              privateCases.push(case_selected);
+            } else {
+              publicCases.push(case_selected);
+            }
+          }
+        }
+
+        this_.setState({
+          ListaCasos: publicCases,
+          ListaCasosPrivados: privateCases,
+          Updated: true,
+        });
       });
     } else {
       //Redirect to login
@@ -110,6 +134,18 @@ class Casos extends React.Component {
     }
   }
 
+  handleChangeCheckBox() {
+    let { showPrivateCasos } = this.state;
+    var newValue = false;
+    if (showPrivateCasos) {
+      newValue = false;
+    } else {
+      newValue = true;
+    }
+
+    this.setState({ showPrivateCasos: newValue });
+  }
+
   closeCasoDetails() {
     this.setState({ casoDetail: null });
   }
@@ -117,20 +153,16 @@ class Casos extends React.Component {
   showCasoDetails(e) {
     const id = e.target.id;
     const this_ = this;
+    var red = null;
 
-    //var casos = showAvailableCasos();
-    //casos.then((result) => {
     for (var i = 0; i < this.state.ListaCasos.length; i++) {
       if (
         this.state.ListaCasos[i].id != undefined &&
         this.state.ListaCasos[i].id == id
       ) {
-        console.log(
-          "Caso escolhido: " + JSON.stringify(this.state.ListaCasos[i])
-        );
         var caso = this.state.ListaCasos[i];
 
-        var red = (
+        red = (
           <Redirect
             to={{
               pathname: "/caso/" + id,
@@ -142,12 +174,33 @@ class Casos extends React.Component {
         this.setState({ redirect: red });
       }
     }
-    // });
+
+    if (red == null) {
+      for (var i = 0; i < this.state.ListaCasosPrivados.length; i++) {
+        if (
+          this.state.ListaCasosPrivados[i].id != undefined &&
+          this.state.ListaCasosPrivados[i].id == id
+        ) {
+          var caso = this.state.ListaCasosPrivados[i];
+
+          red = (
+            <Redirect
+              to={{
+                pathname: "/caso/" + id,
+                state: { caso: caso },
+              }}
+            />
+          );
+
+          this.setState({ redirect: red });
+        }
+      }
+    }
   }
 
   render() {
     //console.log("state no render -> ", this.state);
-    const { ListaCasos } = this.state;
+    const { ListaCasos, ListaCasosPrivados, showPrivateCasos } = this.state;
 
     if (this.state.Updated) {
       return (
@@ -163,6 +216,20 @@ class Casos extends React.Component {
             style={{ marginTop: "10px", marginBottom: "20px" }}
           >
             <CasosModal componentDidMount={this.componentDidMount} />
+          </Row>
+
+          <Row
+            noGutters
+            className="page-header"
+            style={{ marginTop: "10px", marginBottom: "20px" }}
+          >
+            <FormCheckbox
+              id="showCasosPrivados"
+              checked={this.state.showPrivateCasoss}
+              onChange={this.handleChangeCheckBox}
+            >
+              Mostrar casos privados
+            </FormCheckbox>
           </Row>
 
           {/* First Row of Cases */}
@@ -217,12 +284,74 @@ class Casos extends React.Component {
                             id={`${post.id}`}
                             onClick={this.showCasoDetails}
                           >
-                            <i className="fa fa-search mr-1" /> Ver mais
+                            <i className="fa fa-search mr-1" />{" "}
+                            {seeMoreButton[languageCode]}
                           </Button>
                         </div>
                       </CardFooter>
                     </Card>
                     {this.state.redirect}
+                  </Col>
+                ))
+              : ""}
+          </Row>
+          <Row>
+            {ListaCasosPrivados != null && showPrivateCasos
+              ? ListaCasosPrivados.map((post, idx) => (
+                  <Col lg="4" key={idx}>
+                    <Card small className="card-post mb-4">
+                      <CardBody>
+                        <h5 className="card-title">{post.titulo}</h5>
+                        <p
+                          className="card-text text-muted"
+                          style={{
+                            whiteSpace: "nowrap",
+                            width: "inherit",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {post.descricao}
+                        </p>
+                      </CardBody>
+                      <CardFooter className="border-top d-flex">
+                        <div className="card-post__author d-flex">
+                          <img
+                            className="card-post__author-avatar card-post__author-avatar--small"
+                            src={
+                              post.autor.photo
+                                ? post.autor.photo
+                                : "https://www.gravatar.com/avatar/2c5fa499f927cb256c8da6bc60fb7937?d=mp"
+                            }
+                          ></img>
+                          <div className="d-flex flex-column justify-content-center ml-3">
+                            <span className="card-post__author-name">
+                              {post.autor.nome}
+                            </span>
+                            <small className="text-muted">
+                              {" "}
+                              {post.data_criacao
+                                ? dateFormat(
+                                    new Date(post.data_criacao._seconds * 1000),
+                                    "dd-mm-yyyy, h:MM:ss TT"
+                                  )
+                                : "-"}
+                            </small>
+                          </div>
+                        </div>
+                        <div className="my-auto ml-auto">
+                          <Button
+                            size="sm"
+                            theme="primary"
+                            id={`${post.id}`}
+                            onClick={this.showCasoDetails}
+                          >
+                            <i className="fa fa-search mr-1" />{" "}
+                            {seeMoreButton[languageCode]}
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
                   </Col>
                 ))
               : ""}

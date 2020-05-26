@@ -291,6 +291,11 @@ export const confirmDeleteAccount = {
     "Deixará de ter acesso à plaforma através desta conta. Esta ação não pode ser revertida!",
 };
 
+export const commitChangesQuotasMessage = {
+  pt_PT:
+    "Existem alterações não gravadas nesta página que serão perdidas! Deseja gravá-las? (OK-Sim | Cancelar-Não)",
+};
+
 export const confirmLogoutAfterDelete = {
   pt_PT:
     "A sua conta foi apagada com sucesso. Será redirecionado para a página de início de sessão. \n" +

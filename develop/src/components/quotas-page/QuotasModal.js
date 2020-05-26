@@ -26,12 +26,29 @@ class QuotasModal extends React.Component {
   constructor(props) {
     super(props);
 
+    var data = new Date();
+    var month = data.getMonth() + 1;
+    var year = data.getFullYear();
+
+    var anoLetivoAtual = "";
+
+    if (month >= 7) {
+      var first = year;
+      var secondTemp = year + 1;
+      var second = secondTemp.toString()[2] + secondTemp.toString()[3];
+      anoLetivoAtual = first.toString() + "/" + second.toString();
+    } else {
+      var first = year - 1;
+      var second = year.toString()[2] + year.toString()[3];
+      anoLetivoAtual = first.toString() + "/" + second.toString();
+    }
+
     this.state = {
       options: [],
       recetor: "",
       emissor: "",
-      valor: -1,
-      anoLetivo: "",
+      valor: 5, //default
+      anoLetivo: anoLetivoAtual,
       data: new Date(),
     };
 
@@ -45,7 +62,13 @@ class QuotasModal extends React.Component {
     this.closeModal = this.closeModal.bind(this);
     this.loadParents = this.loadParents.bind(this);
 
+    this.componentWillMount = this.componentWillMount.bind(this);
+
     this.loadParents();
+  }
+
+  componentWillMount() {
+    //Get value of cota defined in parameters
   }
 
   onSelectEmissor(selectedList, selectedItem) {
@@ -228,7 +251,7 @@ class QuotasModal extends React.Component {
                         options={this.state.options} // Options to display in the dropdown
                         onSelect={this.onSelectEmissor} // Function will trigger on select event
                         displayValue="name" // Property name to display in the dropdown options
-                        singleSelect={true}
+                        selectionLimit={1}
                         showCheckbox={false}
                       />
                     </FormGroup>
@@ -239,17 +262,18 @@ class QuotasModal extends React.Component {
                         options={this.state.options} // Options to display in the dropdown
                         onSelect={this.onSelectRecetor} // Function will trigger on select event
                         displayValue="name" // Property name to display in the dropdown options
-                        singleSelect={true}
+                        selectionLimit={1}
                         showCheckbox={false}
                       />
                     </FormGroup>
 
                     <FormGroup>
-                      <label htmlFor="valor">Valor</label>
+                      <label htmlFor="valor">Valor (euros)</label>
                       <FormInput
                         id="valor"
                         type="number"
                         onChange={this.handlechangeValor}
+                        value={this.state.valor}
                       ></FormInput>
                     </FormGroup>
                     <FormGroup>
@@ -260,6 +284,7 @@ class QuotasModal extends React.Component {
                         id="valor"
                         type="text"
                         onChange={this.handlechangeAnoLetivo}
+                        value={this.state.anoLetivo}
                       ></FormInput>
                     </FormGroup>
                     <FormGroup>

@@ -1,111 +1,99 @@
 /*
-* file to save common strings that are repeated along the app
-* */
+ * file to save common strings that are repeated along the app
+ * */
 
 export const erase = {
-  "pt_PT" : "Apagar"
+  pt_PT: "Apagar",
 };
 
 export const ok = {
-  "pt_PT" : "Ok"
+  pt_PT: "Ok",
 };
 
-
 export const yes = {
-  "pt_PT" : "Sim"
+  pt_PT: "Sim",
 };
 
 export const no = {
-  "pt_PT" : "Não"
+  pt_PT: "Não",
 };
 
 export const saveChanges = {
-  "pt_PT" : "Guardar alterações"
+  pt_PT: "Guardar alterações",
 };
 
 export const cancel = {
-  "pt_PT" : "Cancelar"
+  pt_PT: "Cancelar",
 };
 
 export const updateProfile = {
-  "pt_PT" : "Atualizar perfil"
+  pt_PT: "Atualizar perfil",
 };
 
 export const close = {
-  "pt_PT" : "Fechar"
+  pt_PT: "Fechar",
 };
 
 export const changeEmail = {
-  "pt_PT" : "Mudar email"
+  pt_PT: "Mudar email",
 };
 
-
 export const updateInfo = {
-  "pt_PT" : "Atualizar informações"
+  pt_PT: "Atualizar informações",
 };
 
 export const deleteChild = {
-  "pt_PT" : "Eliminar educando"
+  pt_PT: "Eliminar educando",
 };
-
 
 export const attentionPrompt = {
-  "pt_PT" : "IMPORTANTE"
+  pt_PT: "IMPORTANTE",
 };
-
 
 export const updateEmailPrompt = {
-  "pt_PT" : "Atualizar email?"
+  pt_PT: "Atualizar email?",
 };
 
-
 export const signInWithLink = {
-  "pt_PT" : "Entrar com link"
+  pt_PT: "Entrar com link",
 };
 
 export const signInWithGoogle = {
-  "pt_PT" : "Entrar com Google"
+  pt_PT: "Entrar com Google",
 };
 
 export const signInWithFacebook = {
-  "pt_PT" : "Entrar com Facebook"
+  pt_PT: "Entrar com Facebook",
 };
 
 export const signInWithMicrosoft = {
-  "pt_PT" : "Entrar com Microsoft"
+  pt_PT: "Entrar com Microsoft",
 };
 
-
-
 export const unlinkGoogle = {
-  "pt_PT" : "Desassociar Google"
+  pt_PT: "Desassociar Google",
 };
 
 export const unlinkFacebook = {
-  "pt_PT" : "Desassociar Facebook"
+  pt_PT: "Desassociar Facebook",
 };
 
 export const unlinkMicrosoft = {
-  "pt_PT" : "Desassociar Microsoft"
+  pt_PT: "Desassociar Microsoft",
 };
 
-
-
 export const hello = {
-  "pt_PT" : "Olá"
+  pt_PT: "Olá",
 };
 
 export const deleteAccountPrompt = {
-  "pt_PT" : "Apagar conta?"
+  pt_PT: "Apagar conta?",
 };
 
-
 export const success_geral = {
-  "pt_PT" : "Sucesso"
+  pt_PT: "Sucesso",
 };
 
 export const error_geral = {
-  "pt_PT" : "Ocorreu um erro. Por favor, tente novamente."
+  pt_PT: "Ocorreu um erro. Por favor, tente novamente.",
 };
-
-

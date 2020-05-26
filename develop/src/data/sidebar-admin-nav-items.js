@@ -1,6 +1,6 @@
 export default function () {
   return [
-    {
+    /* {
       title: "Blog Dashboard",
       to: "/blog-overview",
       htmlBefore: '<i class="material-icons">edit</i>',
@@ -20,7 +20,7 @@ export default function () {
       title: "Forms & Components",
       htmlBefore: '<i class="material-icons">view_module</i>',
       to: "/components-overview",
-    },
+    },*/
     {
       title: "O meu perfil",
       htmlBefore: '<i class="material-icons">person</i>',

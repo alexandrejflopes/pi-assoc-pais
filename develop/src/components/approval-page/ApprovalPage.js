@@ -26,6 +26,7 @@ import { saveRegistToDB } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 import ApprovalModal from "./ApprovalModal";
+import { cleanButton, languageCode } from "../../utils/general_utils";
 
 class Approval_Page extends Component {
   constructor(props) {
@@ -555,8 +556,8 @@ class Approval_Page extends Component {
             </Row>
           </Col>
           {this.state.redirect}
-          <Button theme="success" onClick={this.deletePassedRegisters}>
-            <i class="fas fa-sync-alt"></i>
+          <Button theme="danger" onClick={this.deletePassedRegisters}>
+            {cleanButton[languageCode]}
           </Button>
         </ListGroupItem>
       </ListGroup>

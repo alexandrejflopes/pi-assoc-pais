@@ -111,8 +111,8 @@ async function showAvailableCasos() {
   var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
   // utilizador teste
 
-  var nome = "Diogo Gomes";
-  var id = "dgomes@pi-assoc-pais.com";
+  var nome = "";
+  var id = "";
   var foto = "";
   if (currentUser != undefined) {
     nome = currentUser.Nome;
@@ -130,8 +130,6 @@ async function showAvailableCasos() {
     "&" +
     "foto=" +
     encodeURIComponent(foto);
-
-  console.log(uri);
 
   const request = async () => {
     let casos;

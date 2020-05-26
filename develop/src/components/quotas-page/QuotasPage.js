@@ -11,6 +11,8 @@ import {
 } from "shards-react";
 import { toast, Bounce } from "react-toastify";
 import { Link, Redirect } from "react-router-dom";
+import { commitChangesQuotasMessage } from "../../utils/messages_strings";
+import { languageCode } from "../../utils/general_utils";
 
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 import PageTitle from "../common/PageTitle";
@@ -33,6 +35,8 @@ class Quotas_Page extends Component {
       nome: null,
       admin: null,
       redirect: null,
+      dialogOpen: false,
+      userAnswer: false,
     };
 
     const this_ = this;
@@ -48,6 +52,7 @@ class Quotas_Page extends Component {
     this.handleChangeNotas = this.handleChangeNotas.bind(this);
     this.commit = this.commit.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.componentWillUnmount = this.componentWillUnmount.bind(this);
     this.getQuotas();
   }
 
@@ -89,6 +94,41 @@ class Quotas_Page extends Component {
         />
       );
       this.setState({ redirect: redirect });
+    }
+  }
+
+  componentWillUnmount() {
+    const { items, checkBoxPagante, checkBoxRecetor, notas } = this.state;
+    const this_ = this;
+
+    var arrayToChange = [];
+    for (var i = 0; i < items.length; i++) {
+      var json = items[i];
+      var emissor = checkBoxPagante[i];
+      var recetor = checkBoxRecetor[i];
+      var nota = notas[i];
+
+      if (
+        json["Confirmado Pagante"] != emissor ||
+        json["Confirmado Recetor"] != recetor ||
+        json["Notas"] != nota
+      ) {
+        var jsonValues = {};
+        jsonValues.id = json.id;
+        jsonValues.emissor = emissor;
+        jsonValues.recetor = recetor;
+        jsonValues.nota = nota;
+        arrayToChange.push(jsonValues);
+      }
+    }
+
+    if (arrayToChange.length !== 0) {
+      if (window.confirm(commitChangesQuotasMessage[languageCode])) {
+        // Save it!
+        this_.commit();
+      } else {
+        // Do nothing!
+      }
     }
   }
 

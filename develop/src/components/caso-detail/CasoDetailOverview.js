@@ -16,8 +16,9 @@ import {
   CardFooter,
 } from "shards-react";
 
+import { firestore, firebase_auth, firebase } from "../../firebase-config";
 import { addDocError, sucessoGeral } from "../../utils/messages_strings";
-
+import { Multiselect } from "multiselect-react-dropdown";
 import ListGroupReact from "react-bootstrap/ListGroup";
 import {
   defaultAvatar,
@@ -44,6 +45,10 @@ class CasoDetailOverview extends React.Component {
       titleToAdd: "",
       buttonSave: "Gravar",
       buttonsEditDisabled: false,
+      updatingMembers: false,
+      membersToAdd: [],
+      options: [],
+      membersComplete: [],
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -51,6 +56,11 @@ class CasoDetailOverview extends React.Component {
     this.handleTitleToAddChange = this.handleTitleToAddChange.bind(this);
     this.cancelEditTitle = this.cancelEditTitle.bind(this);
     this.finalizeEditTitle = this.finalizeEditTitle.bind(this);
+    this.startMembersUpdate = this.startMembersUpdate.bind(this);
+    this.cancelUpdatingMembers = this.cancelUpdatingMembers.bind(this);
+    this.finalizeUpdatingMembers = this.finalizeUpdatingMembers.bind(this);
+    this.onSelectMembro = this.onSelectMembro.bind(this);
+    this.onRemoveMembro = this.onRemoveMembro.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -140,6 +150,165 @@ class CasoDetailOverview extends React.Component {
     request();
   }
 
+  startMembersUpdate() {
+    const { membros, options } = this.state;
+
+    var currentMembers = [];
+
+    for (var i = 0; i < membros.length; i++) {
+      var membro = membros[i];
+      currentMembers.push(membro["id"]);
+    }
+
+    if (options.length == 0) {
+      const parentsCollection = firestore.collection("parents");
+
+      parentsCollection.get().then((querySnapshot) => {
+        var membersArray = [];
+        var membersArrayComplete = [];
+        var options = [];
+        var optionsSelected = [];
+
+        var index = 0;
+        querySnapshot.forEach((doc) => {
+          if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
+            if (
+              doc.data()["Validated"] != undefined &&
+              doc.data()["Validated"] != null &&
+              doc.data()["Validated"].toString() != "false"
+            ) {
+              membersArrayComplete.push({
+                nome: doc.data()["Nome"],
+                id: doc.data()["Email"],
+                photo: doc.data()["photo"],
+              });
+
+              if (currentMembers.includes(doc.data()["Email"])) {
+                optionsSelected.push({ id: index, name: doc.data()["Nome"] });
+              }
+              options.push({ id: index, name: doc.data()["Nome"] });
+
+              index += 1;
+            }
+          }
+        });
+        if (options.length != 0) {
+          this.setState({
+            updatingMembers: true,
+            membersComplete: membersArrayComplete,
+            options: options,
+            membersToAdd: optionsSelected,
+          });
+        } else {
+          //No users to add
+        }
+      });
+    } else {
+      var optionsSelected = [];
+      var alreadyPut = [];
+      for (var i = 0; i < membros.length; i++) {
+        var membro = membros[i];
+
+        if (!alreadyPut.includes(membro["id"])) {
+          optionsSelected.push({ id: i, name: membro["nome"] });
+          alreadyPut.push(membro["id"]);
+        }
+      }
+
+      this.setState({
+        updatingMembers: true,
+        membersToAdd: optionsSelected,
+      });
+    }
+  }
+
+  cancelUpdatingMembers() {
+    this.setState({ updatingMembers: false, membersToAdd: [] });
+  }
+
+  finalizeUpdatingMembers() {
+    const { membersToAdd, id, membersComplete, options } = this.state;
+    const this_ = this;
+    var listaMembros = [];
+
+    for (var i = 0; i < membersToAdd.length; i++) {
+      listaMembros.push(membersComplete[membersToAdd[i].id]);
+    }
+
+    if (listaMembros.length != 0) {
+      this_.setState({ buttonsEditDisabled: true, buttonSave: "A gravar..." });
+
+      let uri =
+        "https://us-central1-associacao-pais.cloudfunctions.net/api/updateMembrosCaso?" +
+        "id=" +
+        id +
+        "&membros=" +
+        encodeURIComponent(JSON.stringify(listaMembros));
+
+      const request = async () => {
+        await fetch(uri)
+          .then((resp) => resp.json()) // Transform the data into json
+          .then(function (data) {
+            if (data != null && data._writeTime) {
+              //Sucesso
+
+              var memberNames = "";
+              for (var i = 0; i < listaMembros.length; i++) {
+                var membro = listaMembros[i];
+                if (i == 0) {
+                  memberNames += membro.nome;
+                } else {
+                  memberNames += ", " + membro.nome;
+                }
+              }
+
+              this_.setState({
+                membersToAdd: [],
+                buttonSave: "Gravar",
+                buttonsEditDisabled: false,
+                updatingMembers: false,
+                membros: listaMembros,
+                memberNames: memberNames,
+              });
+              this_.props.updateMembers(listaMembros);
+            } else {
+              //Erro
+              this_.setState({
+                buttonsEditDisabled: false,
+              });
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+            this_.setState({
+              buttonsEditDisabled: false,
+            });
+          });
+      };
+
+      request();
+    } else {
+    }
+  }
+
+  onSelectMembro(selectedList, selectedItem) {
+    var array = this.state.membersToAdd;
+    array.push(selectedItem);
+    this.setState({ membersToAdd: array });
+  }
+
+  onRemoveMembro(selectedList, removedItem) {
+    const { membersToAdd } = this.state;
+    var array = membersToAdd;
+
+    var index = array.indexOf(removedItem);
+    if (index !== -1) {
+      array.splice(index, 1);
+    }
+
+    this.setState({ membersToAdd: array });
+  }
+
   /*********************************** HANDLERS ***********************************/
   render() {
     return (
@@ -193,9 +362,25 @@ class CasoDetailOverview extends React.Component {
                 value={this.state.titleToAdd}
               />
             </Form>
+          ) : this.state.updatingMembers ? (
+            <Form className="add-new-post">
+              <label htmlFor="membros">Membros</label>
+              <Multiselect
+                options={this.state.options} // Options to display in the dropdown
+                onSelect={this.onSelectMembro} // Function will trigger on select event
+                onRemove={this.onRemoveMembro}
+                selectedValues={this.state.membersToAdd}
+                displayValue="name" // Property name to display in the dropdown options
+                //showCheckbox={true}
+              />
+            </Form>
           ) : (
             <ButtonGroup>
-              <Button style={{ margin: "3px" }}>
+              <Button
+                disabled={this.state.arquivado == true ? true : false}
+                style={{ margin: "3px" }}
+                onClick={this.startMembersUpdate}
+              >
                 <i class="material-icons">edit</i>Atualizar Membros
               </Button>
               <Button
@@ -204,7 +389,11 @@ class CasoDetailOverview extends React.Component {
               >
                 <i class="material-icons">archive</i> Arquivar/Desarquivar
               </Button>
-              <Button style={{ margin: "3px" }} onClick={this.editTitle}>
+              <Button
+                disabled={this.state.arquivado == true ? true : false}
+                style={{ margin: "3px" }}
+                onClick={this.editTitle}
+              >
                 <i class="material-icons">edit</i> Editar título
               </Button>{" "}
             </ButtonGroup>
@@ -223,6 +412,24 @@ class CasoDetailOverview extends React.Component {
                 theme="danger"
                 disabled={this.state.buttonsEditDisabled}
                 onClick={this.cancelEditTitle}
+              >
+                Cancelar
+              </Button>
+            </div>
+          ) : this.state.updatingMembers ? (
+            <div>
+              <Button
+                style={{ margin: "5px" }}
+                theme="success"
+                onClick={this.finalizeUpdatingMembers}
+                disabled={this.state.buttonsEditDisabled}
+              >
+                {this.state.buttonSave}
+              </Button>
+              <Button
+                theme="danger"
+                disabled={this.state.buttonsEditDisabled}
+                onClick={this.cancelUpdatingMembers}
               >
                 Cancelar
               </Button>

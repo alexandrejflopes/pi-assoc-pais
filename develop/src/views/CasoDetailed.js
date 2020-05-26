@@ -140,6 +140,7 @@ class Casos extends React.Component {
     );
     this.arquiveOrReverse = this.arquiveOrReverse.bind(this);
     this.updateTitle = this.updateTitle.bind(this);
+    this.updateMembers = this.updateMembers.bind(this);
   }
 
   componentDidMount() {
@@ -192,15 +193,19 @@ class Casos extends React.Component {
           var ficheiros = data.ficheiros;
           var comentarios = data.observacoes;
           var membros = data.membros;
+          var privado = data.privado;
 
-          var userInCaso = false;
-          for (var i = 0; i < membros.length; i++) {
-            if (
-              membros[i].nome == currentUsername ||
-              membros[i].nome == currentUser.Nome
-            ) {
-              userInCaso = true;
-              break;
+          var userInCaso = true;
+          if (privado) {
+            userInCaso = false;
+            for (var i = 0; i < membros.length; i++) {
+              if (
+                membros[i].nome == currentUsername ||
+                membros[i].nome == currentUser.Nome
+              ) {
+                userInCaso = true;
+                break;
+              }
             }
           }
 
@@ -695,6 +700,10 @@ class Casos extends React.Component {
     this.setState({ title: newTitle });
   }
 
+  updateMembers(newListOfMembers) {
+    this.setState({ membros: newListOfMembers });
+  }
+
   render() {
     if (this.state.loading == true) {
       return (
@@ -732,6 +741,7 @@ class Casos extends React.Component {
                   username={this.state.username}
                   arquivado={true}
                   membros={this.state.membros}
+                  updateMembers={this.updateMembers}
                   arquiveOrReverse={this.arquiveOrReverse}
                   updateTitle={this.updateTitle}
                 />
@@ -744,6 +754,7 @@ class Casos extends React.Component {
                     username={this.state.username}
                     arquivado={false}
                     membros={this.state.membros}
+                    updateMembers={this.updateMembers}
                     arquiveOrReverse={this.arquiveOrReverse}
                     updateTitle={this.updateTitle}
                   />
@@ -769,6 +780,7 @@ class Casos extends React.Component {
                 <CardFooter>
                   {this.state.buttonEditDescriptionDisabled == false ? (
                     <Button
+                      disabled={this.state.arquivado == true ? true : false}
                       theme="white"
                       id={""}
                       onClick={this.editDescription}
@@ -776,7 +788,7 @@ class Casos extends React.Component {
                       <span className="text-light">
                         <i className="material-icons">edit</i>
                       </span>{" "}
-                      Edit
+                      Editar
                     </Button>
                   ) : (
                     <div>
@@ -858,10 +870,8 @@ class Casos extends React.Component {
                               </a>
                               {" - "}
                               <span className="text-mutes">
-                                {moment(
-                                  Date(comment.tempo._seconds * 1000).toString()
-                                )
-                                  .format("DD/MM/YYYY")
+                                {moment(comment.tempo._seconds * 1000)
+                                  .format("DD/MM/YYYY HH:mm:ss")
                                   .toString()}
                               </span>
                             </div>
@@ -1027,7 +1037,10 @@ class Casos extends React.Component {
                       />
                     </Form>
                   ) : (
-                    <Button onClick={this.addDoc}>
+                    <Button
+                      disabled={this.state.arquivado == true ? true : false}
+                      onClick={this.addDoc}
+                    >
                       {" "}
                       <i className="material-icons">edit</i> Adicionar documento
                     </Button>

@@ -20,6 +20,9 @@ import {
   parentsParameters,
   showToast,
   toastTypes,
+  saveButton,
+  closeButton,
+  newCaseButton,
 } from "../../utils/general_utils";
 import { Multiselect } from "multiselect-react-dropdown";
 import { addCasoError, sucessoGeral } from "../../utils/messages_strings";
@@ -112,7 +115,13 @@ class CasosModal extends React.Component {
   }
 
   closeModal() {
-    this.setState({ show: false });
+    this.setState({
+      show: false,
+      caseTitle: "",
+      descricao: "",
+      membrosSelected: [],
+      checkBoxStatus: false,
+    });
   }
 
   handleChangeCheckBox() {
@@ -237,11 +246,11 @@ class CasosModal extends React.Component {
       <>
         <Button
           size="md"
-          theme="primary"
+          theme="success"
           id="new_case"
           onClick={this.showModal}
         >
-          <i className="fa fa-plus mr-1" /> Abrir um novo caso
+          <i className="fa fa-plus mr-1" /> {newCaseButton[languageCode]}
         </Button>
 
         <Modal show={this.state.show} onHide={this.closeModal}>
@@ -323,11 +332,11 @@ class CasosModal extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant="secondary" onClick={this.closeModal}>
-              Fechar
+            <Button theme="danger" onClick={this.closeModal}>
+              {closeButton[languageCode]}
             </Button>
-            <Button variant="primary" onClick={this.createCase}>
-              Criar caso
+            <Button theme="success" onClick={this.createCase}>
+              {saveButton[languageCode]}
             </Button>
           </Modal.Footer>
         </Modal>
