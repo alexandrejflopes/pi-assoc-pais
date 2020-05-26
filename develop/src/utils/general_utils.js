@@ -24,6 +24,12 @@ export const regular_role = {
   pt_PT: "Associado(a)",
 };
 
+export const auth_providers_names = {
+  GOOGLE : "google.com",
+  FACEBOOK : "facebook.com",
+  PASSWORD : "password"
+};
+
 const membersCSVparamsIndexes = {
   assoc_num_index: 0,
   role_index: 1,
@@ -68,6 +74,44 @@ export const emailRegex = new RegExp(
 
 const notAvailableDesignation = {
   pt_PT: "ND", // nao determinado/disponivel
+};
+
+export const cargoDocKey = "titulo";
+
+export const assocParameters = {
+  ZIP : {
+    "pt_PT": "Código Postal"
+  },
+  DAYS_TO_DELETE_REGISTRATION : {
+    "pt_PT": "DeleteRegistosSemPagar"
+  },
+  DESCRIPTION : {
+    "pt_PT": "Descrição"
+  },
+  EMAIL : {
+    "pt_PT": "Email da Associação"
+  },
+  IBAN : {
+    "pt_PT": "IBAN"
+  },
+  CITY : {
+    "pt_PT": "Localidade"
+  },
+  LOGO : {
+    "pt_PT": "Logótipo"
+  },
+  STREET : {
+    "pt_PT": "Morada"
+  },
+  NAME : {
+    "pt_PT": "Nome da Associação de Pais"
+  },
+  FEE : {
+    "pt_PT": "Quota"
+  },
+  PHONE : {
+    "pt_PT": "Telemóvel"
+  },
 };
 
 const newParametersTypes = {

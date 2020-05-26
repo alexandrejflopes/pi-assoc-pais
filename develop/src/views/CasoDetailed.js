@@ -84,7 +84,7 @@ class Casos extends React.Component {
     }
 
     this.state = {
-      redirect: null,
+      //redirect: null,
       loading: true,
       currentUsername: "",
       id: id,

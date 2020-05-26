@@ -30,6 +30,10 @@ export const updateProfile = {
   pt_PT: "Atualizar perfil",
 };
 
+export const updateAssocData = {
+  pt_PT: "Atualizar informações da associação",
+};
+
 export const close = {
   pt_PT: "Fechar",
 };
@@ -88,6 +92,10 @@ export const hello = {
 
 export const deleteAccountPrompt = {
   pt_PT: "Apagar conta?",
+};
+
+export const deleteChildPrompt = {
+  pt_PT: "Eliminar educando?",
 };
 
 export const success_geral = {

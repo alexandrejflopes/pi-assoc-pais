@@ -73,6 +73,23 @@ export const deleteAccountSectionTitle = {
   "pt_PT" : "Apagar conta"
 };
 
+export const exportParentsAndChildren = {
+  "pt_PT" : "Exportar membros e alunos"
+};
+
+export const exportCasos = {
+  "pt_PT" : "Exportar casos"
+};
+
+export const assocDataInfoFormTitle = {
+  "pt_PT" : "Dados da associação"
+};
+
+export const newAssocLogoModalTitle = {
+  "pt_PT" : "Logótipo"
+};
+
+
 
 
 

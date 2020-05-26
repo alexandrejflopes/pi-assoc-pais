@@ -14,6 +14,7 @@ import {
   Row
 } from "shards-react";
 import {
+  auth_providers_names,
   languageCode,
   parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
@@ -53,7 +54,10 @@ class LinkProviders extends React.Component {
     //const {phone, nif, email, name, cc, job, street, city} = this.props.user;
     this.state = {
       title: infoFormTitle,
-      parent : parent
+      parent : parent,
+      hasFacebook : false,
+      hasGoogle : false,
+      hasMicrosoft : false
     };
 
 
@@ -71,6 +75,22 @@ class LinkProviders extends React.Component {
   componentDidMount() {
     this._isMounted = true;
 
+    const loggedUser = firebase_auth.currentUser;
+    let providers = [];
+
+    if(loggedUser!=null){
+      loggedUser.providerData.forEach(function (profile) {
+        providers.push(profile.providerId);
+      });
+    }
+
+    if(providers.includes(auth_providers_names.GOOGLE)){
+      this.setState({hasGoogle : true});
+    }
+    if(providers.includes(auth_providers_names.FACEBOOK)){
+      this.setState({hasFacebook : true});
+    }
+
   }
 
   componentWillUnmount() {
@@ -81,12 +101,12 @@ class LinkProviders extends React.Component {
 
 
   googleLink(){
+    const this_ = this;
     const provider = new firebase.auth.GoogleAuthProvider();
       firebase_auth.currentUser.linkWithPopup(provider).then(function(result) {
         showToast(success_geral[languageCode], 3000, toastTypes.SUCCESS);
-        var credential = result.credential;
-        var user = result.user;
         console.log("link result -> " + JSON.stringify(result));
+        this_.setState({hasGoogle : true});
       }).catch(function(error) {
         console.log("error no link Google: " + error);
         showToast(linkAccountError[languageCode], 6000, toastTypes.ERROR);
@@ -94,11 +114,11 @@ class LinkProviders extends React.Component {
   }
 
   facebookLink(){
+    const this_ = this;
     const provider = new firebase.auth.FacebookAuthProvider();
     firebase_auth.currentUser.linkWithPopup(provider).then(function(result) {
       showToast(success_geral[languageCode], 3000, toastTypes.SUCCESS);
-      var credential = result.credential;
-      var user = result.user;
+      this_.setState({hasFacebook : true});
     }).catch(function(error) {
       console.log("erro no unlink FB -> " + error);
       showToast(linkAccountError[languageCode], 6000, toastTypes.ERROR);
@@ -109,16 +129,17 @@ class LinkProviders extends React.Component {
     const provider = new firebase.auth.OAuthProvider('microsoft.com');
     firebase_auth.currentUser.linkWithPopup(provider).then(function(result) {
       showToast(success_geral[languageCode], 3000, toastTypes.SUCCESS);
-    }).catch(function(error) {
+    }).catch(function() {
       showToast(linkAccountError[languageCode], 6000, toastTypes.ERROR);
     });
   }
 
   googleUnlink(){
+    const this_ = this;
     const user = firebase_auth.currentUser;
-
     user.unlink('google.com').then(function() {
       showToast(success_geral[languageCode], 3000, toastTypes.SUCCESS);
+      this_.setState({hasGoogle : false});
     }).catch(function(error) {
       console.log("erro no unlink FB -> " + error);
       showToast(unlinkAccountError[languageCode], 6000, toastTypes.ERROR);
@@ -126,10 +147,11 @@ class LinkProviders extends React.Component {
   }
 
   facebookUnlink(){
+    const this_ = this;
     const user = firebase_auth.currentUser;
-
     user.unlink('facebook.com').then(function() {
       showToast(success_geral[languageCode], 3000, toastTypes.SUCCESS);
+      this_.setState({hasFacebook : false});
     }).catch(function(error) {
       console.log("erro no unlink FB -> " + error);
       showToast(unlinkAccountError[languageCode], 6000, toastTypes.ERROR);
@@ -138,7 +160,6 @@ class LinkProviders extends React.Component {
 
   microsofUnlink(){
     const user = firebase_auth.currentUser;
-
     user.unlink('microsoft.com').then(function() {
       showToast(success_geral[languageCode], 3000, toastTypes.SUCCESS);
     }).catch(function(error) {
@@ -157,23 +178,29 @@ class LinkProviders extends React.Component {
           <ListGroupItem className="p-3">
             <Row>
               <Col lg="12" md="12" style={{marginBottom: "23px"}}>
-                <Button theme="primary" onClick={this.facebookLink}>
-                  <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>Facebook</Button>
-                <Button theme="primary" onClick={this.facebookUnlink} style={{float : "right"}}>
-                  <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>{unlinkFacebook[languageCode]}</Button>
+                {this.state.hasFacebook ?
+                  <Button theme="primary" onClick={this.facebookUnlink}>
+                    <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>{unlinkFacebook[languageCode]}</Button>
+                :
+                  <Button theme="primary" onClick={this.facebookLink}>
+                    <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>Facebook</Button>
+                }
               </Col>
               <Col lg="12" md="12" style={{marginBottom: "23px"}}>
-                <Button theme="danger" onClick={this.googleLink}>
-                  <i className="fab fa-google" style={{marginRight: "10px"}}/>Google</Button>
-                <Button theme="danger" onClick={this.googleUnlink} style={{float : "right"}}>
-                  <i className="fab fa-google" style={{marginRight: "10px"}}/>{unlinkGoogle[languageCode]}</Button>
+                {this.state.hasGoogle ?
+                  <Button theme="danger" onClick={this.googleUnlink}>
+                    <i className="fab fa-google" style={{marginRight: "10px"}}/>{unlinkGoogle[languageCode]}</Button>
+                  :
+                  <Button theme="danger" onClick={this.googleLink}>
+                    <i className="fab fa-google" style={{marginRight: "10px"}}/>Google</Button>
+                }
               </Col>
-              <Col lg="12" md="12">
+              {/*<Col lg="12" md="12">
                 <Button theme="success" onClick={this.microsoftLink}>
                   <i className="fab fa-microsoft" style={{marginRight: "10px"}}/>Microsoft</Button>
                 <Button theme="success" onClick={this.microsofUnlink} style={{float : "right"}}>
                   <i className="fab fa-microsoft" style={{marginRight: "10px"}}/>{unlinkMicrosoft[languageCode]}</Button>
-              </Col>
+              </Col>*/}
             </Row>
           </ListGroupItem>
         </ListGroup>

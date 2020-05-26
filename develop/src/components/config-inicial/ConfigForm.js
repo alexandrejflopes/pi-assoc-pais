@@ -18,7 +18,14 @@ import NewParamsFileUpload from "./NewParamsFileUpload";
 import {install} from "../../firebase_scripts/installation";
 import StudentsFileUpload from "./StudentsFileUpload";
 import {languageCode} from "../../utils/general_utils";
-import {membersImportFileFormatsTipMessage, studentsImportFileFormatsTipMessage, paramsJsonFileTipMessage, assocLogoFormatsTipMessage} from "../../utils/messages_strings";
+import {
+  membersImportFileFormatsTipMessage,
+  studentsImportFileFormatsTipMessage,
+  paramsJsonFileTipMessage,
+  assocLogoFormatsTipMessage,
+  cargosFileTipMessage
+} from "../../utils/messages_strings";
+import CargosFileUpload from "./CargosFileUpload";
 
 class ConfigForm extends Component {
 
@@ -30,7 +37,8 @@ class ConfigForm extends Component {
       logo: false,
       members: false,
       students: false,
-      jsonParams: false
+      jsonParams: false,
+      cargosFile : false
     };
   }
 
@@ -73,12 +81,12 @@ class ConfigForm extends Component {
               <Row form>
                 <Col md="6" className="form-group">
                   <label htmlFor="configAssocLocalidade">Localidade</label>
-                  <FormInput id="configAssocLocalidade" />
+                  <FormInput id="configAssocLocalidade" placeholder="Aveiro" />
                   <FormFeedback id="configAssocLocalidadeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
                 <Col md="6" className="form-group">
                   <label htmlFor="configAssocZip">Código Postal</label>
-                  <FormInput id="configAssocZip" />
+                  <FormInput id="configAssocZip" placeholder="1234-567"/>
                   <FormFeedback id="configAssocZipFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
               </Row>
@@ -113,17 +121,24 @@ class ConfigForm extends Component {
               </Row>
 
               <Row form>
-                <Col md="12">
+                <Col md="6">
                   <FormGroup>
                     <label htmlFor="configAssocIBAN">IBAN (opcional)</label>
                     <FormInput id="configAssocIBAN" placeholder="PT50 1234 4321 12345678901 72"/>
                     <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                   </FormGroup>
-
+                </Col>
+                <Col md="6" className="form-group">
+                  <label htmlFor="configAssocFee">Valor da Quota (€)</label>
+                  <FormInput
+                    required
+                    type="number"
+                    id="configAssocFee"
+                    placeholder="5"
+                  />
+                  <FormFeedback id="configAssocFeeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
               </Row>
-
-
             </Form>
           </Col>
 
@@ -190,6 +205,22 @@ class ConfigForm extends Component {
                       {paramsJsonFileTipMessage[languageCode]}
                     </Tooltip>
                     <NewParamsFileUpload />
+                  </FormGroup>
+                </Col>
+              </Row>
+              <Row form>
+                <Col md="6">
+                  <FormGroup>
+                    <label htmlFor="configAssocCargos">Cargos da Associação <span id="cargosFileTooltip" className="material-icons" style={{fontSize:"100%"}}>info</span></label>
+                    <Tooltip
+                      open={this.state.cargosFile}
+                      target="#cargosFileTooltip"
+                      toggle={() => this.toggle("cargosFile")}
+                      style={{fontSize:"120%"}}
+                    >
+                      {cargosFileTipMessage[languageCode]}
+                    </Tooltip>
+                    <CargosFileUpload />
                   </FormGroup>
                 </Col>
               </Row>

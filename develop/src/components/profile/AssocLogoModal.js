@@ -1,6 +1,6 @@
 /* eslint jsx-a11y/anchor-is-valid: 0 */
 
-import React from "react";
+import React, {Component as SidebarMainNavbar} from "react";
 import Modal from "react-bootstrap/Modal";
 import {
   Button,
@@ -8,6 +8,7 @@ import {
   Row,
 } from "shards-react";
 import {
+  assocParameters,
   defaultAvatar,
   languageCode, parentsParameters, showToast,
   toastTypes,
@@ -16,17 +17,25 @@ import {
   cancel,
   saveChanges
 } from "../../utils/common_strings";
-import {newProfilePhoto} from "../../utils/page_titles_strings";
 import {
-  updateParent,
+  newAssocLogoModalTitle,
+  newProfilePhoto
+} from "../../utils/page_titles_strings";
+import {
+  updateParent, uploadAssocLogo,
   uploadProfilePhoto
 } from "../../firebase_scripts/profile_functions";
 import {
+  assocDataUpdateSuccess, assocUpdateLogoError, assocUpdateLogoSuccess,
   parentUpdatePhotoError, parentUpdatePhotoSuccess,
 } from "../../utils/messages_strings";
 import {firebase_auth, storage, storageRef} from "../../firebase-config";
+import {
+  getAssocDoc,
+  updateAssocDoc
+} from "../../firebase_scripts/get_assoc_info";
 
-class ParentPhotoModal extends React.Component {
+class AssocLogoModal extends React.Component {
   constructor(props) {
     super(props);
 
@@ -79,105 +88,108 @@ class ParentPhotoModal extends React.Component {
       // delete current photo to save the new and not cluttering the storage
       previousPhotoRef.delete()
         .then(() => {
-          const uploadTask = uploadProfilePhoto(newPhotoFile);
+          const uploadTask = uploadAssocLogo(newPhotoFile);
           uploadTask
             .then((snapshot) => {
               // Handle successful uploads on complete
               // get the download URL
               snapshot.ref.getDownloadURL().then(function (downloadURL) {
-                const newPhotoField = {[parentsParameters.PHOTO[languageCode]] : downloadURL};
-                const loggedUser = firebase_auth.currentUser;
+                const newLogoField = {[assocParameters.LOGO[languageCode]] : downloadURL};
 
-                loggedUser.updateProfile({
-                  photoURL: downloadURL
-                }).then(function() {
-                  updateParent(loggedUser.email, newPhotoField)
-                    .then((updatedParent) => {
-                      const upParentString = JSON.stringify(updatedParent);
-                      //console.log("updatedParent recebido depois do update foto -> " + upParentString);
-                      // update user data in localstorage
-                      window.localStorage.setItem("userDoc", upParentString);
-                      closeModalAfterTheUpdate();
-                      myComponentDidMount(true);
-                      setNewPhotoOnState(downloadURL);
-                      // TODO: update navbar instantaneously
-                      showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
-                    })
-                    .catch((error) => {
-                      if(Object.keys(error).length!==0){
-                        console.log("update error: " + JSON.stringify(error));
-                        showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                        restorePhoto();
-                        this_.enableButtonsWhileUpdating();
-                      }
-                    });
-                }).catch(function(error) {
-                  console.log("update error no firebase user: " + JSON.stringify(error));
-                  showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                  restorePhoto();
-                  this_.enableButtonsWhileUpdating();
-                });
+                updateAssocDoc(newLogoField)
+                  .then(() => {
+                    getAssocDoc()
+                      .then(doc => {
+                        if (!doc.exists) {
+                          console.log('No assotiation document found!');
+                        }
+                        else {
+                          const assocDataString = JSON.stringify(doc.data());
+                          console.log("assocData recebida depois do update foto -> " + assocDataString);
+                          // update assoc data in localstorage
+                          window.localStorage.setItem("assocDoc", assocDataString);
+                          closeModalAfterTheUpdate();
+                          myComponentDidMount(true);
+                          setNewPhotoOnState(downloadURL);
+                          // TODO: update navbar instantaneously with logo
+                          showToast(assocUpdateLogoSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                        }
+                      })
+                      .catch(err => {
+                        console.log('Error getting document', err);
+                      });
+                  })
+                  .catch((error) => {
+                    if(Object.keys(error).length!==0){
+                      console.log("update error: " + JSON.stringify(error));
+                      showToast(assocUpdateLogoError[languageCode], 5000, toastTypes.ERROR);
+                      restorePhoto();
+                      this_.enableButtonsWhileUpdating();
+                    }
+                  });
 
               });
             })
             .catch((error) => {
               console.log("Logo upload failed: " + JSON.stringify(error));
-              showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+              showToast(assocUpdateLogoError[languageCode], 5000, toastTypes.ERROR);
               this_.restoreOriginalPhoto();
               this_.enableButtonsWhileUpdating();
             });
         })
         .catch(() => {
           console.log("erro no delete");
-          showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+          showToast(assocUpdateLogoError[languageCode], 5000, toastTypes.ERROR);
           this.restoreOriginalPhoto();
           this_.enableButtonsWhileUpdating();
         });
     }
     catch (e) {
-      const uploadTask = uploadProfilePhoto(newPhotoFile);
+      const uploadTask = uploadAssocLogo(newPhotoFile);
       uploadTask
         .then((snapshot) => {
           // Handle successful uploads on complete
           // get the download URL
           snapshot.ref.getDownloadURL().then(function (downloadURL) {
-            const newPhotoField = {[parentsParameters.PHOTO[languageCode]] : downloadURL};
-            const loggedUser = firebase_auth.currentUser;
+            const newLogoField = {[assocParameters.LOGO[languageCode]] : downloadURL};
 
-            loggedUser.updateProfile({
-              photoURL: downloadURL
-            }).then(function() {
-              updateParent(firebase_auth.currentUser.email, newPhotoField)
-                .then((updatedParent) => {
-                  const upParentString = JSON.stringify(updatedParent);
-                  console.log("updatedParent recebido depois do update foto -> " + upParentString);
-                  // update user data in localstorage
-                  window.localStorage.setItem("userDoc", upParentString);
-                  closeModalAfterTheUpdate();
-                  myComponentDidMount(true);
-                  setNewPhotoOnState();
-                  // TODO: update navbar instantaneously
-                  showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
-                })
-                .catch((error) => {
-                  if(Object.keys(error).length!==0){
-                    console.log("update error: " + JSON.stringify(error));
-                    showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-                    restorePhoto();
-                    this_.enableButtonsWhileUpdating();
-                  }
-                });
-            }).catch(function(error) {
-              console.log("update error no firebase user: " + JSON.stringify(error));
-              showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
-              restorePhoto();
-              this_.enableButtonsWhileUpdating();
-            });
+            updateAssocDoc(newLogoField)
+              .then(() => {
+                getAssocDoc()
+                  .then(doc => {
+                    if (!doc.exists) {
+                      console.log('No assotiation document found!');
+                    }
+                    else {
+                      const assocDataString = JSON.stringify(doc.data());
+                      console.log("assocData recebida depois do update foto -> " + assocDataString);
+                      // update assoc data in localstorage
+                      window.localStorage.setItem("assocDoc", assocDataString);
+                      closeModalAfterTheUpdate();
+                      myComponentDidMount(true);
+                      setNewPhotoOnState(downloadURL);
+                      // TODO: update navbar instantaneously with logo
+                      showToast(assocUpdateLogoSuccess[languageCode], 5000, toastTypes.SUCCESS);
+                    }
+                  })
+                  .catch(err => {
+                    console.log('Error getting document', err);
+                  });
+              })
+              .catch((error) => {
+                if(Object.keys(error).length!==0){
+                  console.log("update error: " + JSON.stringify(error));
+                  showToast(assocUpdateLogoError[languageCode], 5000, toastTypes.ERROR);
+                  restorePhoto();
+                  this_.enableButtonsWhileUpdating();
+                }
+              });
+
           });
         })
         .catch((error) => {
-          console.log("Photo upload failed: " + JSON.stringify(error));
-          showToast(parentUpdatePhotoError[languageCode], 5000, toastTypes.ERROR);
+          console.log("Logo upload failed: " + JSON.stringify(error));
+          showToast(assocUpdateLogoError[languageCode], 5000, toastTypes.ERROR);
           this_.restoreOriginalPhoto();
           this_.enableButtonsWhileUpdating();
         });
@@ -233,13 +245,12 @@ class ParentPhotoModal extends React.Component {
 
 
   render() {
-    //console.log("state a render -> " + JSON.stringify(this.state));
     return (
       <>
         <Button
           size="sm"
           theme="light"
-          id="new_case"
+          id="new_logo"
           onClick={this.showModal}
         >
           <span className="material-icons md-24">add_a_photo</span>
@@ -249,7 +260,7 @@ class ParentPhotoModal extends React.Component {
         <Modal show={this.state.show} onHide={this.closeModal}>
           <Modal.Header closeButton>
             <Modal.Title>
-              {newProfilePhoto[languageCode]}
+              {newAssocLogoModalTitle[languageCode]}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -262,24 +273,15 @@ class ParentPhotoModal extends React.Component {
                 }}
               >
                 <div style={{
-                  width : "110px",
+                  width : "100%",
                   height: "110px",
                   backgroundImage: "url(" + this.state.newPhoto + ")",
                   backgroundPosition : "center",
-                  borderRadius: "50%",
-                  backgroundSize: "cover",
-                  backgroundRepeat: "no-repeat"
+                  borderRadius: "2%",
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
                 }}>
                 </div>
-                {/*
-                  <img
-                    className="rounded-circle img-fluid"
-                    src={
-                      this.state.newPhoto
-                    }
-                    width="110"
-                  />
-                */}
               </Row>
               <div style={{ margin: "10px" }} />
               <Row
@@ -330,4 +332,4 @@ class ParentPhotoModal extends React.Component {
   }
 }
 
-export default ParentPhotoModal;
+export default AssocLogoModal;

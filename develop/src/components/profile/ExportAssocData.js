@@ -17,11 +17,12 @@ import {
   parentsParameters, showToast, toastTypes
 } from "../../utils/general_utils";
 import {
-  exportAssocData,
-  exportMyData, exportWord,
+  exportAssocData, exportCasos,
+  exportMyData, exportParentsAndChildren, exportWord,
 } from "../../utils/page_titles_strings";
 import {FormText} from "react-bootstrap";
 import {
+  exportAssocCasosExplanation,
   exportAssocDataExplanation, exportAssocDataOnProcess, exportAssocDataSuccess,
   exportChildrenDataError,
   exportMembersDataError,
@@ -57,6 +58,7 @@ class ExportAssocData extends React.Component {
 
 
     this.exportAssocData = this.exportAssocData.bind(this);
+    this.exportAllCasos = this.exportAllCasos.bind(this);
 
 
   }
@@ -119,6 +121,9 @@ class ExportAssocData extends React.Component {
   }
 
 
+  exportAllCasos(){
+    // TODO: cloud function de export de todos os casos
+  }
 
   render() {
     return (
@@ -132,14 +137,28 @@ class ExportAssocData extends React.Component {
               <Col>
                 <Form>
                   <Row form>
-                    <Col md="12" className="form-group">
+                    <Col md="6" className="form-group">
+                      <h6 className="m-0">Membros e Alunos</h6>
                       <p>
                         {exportAssocDataExplanation[languageCode]}
                       </p>
                     </Col>
+                    <Col md="6" className="form-group">
+                      <h6 className="m-0">Casos</h6>
+                      <p>
+                        {exportAssocCasosExplanation[languageCode]}
+                      </p>
+                    </Col>
                   </Row>
                   <hr />
-                  <Button theme="accent" onClick={this.exportAssocData}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportWord[languageCode]}</Button>
+                  <Row form>
+                    <Col md="4" className="form-group">
+                      <Button theme="accent" onClick={this.exportAssocData}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportParentsAndChildren[languageCode]}</Button>
+                    </Col>
+                    <Col md="4" className="form-group">
+                      <Button theme="accent" onClick={this.exportAllCasos}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>get_app</span> {exportCasos[languageCode]}</Button>
+                    </Col>
+                  </Row>
                 </Form>
               </Col>
             </Row>

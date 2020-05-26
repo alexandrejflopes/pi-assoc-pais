@@ -20,7 +20,7 @@ import {
   parentsParameters,
   notAvailableDesignation,
   zipCodeRegexes,
-  defaultAvatar, showToast, toastTypes, emailRegex
+  defaultAvatar, showToast, toastTypes, emailRegex, cargoDocKey
 } from "../utils/general_utils";
 import {
   jsonParamsErrorMessage,
@@ -31,12 +31,17 @@ import {
   registationSuccess,
   registationError,
   addCaseSucess,
-  addCaseError, uploadLogoError, installError, invalidEmailMessage
+  addCaseError,
+  uploadLogoError,
+  installError,
+  invalidEmailMessage,
+  rolesFileErrorMessage
 } from "../utils/messages_strings";
 const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
 const csvsErrorMessage = jsonOrCsvParamsErrorMessage[languageCode];
 const sucessImportMessage = importSucessMessage[languageCode];
 const requiredFieldsMissingMessage = provideRequiredFieldsMessage[languageCode];
+const rolesErrorMessage = rolesFileErrorMessage[languageCode];
 
 const parentDesignation = newParametersEntities.parent[languageCode];
 const studentDesignation = newParametersEntities.student[languageCode];
@@ -44,7 +49,9 @@ const NAdesignation = notAvailableDesignation[languageCode];
 
 export let installGotErrors = false;
 
+
 let membersEmails = {};
+let membersDocsList = []; // save members docs to check their roles later
 
 let newParametersData = {
   parent :
@@ -656,7 +663,115 @@ function setupCSVData(fileString, parents) {
     rowsData.push(lineDict);
   }
 
+  // save this globally
+  membersDocsList = rowsData;
+
   return rowsData;
+}
+
+// ------------------------------------------------------------
+// PROCESS ROLES
+
+/*
+ * function to process TEXT with roles for the association's members:
+ *  read the file, get a list of roles from it and check if the
+ *  roles of the members from the CSV have a role from this TXT file
+ * */
+function readAndCheckRolesFile(rolesFile, callback) {
+  const rolesReader = new FileReader();
+  let rolesFileString = "NR";
+
+  rolesReader.onloadend = function () {
+    rolesFileString = rolesReader.result;
+    let rolesFileCorrect = false; // control the correctness of roles file
+    try{
+      // if there's no information in the file, it's invalid
+      if(rolesFileString.trim().length===0){
+        throw "Too few data in TEXT file to process";
+      }
+
+      const rolesList = setupTXTRoles(rolesFileString, true);
+
+      if(parentsRolesAreValid(rolesList, membersDocsList)){
+        rolesFileCorrect = true;
+        saveRolesInDB(rolesList);
+        callback(rolesFileCorrect);
+      }
+      else{
+        rolesFileCorrect = false;
+        callback(rolesFileCorrect);
+      }
+    }
+    catch (e) {
+      // catch error if the TXT is improperly formatted, for example
+      rolesFileCorrect = false;
+      callback(rolesFileCorrect);
+    }
+  };
+  rolesReader.readAsText(rolesFile, "UTF-8");
+}
+
+/*
+ * function to read the TEXT file with roles for the association's
+ * members and get a list of roles from it
+ * */
+function setupTXTRoles(fileString){
+  const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
+  console.log("allLinesTXT -> ", allLines);
+
+  // if there's no information in the file, it's invalid
+  if(allLines.length===0){
+    console.log("sem dados nas linhas do txt");
+    throw "Too few data in TXT file to process"
+  }
+
+  let cargos = [];
+  for(let i = 0; i < allLines.length; i++){
+    let cargosNaLinha = allLines[i].split(/[,]+/).filter((item) => item).map(s => s.trim()); // remove empty strings and trailing spaces
+    cargos = cargos.concat(cargosNaLinha); // add this roles to the main array
+  }
+  console.log("cargos lidos -> " + cargos);
+  return cargos;
+}
+
+/*
+ * for each role imported, save it as a document in Firestore
+ * - for each role: {"titulo" (from cargoDocKey constant) : <role_name>}
+ * */
+function saveRolesInDB(rolesArray){
+  const cargosRef = firestore.collection("cargos");
+  const cargoKey = cargoDocKey;
+  for(let pos in rolesArray){
+    const cargo = rolesArray[pos];
+
+    const cargoDoc = {[cargoKey] : cargo};
+    const docRef = cargosRef.doc(cargo);
+    docRef
+      .set(cargoDoc)
+      .then(function () {
+        console.log("Cargo <" + cargo + "> guardado com sucesso.");
+      })
+      .catch(function (error) {
+        console.log("erro ao guardar cargo <" + cargo + ">");
+        installGotErrors = true;
+      });
+  }
+}
+
+/*
+ * function to check if the roles of the members from the CSV
+ * have a role from the TXT file provided with the association's roles
+ * */
+function parentsRolesAreValid(rolesArray, parentsDocList){
+  let parentsRolesValid = true;
+  for(let pos in parentsDocList){
+    const parentDoc = parentsDocList[pos];
+    const parentRole = parentDoc[parentsParameters.ROLE[languageCode]];
+    if(!rolesArray.includes(parentRole)){
+      parentsRolesValid = false;
+      break;
+    }
+  }
 }
 
 // --------- USER
@@ -779,15 +894,23 @@ function getFormElementsAndValues() {
       let labelHtmlFor = label.htmlFor;
       let inputId = input.id;
 
+      // TODO: alterações feitas aqui
       if (labelHtmlFor === inputId) {
         if (labelText.includes("(") || labelText.includes("/")) {
-          labelText = labelText.split(" ")[0];
+          if(labelText.trim()==="Valor da Quota (€)"){
+            labelText = "Quota";
+          }
+          else{
+            labelText = labelText.split(" ")[0];
+          }
         }
         submittedInputs[labelText] = input;
         break;
       }
     }
   }
+
+  submittedInputs["DeleteRegistosSemPagar"] = "7";
 
   return submittedInputs;
 }
@@ -849,8 +972,14 @@ function install() {
   let policyCheckboxChecked = true;
   const inputsInfo = getFormElementsAndValues(); // { "labelText" : input }
 
+  console.log("inputsInfo v ");
+  console.log(inputsInfo);
+
   for (const label in inputsInfo) {
+    console.log("label -> " + label);
     let input = inputsInfo[label];
+    console.log("input v ");
+    console.log(input);
     if (input.value === "" && input.required) {
       input.classList.add("is-invalid");
       document.querySelector("#" + input.id + "Feedback").style.display =
@@ -903,8 +1032,8 @@ function install() {
     const paramsJSONfile = document.getElementById("configAssocNewParams")
       .files[0];
     const membersFile = document.getElementById("configAssocMembers").files[0];
-    const studentsFile = document.getElementById("configAssocStudents")
-      .files[0];
+    const studentsFile = document.getElementById("configAssocStudents").files[0];
+    const rolesFile = document.getElementById("configAssocCargos").files[0];
 
     getAndSaveJSONparamsData(paramsJSONfile, function (jsonCorrect) {
       if(!jsonCorrect){
@@ -920,7 +1049,7 @@ function install() {
         getandSaveCSVdata(membersFile, studentsFile, function (paramsFilesCorrect) {
 
           if(!paramsFilesCorrect){
-            // reset all import files' inputs
+            // reset all import files' inputs that potentially lead to error
             const paramsInput = document.getElementById("configAssocNewParams");
             paramsInput.classList.add("is-invalid");
             document.querySelector("#" + paramsInput.id + "Feedback").style.display =
@@ -944,52 +1073,79 @@ function install() {
           }
 
           else{
-            // uploads after files are validated
-            uploadAssocDataFiles("configAssocMembers");
-            uploadAssocDataFiles("configAssocStudents");
-            uploadAssocDataFiles("configAssocNewParams");
 
-            const fileArray = document.getElementById("configAssocLogo").files;
+            readAndCheckRolesFile(rolesFile, function (rolesCorrect) {
 
-            if (fileArray.length !== 0) {
-              const file = fileArray[0]; // just one logo is uploaded
-              const uploadTask = uploadNewLogo(file);
-              uploadTask.on(
-                "state_changed",
-                function (snapshot) {
-                  // Observe state change events such as progress, pause, and resume
-                  // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                  var progress =
-                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                  console.log("Logo upload " + progress + "% completed");
-                  switch (snapshot.state) {
-                    case firebase.storage.TaskState.PAUSED: // or 'paused'
-                      console.log("Logo upload on pause");
-                      break;
-                    case firebase.storage.TaskState.RUNNING: // or 'running'
-                      console.log("Logo upload in progress");
-                      break;
-                  }
-                },
-                function (error) {
-                  console.log("Logo upload failed: " + error);
-                  installGotErrors = true;
-                  showToast(uploadLogoError[languageCode], 5000, toastTypes.ERROR);
-                },
-                function () {
-                  // Handle successful uploads on complete
-                  // get the download URL
-                  uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+              if(!rolesCorrect){
+                // reset all import files' inputs that potentially lead to error
+
+                // if there's an error with CSVs, not allow to submit the form
+                const membersInput = document.getElementById("configAssocMembers");
+                membersInput.classList.add("is-invalid");
+                document.querySelector("#" + membersInput.id + "Feedback").style.display =
+                  "block";
+                membersInput.value = "";
+
+
+                const rolesInput = document.getElementById("configAssocCargos");
+                rolesInput.classList.add("is-invalid");
+                document.querySelector("#" + rolesInput.id + "Feedback").style.display =
+                  "block";
+                rolesInput.value = "";
+
+                showToast(rolesErrorMessage, 15000, toastTypes.ERROR);
+              }
+              else{
+                // uploads after files are validated
+                uploadAssocDataFiles("configAssocMembers");
+                uploadAssocDataFiles("configAssocStudents");
+                uploadAssocDataFiles("configAssocNewParams");
+                //uploadAssocDataFiles("configAssocNewParams");
+
+                const fileArray = document.getElementById("configAssocLogo").files;
+
+                if (fileArray.length !== 0) {
+                  const file = fileArray[0]; // just one logo is uploaded
+                  const uploadTask = uploadNewLogo(file);
+                  uploadTask.on(
+                    "state_changed",
+                    function (snapshot) {
+                      // Observe state change events such as progress, pause, and resume
+                      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                      var progress =
+                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                      console.log("Logo upload " + progress + "% completed");
+                      switch (snapshot.state) {
+                        case firebase.storage.TaskState.PAUSED: // or 'paused'
+                          console.log("Logo upload on pause");
+                          break;
+                        case firebase.storage.TaskState.RUNNING: // or 'running'
+                          console.log("Logo upload in progress");
+                          break;
+                      }
+                    },
+                    function (error) {
+                      console.log("Logo upload failed: " + error);
+                      installGotErrors = true;
+                      showToast(uploadLogoError[languageCode], 5000, toastTypes.ERROR);
+                    },
+                    function () {
+                      // Handle successful uploads on complete
+                      // get the download URL
+                      uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+                        continueInstallation(inputsInfo, downloadURL);
+                      });
+                    }
+                  );
+                } else if (fileArray.length === 0) {
+                  const defaultLogoTask = uploadDefaultLogo();
+                  defaultLogoTask.then(function (downloadURL) {
                     continueInstallation(inputsInfo, downloadURL);
                   });
                 }
-              );
-            } else if (fileArray.length === 0) {
-              const defaultLogoTask = uploadDefaultLogo();
-              defaultLogoTask.then(function (downloadURL) {
-                continueInstallation(inputsInfo, downloadURL);
-              });
-            }
+              }
+
+            })
           }
 
         });
@@ -1075,4 +1231,5 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         // functions used in tests
         checkJSONparamsEntitiesAndTypes,
         compareCSVandJsonParameters,
-        getandSaveCSVdata};
+        getandSaveCSVdata,
+        setupTXTRoles};

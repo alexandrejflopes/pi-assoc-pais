@@ -1,5 +1,6 @@
-import { firestore, storageRef } from "../firebase-config";
+import {firebaseConfig, firestore, storageRef} from "../firebase-config";
 import React from "react";
+import {languageCode, parentsParameters} from "../utils/general_utils";
 
 function addCasosExemplo() {
   let casosRef = firestore.collection("casos");
@@ -114,14 +115,16 @@ async function showAvailableCasos() {
   var nome = "";
   var id = "";
   var foto = "";
-  if (currentUser != undefined) {
-    nome = currentUser.Nome;
-    id = currentUser.Email;
-    foto = currentUser.photo;
+  if (currentUser != null) {
+    nome = currentUser[parentsParameters.NAME[languageCode]];
+    id = currentUser[parentsParameters.EMAIL[languageCode]];
+    foto = currentUser[parentsParameters.PHOTO[languageCode]];
   }
 
+  const project_id = firebaseConfig.projectId;
+
   let uri =
-    "https://us-central1-associacao-pais.cloudfunctions.net/api/getUserAvailableCasos?" +
+    "https://us-central1-" + project_id + ".cloudfunctions.net/api/getUserAvailableCasos?" +
     "id=" +
     id +
     "&" +
@@ -129,7 +132,7 @@ async function showAvailableCasos() {
     encodeURIComponent(nome) +
     "&" +
     "foto=" +
-    encodeURIComponent(foto);
+    foto;
 
   const request = async () => {
     let casos;

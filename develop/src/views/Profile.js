@@ -8,23 +8,28 @@ import { Redirect } from "react-router-dom";
 import {
   fetchUserDoc,
   getNewParams,
-  mapParamsToInputType,
+  mapParamsToInputType, updateParent,
 } from "../firebase_scripts/profile_functions";
 import { firebase_auth } from "../firebase-config";
 import {
   defaultAvatar,
   languageCode,
-  parentsParameters
+  parentsParameters, showToast, toastTypes
 } from "../utils/general_utils";
 import { profilePageTitle } from "../utils/page_titles_strings";
-import { loadingInfo } from "../utils/messages_strings";
+import {
+  loadingInfo,
+  parentUpdatePhotoError,
+  parentUpdatePhotoSuccess
+} from "../utils/messages_strings";
 import UserActions from "../components/layout/MainNavbar/NavbarNav/UserActions";
+import {getAssocDoc} from "../firebase_scripts/get_assoc_info";
 
 class Profile extends React.Component {
   constructor(props) {
     super(props);
 
-    let userEmail, userProvided = null;
+    let userEmail, userProvided, assoc = null;
     if (this.props.location.state != null) {
       userEmail = this.props.location.state.userEmail;
       userProvided = this.props.location.state.userProvided;
@@ -41,94 +46,123 @@ class Profile extends React.Component {
       userDoc: null,
       editingProfile: false,
       newParamsInputTypes: null,
+      assocDoc : assoc,
     };
 
 
     this.saveNewParams = this.saveNewParams.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
+    this.setupAssocDoc = this.setupAssocDoc.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
 
   componentDidMount(updating) {
 
+    const this_ = this;
+    //this._isMounted = true;
+
     if(updating){
       const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
       if(localUser!=null){
-        this.setState({userDoc : localUser});
+        this_.setState({userDoc : localUser});
+      }
+
+      const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+      if(localAssocDoc!=null){
+        this_.setState({assocDoc: localAssocDoc});
       }
     }
 
 
-  //this._isMounted = true;
-  const this_ = this;
+    else{
+      console.log("DID MOUNT!");
+      const currentUser = firebase_auth.currentUser;
+      const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+      console.log("localuser -> " + JSON.stringify(localUser));
 
-  console.log("DID MOUNT!");
-  const currentUser = firebase_auth.currentUser;
-  const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+      if(currentUser!=null){
+        if(localUser!=null){
+          if (localUser[parentsParameters.EMAIL[languageCode]] !== firebase_auth.currentUser.email) {
+            const userPromise = fetchUserDoc(this_.state.userEmail);
 
-  if(currentUser!=null){
-    if(localUser!=null){
-      if (localUser[parentsParameters.EMAIL[languageCode]] !== firebase_auth.currentUser.email) {
+            userPromise
+              .then((result) => {
+                console.log("1. Result userDoc: " + JSON.stringify(result));
+                if (result.error == null) {
+                  // no error
+                  console.log("atualizar state com user doc recebido");
+                  this_.setState({ userDoc: result });
+                  window.localStorage.setItem("userDoc", JSON.stringify(result));
+                  UserActions.componentDidMount();
+                  this_.saveNewParams();
+                }
+              })
+              .catch((error) => {
+                console.log("1. error userDoc: " + JSON.stringify(error));
+                this_.componentDidMount();
+              });
+          }
+          else {
+            console.log("atualizar state com localUser");
+            this_.saveNewParams();
+            this_.setState({ userDoc: localUser });
+          }
+        }
+        else {
+          console.log("não há user no LS, buscar novo");
           const userPromise = fetchUserDoc(this_.state.userEmail);
 
           userPromise
             .then((result) => {
-              console.log("1. Result userDoc: " + JSON.stringify(result));
+              console.log("2. Result userDoc: " + JSON.stringify(result));
               if (result.error == null) {
+
+                // TODO: check
+                let parent = result;
+                const currentUserPhoto = currentUser.photoURL;
+                const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
+                console.log("currentUserPhotoUrl -> " + currentUserPhoto);
+                console.log("resultUserPhoto -> " + resultUserPhoto);
+
+                if(currentUserPhoto!=null){
+                  if(currentUserPhoto!==resultUserPhoto){
+                    parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
+                    const photoField = {[parentsParameters.PHOTO[languageCode]] : currentUserPhoto};
+                    updateParent(currentUser.email, photoField)
+                      .then(() => {
+                        console.log("updated parent with provider photo in DB")
+                      })
+                      .catch((error) => {
+                        if(Object.keys(error).length!==0){
+                          console.log("update error: " + JSON.stringify(error));
+                        }
+                      });
+                  }
+                }
+                // ----------------------------------------------------------------------
+
                 // no error
                 console.log("atualizar state com user doc recebido");
-                this_.setState({ userDoc: result });
-                window.localStorage.setItem("userDoc", JSON.stringify(result));
-                UserActions.componentDidMount();
+                console.log("parent com foto do provider -> " + JSON.stringify(parent));
+                this_.setState({ userDoc: parent });
+
+                window.localStorage.setItem("userDoc", JSON.stringify(parent));
                 this_.saveNewParams();
+                UserActions.componentDidMount();
               }
             })
             .catch((error) => {
-              console.log("1. error userDoc: " + JSON.stringify(error));
+              console.log("2. error userDoc: " + JSON.stringify(error));
               this_.componentDidMount();
             });
+        }
       }
-      else {
-          console.log("atualizar state com localUser");
-          this_.saveNewParams();
-          this_.setState({ userDoc: localUser });
-      }
-      }
-    else {
-        console.log("não há user no LS, buscar novo");
-        const userPromise = fetchUserDoc(this_.state.userEmail);
 
-        userPromise
-          .then((result) => {
-            console.log("2. Result userDoc: " + JSON.stringify(result));
-            if (result.error == null) {
+      this_.setupAssocDoc();
+    }
 
-              // TODO: check
-              let parent = result;
-              const currentUserPhoto = currentUser.photoURL;
-              const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
-              console.log("currentUserPhotoUrl -> " + currentUserPhoto);
-              console.log("resultUserPhoto -> " + resultUserPhoto);
-              // ----------------------------------------------------------------------
-              parent[parentsParameters.PHOTO[languageCode]] = currentUserPhoto;
-              // no error
-              console.log("atualizar state com user doc recebido");
-              console.log("parent com foto do provider -> " + JSON.stringify(parent));
-              this_.setState({ userDoc: parent });
-
-              window.localStorage.setItem("userDoc", JSON.stringify(parent));
-              this_.saveNewParams();
-              UserActions.componentDidMount();
-            }
-          })
-          .catch((error) => {
-            console.log("2. error userDoc: " + JSON.stringify(error));
-            this_.componentDidMount();
-          });
-      }
-  }
 
 
 }
@@ -139,6 +173,32 @@ class Profile extends React.Component {
   }
 
   /*********************************** HANDLERS ***********************************/
+
+  setupAssocDoc(){
+    const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+    if(localAssocDoc!=null){
+      this.setState({assocDoc: localAssocDoc});
+    }
+    else{
+      const promise = getAssocDoc();
+      promise
+        .then(doc => {
+          if (!doc.exists) {
+            console.log('No assotiation document found!');
+          }
+          else {
+            const data = doc.data();
+            window.localStorage.setItem("assocDoc", JSON.stringify(data));
+            this.setState({
+              assocDoc: localAssocDoc
+            });
+          }
+        })
+        .catch(err => {
+          console.log('Error getting document', err);
+        });
+    }
+  }
 
   saveNewParams() {
     console.log("entrei nos newParamsTypes");

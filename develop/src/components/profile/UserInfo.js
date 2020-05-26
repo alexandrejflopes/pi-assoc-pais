@@ -68,14 +68,17 @@ class UserInfo extends React.Component {
         [parentsParameters.CITY[languageCode]] : false,
         [parentsParameters.ZIPCODE[languageCode]] : false,
         [parentsParameters.NIF[languageCode]] : false,
-        [parentsParameters.CC[languageCode]] : false
+        //[parentsParameters.CC[languageCode]] : false
       },
       oldParent: null,
+      onUpdateButtonsDisabled : false
     };
 
     this.handleChangeParam = this.handleChangeParam.bind(this);
     this.enableEditableInputs = this.enableEditableInputs.bind(this);
     this.disableEditableInputs = this.disableEditableInputs.bind(this);
+    this.disableUpdateButtons = this.disableUpdateButtons.bind(this);
+    this.enableUpdateButtons = this.enableUpdateButtons.bind(this);
     this.editForm = this.editForm.bind(this);
     this.cancelEditing = this.cancelEditing.bind(this);
     this.lockFormAfterSubmit = this.lockFormAfterSubmit.bind(this);
@@ -98,11 +101,14 @@ class UserInfo extends React.Component {
   /*********************************** HANDLERS ***********************************/
 
   updateParent(){
-    const validResult = this.validForm();
+    const this_ = this;
+    const validResult = this_.validForm();
     if(!validResult){
       showToast(provideRequiredFieldsMessage[languageCode], 5000, toastTypes.ERROR);
     }
     else{
+      this_.disableEditableInputs();
+      this_.disableUpdateButtons();
       //this.cancelEditing();
       //showToast(changesCommitSuccess[languageCode], 5000, toastTypes.SUCCESS);
       updateParent(firebase_auth.currentUser.email, this.state.parent)
@@ -111,8 +117,8 @@ class UserInfo extends React.Component {
           console.log("updatedParent recebido depois do update info -> " + upParentString);
           // update user data in localstorage
           window.localStorage.setItem("userDoc", upParentString);
-          this.lockFormAfterSubmit();
-          this.props.componentDidMount(true);
+          this_.lockFormAfterSubmit();
+          this_.props.componentDidMount(true);
           // TODO: update navbar instantaneously
           showToast(parentUpdateSuccess[languageCode], 5000, toastTypes.SUCCESS);
         })
@@ -120,6 +126,8 @@ class UserInfo extends React.Component {
           if(Object.keys(error).length!==0){
             console.log("update error: " + JSON.stringify(error));
             showToast(parentUpdateError[languageCode], 5000, toastTypes.ERROR);
+            this_.cancelEditing();
+            this_.enableUpdateButtons();
           }
         });
     }
@@ -128,10 +136,19 @@ class UserInfo extends React.Component {
   lockFormAfterSubmit(){
     //this.resetFeedbacks();
     this.disableEditableInputs();
+    this.enableUpdateButtons();
     this.setState({ editing: false });
     // save new parent data
     const parent = {...this.state.parent};
     this.setState({ oldParent: parent });
+  }
+
+  disableUpdateButtons(){
+    this.setState({ onUpdateButtonsDisabled: true });
+  }
+
+  enableUpdateButtons(){
+    this.setState({ onUpdateButtonsDisabled: false });
   }
 
   validForm(){
@@ -426,7 +443,7 @@ class UserInfo extends React.Component {
                           this.state.parent[parentsParameters.CC[languageCode]]
                         }
                         onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.CC[languageCode]]}
+                        //invalid={this.state.feedbacks[parentsParameters.CC[languageCode]]}
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
@@ -434,7 +451,7 @@ class UserInfo extends React.Component {
                   <hr />
                   {this.renderExtra()}
 
-                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateParent}>{saveChanges[languageCode]}</Button> </div>
+                  { this.state.editing ? <div><Button theme="danger" onClick={this.cancelEditing} disabled={this.state.onUpdateButtonsDisabled}>{cancel[languageCode]}</Button> <Button theme="success" className="float-right" onClick={this.updateParent} disabled={this.state.onUpdateButtonsDisabled}>{saveChanges[languageCode]}</Button> </div>
                     : <Button theme="accent" onClick={this.editForm}>{updateProfile[languageCode]}</Button>
                   }
                 </Form>

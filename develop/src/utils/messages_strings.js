@@ -10,6 +10,11 @@ const loadingInfo = {
 
 // ------------------ STRINGS RELATED TO FORMS ------------------
 
+export const daysToDeleteRegistTipMessage = {
+  pt_PT:
+    "Número de dias após o qual os pedidos de registo não aprovados e sem quota paga são eliminados automaticamente."
+};
+
 const jsonParamsErrorMessage = {
   pt_PT:
     "O ficheiro JSON fornecido é inválido!\n" +
@@ -25,6 +30,15 @@ const jsonOrCsvParamsErrorMessage = {
     " - existem parâmetros no CSV não suportados (verique o nome deles);\n" +
     " - exitem parâmetros com valores inesperados (ex: 'Quotas Pagas' ou 'Admin');\n" +
     " - há parâmetros novos no CSV que já são suportados pela plataforma.\n" +
+    "Para mais informações, consulte o manual de utilização.\n" +
+    "Obrigado.",
+};
+
+export const rolesFileErrorMessage = {
+  pt_PT:
+    "Houve um erro no processamente de cargos. As razões incluem: " +
+    " - o ficheiro de texto dos cargos não tem o formato adequado;" +
+    " - há membros no CSV com cargos não presentes no ficheiro dos cargos fornecido;" +
     "Para mais informações, consulte o manual de utilização.\n" +
     "Obrigado.",
 };
@@ -85,6 +99,12 @@ const paramsJsonFileTipMessage = {
     "da associação, para os educandos ou ambos.\nPara mais informações, consulte o manual de utilização da plataforma.",
 };
 
+export const cargosFileTipMessage = {
+  pt_PT:
+    "Por favor, forneça um ficheiro em formato .txt com os cargos distintos da associação separados por vírgulas.\n" +
+    "Para mais informações, consulte o manual de utilização da plataforma.",
+};
+
 const fillRequiredFieldMessage = {
   pt_PT: "Por favor, preencha este campo",
 };
@@ -122,6 +142,14 @@ export const exportAssocDataExplanation = {
     "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
 };
 
+// TODO: check export to ZIP
+export const exportAssocCasosExplanation = {
+  pt_PT:
+    "Pode descarregar uma cópia de todos os casos criados pelos utilizadores da plataforma, incluindo comentários, " +
+    "membros (no caso de casos privados) e informações sobre os documentos associados aos casos. " +
+    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo."
+};
+
 export const deleteAccountExplanation = {
   pt_PT:
     "Pode eliminar a sua conta da plataforma da associação de pais. Todos os seus dados serão apagados da plataforma, " +
@@ -145,6 +173,7 @@ export const changeEmailOnProcess = {
 };
 
 // ------- ERRORS
+
 export const addCasoError = {
   pt_PT: "Houve um problema a guardar o caso. Por favor, tente novamente.",
 };
@@ -264,12 +293,22 @@ export const childDeleteError = {
     "Houve um problema a eliminar o seu educando. Por favor, tente novamente.",
 };
 
+export const assocDataUpdateError = {
+  pt_PT:
+    "Houve um problema a atualizar as informações. Por favor, tente novamente.",
+};
+
+export const assocUpdateLogoError = {
+  pt_PT:
+    "Houve um problema a atualizar o logótipo. Por favor, tente novamente.",
+};
+
 // ------- CONFIRMATIONS / PROMPTS
 
 export const confirmDeleteChild = {
   pt_PT:
     "Tem a certeza que pretender eliminar este educando?\n" +
-    "Esta ação não é revertível, a menos que volte a adicionar o educando à plataforma.",
+    "Esta ação não é revertível.",
 };
 
 export const confirmUpdateEmail = {
@@ -307,6 +346,7 @@ export const confirmLogoutAfterDelete = {
 export const sucessoGeral = {
   pt_PT: "Sucesso",
 };
+
 export const deleteAccountSuccess = {
   pt_PT: "Conta eliminada com sucesso",
 };
@@ -366,6 +406,15 @@ export const childDeleteSuccess = {
 const errorNoLogedInUser = {
   pt_PT: "Utilizador não registado!",
 };
+
+export const assocDataUpdateSuccess = {
+  pt_PT: "Informações da associação atualizadas com sucesso.",
+};
+
+export const assocUpdateLogoSuccess = {
+  pt_PT: "Logótipo atualizado com sucesso.",
+};
+
 
 export {
   loadingInfo,
