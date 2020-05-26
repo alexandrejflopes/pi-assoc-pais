@@ -12,7 +12,7 @@ const AssocConfigurationNew = () => (
 
     <Row style={{display:"flex" , justifyContent:"center", marginTop:"20px", marginRight:"0px"}}>
       {/* Form */}
-      <Col lg="9" md="12">
+      <Col lg="12" md="12" sm="12">
         <Card small>
           <CardHeader className="border-bottom">
             <h6 className="m-0">Configuração</h6>

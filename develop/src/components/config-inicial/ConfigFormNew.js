@@ -50,7 +50,7 @@ class ConfigFormNew extends Component {
           <Col>
             <Form>
               <Row>
-                <Col md="2">
+                <Col md="12">
                   <h5 >Sobre si <span id="aboutYouTooltip" className="material-icons" style={{fontSize:"100%"}}>info</span></h5>
                   <Tooltip
                     open={this.state.about}
@@ -174,7 +174,7 @@ class ConfigFormNew extends Component {
                     id="configAssocFee"
                     placeholder="5"
                   />
-                  <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+                  <FormFeedback id="configAssocFeeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
               </Row>
 

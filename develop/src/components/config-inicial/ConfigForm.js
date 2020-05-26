@@ -136,7 +136,7 @@ class ConfigForm extends Component {
                     id="configAssocFee"
                     placeholder="5"
                   />
-                  <FormFeedback id="configAssocIBANFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
+                  <FormFeedback id="configAssocFeeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>
               </Row>
             </Form>

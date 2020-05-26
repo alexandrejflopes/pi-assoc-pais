@@ -34,6 +34,15 @@ const jsonOrCsvParamsErrorMessage = {
     "Obrigado.",
 };
 
+export const rolesFileErrorMessage = {
+  pt_PT:
+    "Houve um erro no processamente de cargos. As razões incluem: " +
+    " - o ficheiro de texto dos cargos não tem o formato adequado;" +
+    " - há membros no CSV com cargos não presentes no ficheiro dos cargos fornecido;" +
+    "Para mais informações, consulte o manual de utilização.\n" +
+    "Obrigado.",
+};
+
 const importSucessMessage = {
   pt_PT:
     "A associação foi registada com sucesso e todos os seus membros foram notificados por email.\n" +

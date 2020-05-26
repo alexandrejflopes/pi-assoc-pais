@@ -73,6 +73,8 @@ const notAvailableDesignation = {
   "pt_PT" : "ND" // nao determinado/disponivel
 };
 
+export const cargoDocKey = "titulo";
+
 export const assocParameters = {
   ZIP : {
     "pt_PT": "Código Postal"
