@@ -7,7 +7,7 @@ const pdfkit = require('pdfkit');
 const { 
     APP_NAME,
     auth_URL
-} = require('./handlers');
+} = require('./globals');
 
 admin.initializeApp();
 
