@@ -163,7 +163,7 @@ exports.privacyCaso = functions.https.onRequest((request, response) => {
  * Esta função faz um simples overwrite dos membros de um caso
  * Leva como argumentos: id , membros
  * Sendo o id o id do caso e o argumento membros um array de documentos como o referenciado na função addCaso
- * Devolve apenas o tempo do update do documento
+ * Devolve apenas o tempo do update do documento 
  * A seguir também estão implementadas funções de adicionar e remover utilizadores sem overwrite completo de forma a não haverem problemas de concorrencia
  */
 exports.updateMembrosCaso = functions.https.onRequest((request, response) => {
@@ -171,10 +171,31 @@ exports.updateMembrosCaso = functions.https.onRequest((request, response) => {
     let id = request.query.id;
     let members = JSON.parse(request.query.membros);
 
-    db.collection('casos').doc(id).update({"membros":members}).then((caso)=>{
-        return response.send(caso);
-    }).catch(err => {
-        console.log("Failed to archive -> ", err);
+    db.collection('casos').doc(id).get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            let c = 0;
+            for (i=0;i<members.length;i++) {
+                if (members[i]['id'] === doc.get("autor")['id']) {
+                    c = c + 1;
+                }
+            }
+            if (c === 0) {
+                members.push(doc.get("autor"))
+            }
+            return db.collection('casos').doc(id).update({"membros":members}).then((caso)=>{
+                return response.send(caso);
+            }).catch(err => {
+                console.log("Failed to update membros -> ", err);
+                return response.status(405).send({"error" : err});
+            });
+        }
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
         return response.status(405).send({"error" : err});
     });
 });
@@ -507,63 +528,95 @@ exports.removeAnexoCaso = functions.https.onRequest((request, response) => {
 /**
  * Esta função devolve uma lista de casos que serão disponíveis a um utilizador
  * Ou seja devolve os casos publicos juntamente com os privados a que um utilizador tem acesso
- * Leva como argumentos: id (id do utilizador), nome (nome do utilizador), foto (foto/endereço da foto do utilizador)
+ * Leva como argumentos: id (id do utilizador)
  * Devolve uma lista de casos que um utilizador tem acesso 
  * No entanto a lista de casos têm apenas alguns atributos, não tem todos
- * Tem apenas os atributos titulo, descricao, privado, arquivado e o id do caso 
  */
 exports.getUserAvailableCasos = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let user_id = request.query.id;
-    let user_name = request.query.nome;
-    let user_photo = request.query.foto;
-    let casosRef = db.collection('casos');
-    let availableCases = [];
 
-    let public_cases = casosRef.where('privado','==',false).get();
-    let private_cases = casosRef.where('privado','==',true).where('membros','array-contains',{'id':user_id,'nome':user_name, 'photo':user_photo}).get();
-
-    Promise.all([public_cases, private_cases]).then((query_snapshots) => {
-        let public_cases_array = query_snapshots[0].forEach((doc) => {
-            let data = doc.data();
-            data["id"] = doc.id;
-            let caso = {};
-            caso["id"] = doc.id;
-            caso["descricao"] = doc.get("descricao");
-            caso["titulo"] = doc.get("titulo");
-            caso["privado"] = doc.get("privado");
-            caso["arquivado"] = doc.get("arquivado");
-            caso["autor"] = doc.get("autor");
-            caso["data_criacao"] = doc.get("data_criacao");
-            caso["ficheiros"] = doc.get("ficheiros");
-            caso["membros"] = doc.get("membros");
-            caso["observacoes"] = doc.get("observacoes");
-            availableCases.push(caso);
-        });
-        let private_cases_array = query_snapshots[1].forEach((doc) => {
-            let data = doc.data();
-            data["id"] = doc.id; 
-            let caso = {};
-            caso["id"] = doc.id;
-            caso["descricao"] = doc.get("descricao");
-            caso["titulo"] = doc.get("titulo");
-            caso["privado"] = doc.get("privado");
-            caso["arquivado"] = doc.get("arquivado");
-            caso["autor"] = doc.get("autor");
-            caso["data_criacao"] = doc.get("data_criacao");
-            caso["ficheiros"] = doc.get("ficheiros");
-            caso["membros"] = doc.get("membros");
-            caso["observacoes"] = doc.get("observacoes");
-            availableCases.push(caso);
-        });
-
-        return response.send(availableCases);
+    db.collection('parents').doc(user_id).get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        else {
+            if (doc.get('Admin')){
+                return getAdminCasos(response);
+            }
+            else {
+                return getNonAdminCasos(response, user_id);
+            }
+        }
     })
-    .catch(err => {
-        console.log('Query error:', err);
+    .catch((err) => {
+        console.log('Error getting documents', err);
         return response.status(405).send({"error" : err});
     });
 });
+
+async function getNonAdminCasos(response, user_id) {
+    let db = admin.firestore();
+    let availableCases = [];
+    
+    db.collection('casos').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let c = 0;
+            for (i=0;i<doc.get('membros').length;i++) {
+                if (doc.get('membros')[i]['id'] === user_id) {
+                    c = c + 1;
+                }
+            }
+            if(!doc.get("privado") || c !== 0){
+                let caso = {};
+                caso["id"] = doc.id;
+                caso["descricao"] = doc.get("descricao");
+                caso["titulo"] = doc.get("titulo");
+                caso["privado"] = doc.get("privado");
+                caso["arquivado"] = doc.get("arquivado");
+                caso["autor"] = doc.get("autor");
+                caso["data_criacao"] = doc.get("data_criacao");
+                caso["ficheiros"] = doc.get("ficheiros");
+                caso["membros"] = doc.get("membros");
+                caso["observacoes"] = doc.get("observacoes");
+                availableCases.push(caso);
+            }
+        });
+        return response.send(availableCases);
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
+}
+
+async function getAdminCasos(response) {
+    let db = admin.firestore();
+    let availableCases = [];
+    
+    db.collection('casos').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let caso = {};
+            caso["id"] = doc.id;
+            caso["descricao"] = doc.get("descricao");
+            caso["titulo"] = doc.get("titulo");
+            caso["privado"] = doc.get("privado");
+            caso["arquivado"] = doc.get("arquivado");
+            caso["autor"] = doc.get("autor");
+            caso["data_criacao"] = doc.get("data_criacao");
+            caso["ficheiros"] = doc.get("ficheiros");
+            caso["membros"] = doc.get("membros");
+            caso["observacoes"] = doc.get("observacoes");
+            availableCases.push(caso);
+        });
+        return response.send(availableCases);
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
+}
 /**
  * Função devolve um caso atravéz do seu id.
  * Leva como argumento um id de um caso
