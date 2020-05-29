@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "b0dfd6ff0503fc38ce3694bcf1c7a572",
+    "revision": "ac778d18cf06ec9995128883644bdef8",
     "url": "/pi-assoc-pais/index.html"
   },
   {
-    "revision": "1f2a115caeb0897e95a5",
-    "url": "/pi-assoc-pais/static/js/2.60f0e27e.chunk.js"
+    "revision": "51e5c30bc5b199fe0f5c",
+    "url": "/pi-assoc-pais/static/js/2.ede01721.chunk.js"
   },
   {
     "revision": "c64c486544348f10a6d6c716950bc223",
-    "url": "/pi-assoc-pais/static/js/2.60f0e27e.chunk.js.LICENSE.txt"
+    "url": "/pi-assoc-pais/static/js/2.ede01721.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "ea4bbe30c614a5388f6a",
-    "url": "/pi-assoc-pais/static/js/main.55148f74.chunk.js"
+    "revision": "bddca1abf6384389d63d",
+    "url": "/pi-assoc-pais/static/js/main.406719f6.chunk.js"
   },
   {
     "revision": "03361f4ec0ce09680b1e",
@@ -28,8 +28,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/pi-assoc-pais/static/media/cc.9d1403c3.png"
   },
   {
-    "revision": "b439a446e7a5688e1c05861abd139ea1",
-    "url": "/pi-assoc-pais/static/media/github_logo.b439a446.png"
+    "revision": "d6e352533e42b1369cf5534e4d10d0b3",
+    "url": "/pi-assoc-pais/static/media/github_logo.d6e35253.png"
   },
   {
     "revision": "0271d2c6e35916cc9399994986eb5a64",
@@ -38,5 +38,9 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "70f87bba34487dc1c0cb8916d800c63b",
     "url": "/pi-assoc-pais/static/media/logo_react.70f87bba.png"
+  },
+  {
+    "revision": "34c8131748246a05247e791bcafc0b0c",
+    "url": "/pi-assoc-pais/static/media/trello_logo.34c81317.png"
   }
 ]);

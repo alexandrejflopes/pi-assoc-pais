@@ -1,24 +1,25 @@
 {
   "files": {
-    "main.js": "/pi-assoc-pais/static/js/main.55148f74.chunk.js",
-    "main.js.map": "/pi-assoc-pais/static/js/main.55148f74.chunk.js.map",
+    "main.js": "/pi-assoc-pais/static/js/main.406719f6.chunk.js",
+    "main.js.map": "/pi-assoc-pais/static/js/main.406719f6.chunk.js.map",
     "runtime-main.js": "/pi-assoc-pais/static/js/runtime-main.10585b51.js",
     "runtime-main.js.map": "/pi-assoc-pais/static/js/runtime-main.10585b51.js.map",
-    "static/js/2.60f0e27e.chunk.js": "/pi-assoc-pais/static/js/2.60f0e27e.chunk.js",
-    "static/js/2.60f0e27e.chunk.js.map": "/pi-assoc-pais/static/js/2.60f0e27e.chunk.js.map",
+    "static/js/2.ede01721.chunk.js": "/pi-assoc-pais/static/js/2.ede01721.chunk.js",
+    "static/js/2.ede01721.chunk.js.map": "/pi-assoc-pais/static/js/2.ede01721.chunk.js.map",
     "index.html": "/pi-assoc-pais/index.html",
-    "precache-manifest.b63b8a4d4736e85613d55f8a2563b1e4.js": "/pi-assoc-pais/precache-manifest.b63b8a4d4736e85613d55f8a2563b1e4.js",
+    "precache-manifest.1316447a72a20c28918c4ed51888d16c.js": "/pi-assoc-pais/precache-manifest.1316447a72a20c28918c4ed51888d16c.js",
     "service-worker.js": "/pi-assoc-pais/service-worker.js",
-    "static/js/2.60f0e27e.chunk.js.LICENSE.txt": "/pi-assoc-pais/static/js/2.60f0e27e.chunk.js.LICENSE.txt",
+    "static/js/2.ede01721.chunk.js.LICENSE.txt": "/pi-assoc-pais/static/js/2.ede01721.chunk.js.LICENSE.txt",
     "static/media/assoc-pais-logo.png": "/pi-assoc-pais/static/media/assoc-pais-logo.8d04d9ba.png",
     "static/media/cc.png": "/pi-assoc-pais/static/media/cc.9d1403c3.png",
-    "static/media/github_logo.png": "/pi-assoc-pais/static/media/github_logo.b439a446.png",
+    "static/media/github_logo.png": "/pi-assoc-pais/static/media/github_logo.d6e35253.png",
     "static/media/logo_firebase.png": "/pi-assoc-pais/static/media/logo_firebase.0271d2c6.png",
-    "static/media/logo_react.png": "/pi-assoc-pais/static/media/logo_react.70f87bba.png"
+    "static/media/logo_react.png": "/pi-assoc-pais/static/media/logo_react.70f87bba.png",
+    "static/media/trello_logo.png": "/pi-assoc-pais/static/media/trello_logo.34c81317.png"
   },
   "entrypoints": [
     "static/js/runtime-main.10585b51.js",
-    "static/js/2.60f0e27e.chunk.js",
-    "static/js/main.55148f74.chunk.js"
+    "static/js/2.ede01721.chunk.js",
+    "static/js/main.406719f6.chunk.js"
   ]
 }
