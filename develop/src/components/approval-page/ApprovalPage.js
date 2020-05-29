@@ -26,7 +26,11 @@ import { saveRegistToDB } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
 import ApprovalModal from "./ApprovalModal";
-import { cleanButton, languageCode } from "../../utils/general_utils";
+import {
+  cleanButton,
+  languageCode,
+  assocParameters,
+} from "../../utils/general_utils";
 
 class Approval_Page extends Component {
   constructor(props) {
@@ -45,6 +49,7 @@ class Approval_Page extends Component {
       studentNumber: 1, //Counts number of students
       extraVars: [{}],
       extraPai: 0, //Counts number of extra parameters that belong to the parent part -> they are stored in extraVars[0] along with the extra values from the first student
+      daysToDelete: 7,
     };
 
     this.renderExtra = this.renderExtra.bind(this);
@@ -66,6 +71,17 @@ class Approval_Page extends Component {
 
   componentDidMount() {
     this._isMounted = true;
+
+    const assocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+    if (assocDoc != null) {
+      let daysToDelete =
+        assocDoc[assocParameters.DAYS_TO_DELETE_REGISTRATION[languageCode]];
+      daysToDelete = parseInt(daysToDelete, 10);
+
+      if (daysToDelete != null) {
+        this.setState({ daysToDelete: daysToDelete });
+      }
+    }
 
     this.getParentsToApprove();
     this.renderExtra();
@@ -95,7 +111,7 @@ class Approval_Page extends Component {
   }
 
   deletePassedRegisters() {
-    const { resgistosPorAprovar } = this.state;
+    const { resgistosPorAprovar, daysToDelete } = this.state;
     const this_ = this;
 
     if (resgistosPorAprovar != null) {
@@ -106,7 +122,7 @@ class Approval_Page extends Component {
 
         if (data != null) {
           var date = new Date(data._seconds * 1000);
-          var days = 7;
+          var days = daysToDelete;
           var compareDate = new Date(date.getTime() + days * 86400000);
           var today = new Date();
 

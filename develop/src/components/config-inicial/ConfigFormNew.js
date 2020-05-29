@@ -173,6 +173,7 @@ class ConfigFormNew extends Component {
                     type="number"
                     id="configAssocFee"
                     placeholder="5"
+                    defaultValue="5"
                   />
                   <FormFeedback id="configAssocFeeFeedback" valid={false} style={{display:"none"}}>Por favor, preencha este campo</FormFeedback>
                 </Col>

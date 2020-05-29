@@ -35,7 +35,7 @@ import {
   uploadLogoError,
   installError,
   invalidEmailMessage,
-  rolesFileErrorMessage
+  rolesFileErrorMessage, installDefaultLogoError
 } from "../utils/messages_strings";
 const jsonErrorMessage = jsonParamsErrorMessage[languageCode];
 const csvsErrorMessage = jsonOrCsvParamsErrorMessage[languageCode];
@@ -108,12 +108,10 @@ function fetchAssocNumbers() {
 * function to get a new associate number (the associate numbers are incremental)
 * */
 function generateNewAssocNumber(numbersArray) {
-
+  // TODO: use Firebase Increment?
   // remove empty strings, nulls and undefined and convert number strings to actual numbers
   const numbers = numbersArray.filter(el=>el).map(x=>+x);
-
   return Math.max(...numbers) + 1;
-
 }
 
 
@@ -663,8 +661,9 @@ function setupCSVData(fileString, parents) {
     rowsData.push(lineDict);
   }
 
-  // save this globally
-  membersDocsList = rowsData;
+  // save parents globally to save their roles
+  if(parents)
+    membersDocsList = rowsData;
 
   return rowsData;
 }
@@ -690,7 +689,7 @@ function readAndCheckRolesFile(rolesFile, callback) {
         throw "Too few data in TEXT file to process";
       }
 
-      const rolesList = setupTXTRoles(rolesFileString, true);
+      const rolesList = setupTXTRoles(rolesFileString);
 
       if(parentsRolesAreValid(rolesList, membersDocsList)){
         rolesFileCorrect = true;
@@ -715,7 +714,7 @@ function readAndCheckRolesFile(rolesFile, callback) {
  * function to read the TEXT file with roles for the association's
  * members and get a list of roles from it
  * */
-function setupTXTRoles(fileString){
+export function setupTXTRoles(fileString){
   const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
   console.log("allLinesTXT -> ", allLines);
 
@@ -738,13 +737,12 @@ function setupTXTRoles(fileString){
  * for each role imported, save it as a document in Firestore
  * - for each role: {"titulo" (from cargoDocKey constant) : <role_name>}
  * */
-function saveRolesInDB(rolesArray){
+export function saveRolesInDB(rolesArray){
   const cargosRef = firestore.collection("cargos");
-  const cargoKey = cargoDocKey;
   for(let pos in rolesArray){
     const cargo = rolesArray[pos];
 
-    const cargoDoc = {[cargoKey] : cargo};
+    const cargoDoc = {[cargoDocKey] : cargo};
     const docRef = cargosRef.doc(cargo);
     docRef
       .set(cargoDoc)
@@ -764,14 +762,21 @@ function saveRolesInDB(rolesArray){
  * */
 function parentsRolesAreValid(rolesArray, parentsDocList){
   let parentsRolesValid = true;
+  console.log("parentsDocList");
+  console.log("----------------");
+  console.log(parentsDocList);
   for(let pos in parentsDocList){
     const parentDoc = parentsDocList[pos];
+    console.log("parentDoc atual >" + JSON.stringify(parentDoc));
     const parentRole = parentDoc[parentsParameters.ROLE[languageCode]];
     if(!rolesArray.includes(parentRole)){
+      console.log("txt não inclui <" + parentRole + ">");
       parentsRolesValid = false;
       break;
     }
   }
+
+  return parentsRolesValid;
 }
 
 // --------- USER
@@ -859,6 +864,22 @@ function uploadNewLogo(file) {
   return logoRef.put(file);
 }
 
+export function saveDefaultLogoURL(url) {
+  const defaultLogoRef = firestore.collection("initialConfigs");
+  const logoDoc = {"url" : url};
+  const docRef = defaultLogoRef.doc("defaultLogo");
+  docRef
+    .set(logoDoc)
+    .then(function () {
+      console.log("defaultLogo guardado com sucesso.");
+    })
+    .catch(function () {
+      console.log("erro ao guardar defaultLogo na BD");
+      installGotErrors = true;
+    });
+
+}
+
 // --------------------------------
 
 /*
@@ -894,7 +915,6 @@ function getFormElementsAndValues() {
       let labelHtmlFor = label.htmlFor;
       let inputId = input.id;
 
-      // TODO: alterações feitas aqui
       if (labelHtmlFor === inputId) {
         if (labelText.includes("(") || labelText.includes("/")) {
           if(labelText.trim()==="Valor da Quota (€)"){
@@ -909,8 +929,6 @@ function getFormElementsAndValues() {
       }
     }
   }
-
-  submittedInputs["DeleteRegistosSemPagar"] = "7";
 
   return submittedInputs;
 }
@@ -972,14 +990,14 @@ function install() {
   let policyCheckboxChecked = true;
   const inputsInfo = getFormElementsAndValues(); // { "labelText" : input }
 
-  console.log("inputsInfo v ");
-  console.log(inputsInfo);
+  //console.log("inputsInfo v ");
+  //console.log(inputsInfo);
 
   for (const label in inputsInfo) {
-    console.log("label -> " + label);
+    //console.log("label -> " + label);
     let input = inputsInfo[label];
-    console.log("input v ");
-    console.log(input);
+    //console.log("input v ");
+    //console.log(input);
     if (input.value === "" && input.required) {
       input.classList.add("is-invalid");
       document.querySelector("#" + input.id + "Feedback").style.display =
@@ -1139,9 +1157,14 @@ function install() {
                   );
                 } else if (fileArray.length === 0) {
                   const defaultLogoTask = uploadDefaultLogo();
-                  defaultLogoTask.then(function (downloadURL) {
+                  defaultLogoTask
+                    .then(function (downloadURL) {
+                      saveDefaultLogoURL(downloadURL);
                     continueInstallation(inputsInfo, downloadURL);
-                  });
+                  })
+                    .catch(() => {
+                      showToast(installDefaultLogoError[languageCode], 20000, toastTypes.ERROR);
+                    });
                 }
               }
 
@@ -1178,6 +1201,8 @@ function continueInstallation(inputsInfo, logoURL) {
       }
       temp[label] = inputsInfo[label].value;
     }
+
+    temp["DeleteRegistosSemPagar"] = "7";
 
     return temp;
   };
@@ -1231,5 +1256,4 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         // functions used in tests
         checkJSONparamsEntitiesAndTypes,
         compareCSVandJsonParameters,
-        getandSaveCSVdata,
-        setupTXTRoles};
+        getandSaveCSVdata};

@@ -16,6 +16,7 @@ import {
   FormCheckbox,
 } from "shards-react";
 import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import { assocParameters, languageCode } from "../../utils/general_utils";
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
 import { Multiselect } from "multiselect-react-dropdown";
@@ -69,6 +70,13 @@ class QuotasModal extends React.Component {
 
   componentWillMount() {
     //Get value of cota defined in parameters
+    const assocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
+    if (assocDoc != null) {
+      let quota = assocDoc[assocParameters.FEE[languageCode]];
+      if (quota != null) {
+        this.setState({ valor: quota });
+      }
+    }
   }
 
   onSelectEmissor(selectedList, selectedItem) {

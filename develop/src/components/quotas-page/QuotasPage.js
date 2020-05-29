@@ -294,6 +294,8 @@ class Quotas_Page extends Component {
             <textarea
               class="form-control"
               rows="3"
+              cols="3"
+              style={{ resize: "none" }}
               id="comment"
               name={"notas-" + x}
               onChange={this.handleChangeNotas}
@@ -400,8 +402,12 @@ class Quotas_Page extends Component {
                       <th scope="col" className="border-0">
                         Confirmado pelo Emissor
                       </th>
-                      <th scope="col" className="border-0">
-                        Notas
+                      <th
+                        scope="col"
+                        style={{ resize: "none", width: "100px" }}
+                        className="border-0"
+                      >
+                        Notas/Descrição do Emissor<div> </div>
                       </th>
                     </tr>
                   </thead>
