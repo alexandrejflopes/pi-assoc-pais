@@ -5,6 +5,7 @@ import {
 import firebase from "firebase";
 
 import {
+  defaultLogoFile,
   getGravatarURL,
   languageCode,
   parentsParameters, showToast, toastTypes
@@ -297,7 +298,12 @@ function install() {
                   saveDefaultLogoURL(downloadURL);
                   continueInstallation(inputsInfo, downloadURL);
               }).catch(() => {
-                showToast(installDefaultLogoError[languageCode], 20000, toastTypes.ERROR);
+                if(defaultLogoFile!=null){
+                  continueInstallation(inputsInfo, defaultLogoFile);
+                }
+                else{
+                  showToast(installDefaultLogoError[languageCode], 20000, toastTypes.ERROR);
+                }
               });
             }
           }
