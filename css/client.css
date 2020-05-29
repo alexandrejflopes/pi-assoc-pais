@@ -1,0 +1,57 @@
+.topnav {
+    overflow: hidden;
+    background-color: #4ca2d1;
+    min-height: 50px;
+}
+  
+.nav-logo {
+    padding: 5px;
+    
+}
+
+.nav-logo img {
+    float: left;
+    height: 40px;
+}
+
+  .topnav a {
+    float: right;
+    color: #f2f2f2;
+    text-align: right;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+
+ 
+.user-image {
+    align-content: center;
+    min-height: 50px;
+    padding: 5px;
+    border-radius: 10%;
+}
+
+.user-image:hover img {
+    border: 2px solid #69c8f3;
+}
+
+.user-image img {
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid white;
+}
+
+.user-image i {
+    color: white;
+    margin-left: 5px;
+}
+
+.user-image:hover i {
+    color: #69c8f3;
+}
+
+.user-image:active {
+    
+}
+
