@@ -12,7 +12,7 @@ function Intro() {
                             <div class="overlay"></div>
                             <div class="fh5co-text">
                                 <i class="fh5co-intro-icon fab fa-osi"></i>
-                                <h2>Grátris e open-source</h2>
+                                <h2>Grátis e open-source</h2>
                                 <p>Uma forma completamente grátis de ter uma plataforma online</p>
                             </div>
                         </div>
@@ -48,8 +48,8 @@ function Intro() {
                             <div className="overlay"></div>
                             <div className="fh5co-text">
                                 <i className="fh5co-intro-icon fas fa-file-export"></i>
-                                <h2>Exportar data</h2>
-                                <p>Possibilidade de exportar data relacionada com pagamentos, casos ou utilizadores</p>
+                                <h2>Exportar dados</h2>
+                                <p>Possibilidade de exportar dados relacionados com pagamentos, casos ou utilizadores</p>
                             </div>
                         </div>
                         <div className="fh5co-block to-animate">

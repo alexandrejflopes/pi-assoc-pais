@@ -16,6 +16,27 @@ function About() {
                             </div>
                         </div>
                     </div>
+                    <div className="col-md-4">
+                    </div>
+                    <div className="col-md-4">
+                        <div className="fh5co-person text-center to-animate">
+                            <figure><img src={cc} alt="Image" /></figure>
+                            <h3>Diogo Gomes</h3>
+                            <span>Mentor do projeto</span>
+                            <ul className="social social-circle">
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="col-md-12">
+                        <h3></h3>
+                    </div>
+                    <div className="col-md-12">
+                        <h3></h3>
+                    </div>
+                    <div className="col-md-12">
+                        <h3></h3>
+                    </div>
                     <div className="row">
                         <div className="col-md-3">
                             <div className="fh5co-person text-center to-animate">
