@@ -1233,7 +1233,8 @@ function continueInstallation(inputsInfo, logoURL) {
         .then(function () {
           createDefaultUser();
           notifyAllParents();
-          showToast(sucessImportMessage, 5000, toastTypes.SUCCESS);
+          alert(sucessImportMessage); // alert to block the page
+          //showToast(sucessImportMessage, 5000, toastTypes.SUCCESS);
           window.location.href = "/";
         })
         .catch(function (error) {
