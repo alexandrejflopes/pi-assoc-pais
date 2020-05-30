@@ -38,6 +38,7 @@ const {
   approveParent,
   addFirstPayment,
   alterParentEmail,
+  getUserCargos,
   addCota,
   updateCota,
   confirmarPaganteCota,
@@ -57,6 +58,7 @@ const {
   sendAuthenticationEmailAfterEmailChange,
   sendRegisterEliminationEmail,
   sendAccountEliminationEmail,
+  sendCargoChangeEmail,
   exportParentCSV,
   exportEducandosCSV,
   exportSingleParentCSV,
@@ -100,6 +102,7 @@ app.get('/deleteAccount',deleteAccount);
 app.get('/approveParent',approveParent);
 app.get('/addFirstPayment',addFirstPayment);
 app.get('/alterParentEmail',alterParentEmail);
+app.get('/getUserCargos',getUserCargos);
 app.get('/addCota',addCota);
 app.get('/updateCota',updateCota);
 app.get('/confirmarPaganteCota',confirmarPaganteCota);
@@ -119,6 +122,7 @@ app.get('/sendPositionEmail',sendPositionEmail);
 app.get('/sendAuthenticationEmailAfterEmailChange',sendAuthenticationEmailAfterEmailChange);
 app.get('/sendRegisterEliminationEmail',sendRegisterEliminationEmail);
 app.get('/sendAccountEliminationEmail',sendAccountEliminationEmail);
+app.get('/sendCargoChangeEmail',sendCargoChangeEmail);
 app.get('/exportParentCSV',exportParentCSV);
 app.get('/exportEducandosCSV',exportEducandosCSV);
 app.get('/exportSingleParentCSV',exportSingleParentCSV);

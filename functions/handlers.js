@@ -1132,7 +1132,42 @@ async function alterEmailInCotas(oldEmail, newEmail) {
         return err;
     });
 }
+/**
+ * Função devolve duas listas. Uma tem todos os cargs definidos na base de dados. Outra tem objetos que têm os 
+ * campos id (id/email do utilizador) e o Cargo (cargo desse utilizador).
+ * Formato da respoesta : {"cargos":["Associado(a)", ... ], "users": [ {"id":"email@gmail.com", "Cargo":"Associado(a)"} ]} 
+ */
+exports.getUserCargos = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
 
+    let res = {};
+
+    return db.collection('cargos').get().then(snapshot => {
+        let cargos = [];
+        snapshot.forEach((doc) => {
+            cargos.push(doc.id);
+        });
+        res['cargos'] = cargos;
+        return db.collection('parents').get().then(docs => {
+            let users = [];
+            docs.forEach((doc) => {
+                let user = {'id':doc.id, 'Cargo':doc.get("Cargo")};
+                users.push(user);
+            });
+            res['users'] = users;
+            return response.send(res);
+        })
+        .catch((err) => {
+            console.log('Error getting documents', err);
+            return response.status(405).send({"error" : err});
+        });
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
+
+});
 /**
  * Funções relacionadas com as partes das cotas dos enc de educação
  */
@@ -1776,6 +1811,23 @@ exports.sendAccountEliminationEmail = functions.https.onRequest((request, respon
     
     response.status(204).send();
     return sendEmail(email, subject, message)
+});
+/**
+ * Função que manda email a vários utilizadores relativamente a uma transferência de cargo para os mesmos.
+ * Formato do argumento membros : [{"id":"email@gmail.com", "nome":"Edgar", "cargo":"Vogal"}]
+ */
+exports.sendCargoChangeEmail = functions.https.onRequest((request, response) => {
+    let members = JSON.parse(request.query.membros);
+
+    for (i=0 ; i<members.length ; i++) {
+        let nome = members[i]["nome"];
+        let email = members[i]["id"];
+        let cargo = members[i]["cargo"];
+        let message = "Olá, "+nome+"\n\nFoi feita um transição do cargo "+cargo+" para si. Para aceitar esse cargo terá de realizar a confirmação na plataforma.\n\nSe considera que se trata de um erro, por favor ignore este email ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";
+        let subject = `Transferência de cargo - Autenticação para associação de pais - ${APP_NAME}!`;
+        sendEmail(email, subject, message);
+    }
+    return response.status(204).send();
 });
 /**
  * Função auxiliar utilizada para enviar emails
