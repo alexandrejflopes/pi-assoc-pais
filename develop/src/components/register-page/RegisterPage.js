@@ -33,10 +33,11 @@ import {
   firebaseConfig,
 } from "../../firebase-config";
 import {
-  childSchoolYearTipMessage,
+  childSchoolYearTipMessage, emailAlreadyInUse, emailUsageCheckError,
   paramsJsonFileTipMessage,
   registationError
 } from "../../utils/messages_strings";
+import {checkEmailUsage} from "../../firebase_scripts/registo";
 
 class Register_Page extends Component {
   constructor(props) {
@@ -77,6 +78,7 @@ class Register_Page extends Component {
     };
 
     this.renderExtra = this.renderExtra.bind(this);
+    this.verifyIfEmailIsAlreadyUsed = this.verifyIfEmailIsAlreadyUsed.bind(this);
     this.sendForm = this.sendForm.bind(this);
     this.addStudent = this.addStudent.bind(this);
     this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
@@ -127,6 +129,29 @@ class Register_Page extends Component {
       />
     );
     this.setState({ redirect: red });
+  }
+
+  verifyIfEmailIsAlreadyUsed(){
+    const this_ = this;
+    const emailToCheck = this_.state.email;
+    console.log("email to check -> " + emailToCheck);
+    checkEmailUsage(emailToCheck)
+      .then((exists) => {
+        if(exists==null){
+          showToast(emailUsageCheckError[languageCode], 7000, toastTypes.ERROR);
+        }
+        else{
+          if(exists){
+            showToast(emailAlreadyInUse[languageCode], 7000, toastTypes.ERROR);
+          }
+          else{
+            this_.sendForm();
+          }
+        }
+      })
+      .catch(() => {
+        showToast(emailUsageCheckError[languageCode], 7000, toastTypes.ERROR);
+      })
   }
 
   /**
@@ -325,6 +350,7 @@ class Register_Page extends Component {
           let newAssocNumber = notAvailableDesignation[languageCode];
 
           if(array!=null){
+            // TODO: user Firebase Increment?
             newAssocNumber = generateNewAssocNumber(array).toString();
           }
 
@@ -1019,7 +1045,7 @@ class Register_Page extends Component {
                   </FormGroup>
                   <Row form>
                     <Col md="6" className="form-group">
-                      <Button theme="success" onClick={this.sendForm}>
+                      <Button theme="success" onClick={this.verifyIfEmailIsAlreadyUsed}>
                         Enviar
                       </Button>{" "}
                       <Button onClick={this.addStudent}>

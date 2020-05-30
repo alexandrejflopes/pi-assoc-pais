@@ -130,6 +130,18 @@ const errorSignOut = {
   pt_PT: "Erro ao fazer logout, tente novamente",
 };
 
+export const deleteCasoError = {
+  pt_PT: "Houve um problema a eliminar o caso. Por favor, tente novamente.",
+};
+
+export const emailAlreadyInUse = {
+  pt_PT: "O email que inseriu já está a ser usado por outro utilizador. Por favor, forneça outro email.",
+};
+
+export const emailUsageCheckError = {
+  pt_PT: "Houve um problema a verificar o seu email. Por favor, tente novamente.",
+};
+
 // ------------------ STRINGS RELATED TO PROFILE ------------------
 
 // -------------------------------------- OTHERS --------------------------------------
@@ -329,6 +341,12 @@ export const assocUpdateLogoError = {
 
 // ------- CONFIRMATIONS / PROMPTS
 
+export const confirmDeleteCaso = {
+  pt_PT:
+    "Tem a certeza que pretender eliminar este caso?\n" +
+    "Esta ação não é revertível.",
+};
+
 export const confirmDeleteChild = {
   pt_PT:
     "Tem a certeza que pretender eliminar este educando?\n" +
@@ -441,6 +459,10 @@ export const assocDataUpdateSuccess = {
 
 export const assocUpdateLogoSuccess = {
   pt_PT: "Logótipo atualizado com sucesso.",
+};
+
+export const deleteCasoSuccess = {
+  pt_PT: "Caso eliminado.",
 };
 
 

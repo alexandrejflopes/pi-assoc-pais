@@ -645,6 +645,32 @@ function deleteAccount(email){
 
 }
 
+
+function deleteAccountEmailNotification(nome, email){
+
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/sendAccountEliminationEmail?" +
+    "email=" +
+    email +
+    "&" +
+    "nome=" +
+    nome;
+
+  const request = async () => {
+    await fetch(uri)
+      .then()
+      .catch(function (error) {
+        console.log("Error sending account delete email: " + error);
+      });
+  };
+
+  return request();
+}
+
+
 /*
  * send email to parent to notify it was imported to platform
  */
@@ -695,5 +721,6 @@ export {
   exportAllChildrenToCSV,
   deleteAccount,
   uploadAssocLogo,
-  exportAllCasosToPDF
+  exportAllCasosToPDF,
+  deleteAccountEmailNotification
 };

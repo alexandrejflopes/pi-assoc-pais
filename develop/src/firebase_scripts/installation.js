@@ -1156,6 +1156,7 @@ function install() {
                     }
                   );
                 } else if (fileArray.length === 0) {
+                  // try to upload the file to firestore by its name
                   const defaultLogoTask = uploadDefaultLogo();
                   defaultLogoTask
                     .then(function (downloadURL) {
@@ -1163,6 +1164,7 @@ function install() {
                     continueInstallation(inputsInfo, downloadURL);
                   })
                     .catch(() => {
+                      // alternatively, use asset file directly
                       if(defaultLogoFile!=null){
                         continueInstallation(inputsInfo, defaultLogoFile);
                       }
