@@ -192,35 +192,14 @@ class Casos extends React.Component {
         await fetch(uri)
           .then((resp) => resp.json()) // Transform the data into json
           .then(function (data) {
-            var title = data.titulo;
-
-            var date = new Date(data.data_criacao._seconds * 1000).toString();
-            date = moment(date).format("DD/MM/YYYY").toString();
-            var username = data.autor.nome;
-
-            var descricao = data.descricao;
-            var arquivado = data.arquivado;
-            var ficheiros = data.ficheiros;
-            var comentarios = data.observacoes;
-            var membros = data.membros;
-            var privado = data.privado;
-
-            var userInCaso = true;
-            if (privado && !admin) {
-              userInCaso = false;
-              for (var i = 0; i < membros.length; i++) {
-                if (
-                  membros[i].nome == currentUsername ||
-                  membros[i].nome == currentUser.Nome
-                ) {
-                  userInCaso = true;
-                  break;
-                }
+            var docNonExisting = false;
+            if (data != null) {
+              if (data.error != null) {
+                docNonExisting = true;
               }
             }
-
             var redirect = null;
-            if (userInCaso == false) {
+            if (docNonExisting) {
               redirect = (
                 <Redirect
                   to={{
@@ -228,20 +207,61 @@ class Casos extends React.Component {
                   }}
                 />
               );
-            }
+              this_.setState({
+                redirect: redirect,
+                loading: false,
+              });
+            } else {
+              var title = data.titulo;
 
-            this_.setState({
-              redirect: redirect,
-              title: title,
-              data: date,
-              username: username,
-              descricao: descricao,
-              arquivado: arquivado,
-              docs: ficheiros,
-              comments: comentarios,
-              membros: membros,
-              loading: false,
-            });
+              var date = new Date(data.data_criacao._seconds * 1000).toString();
+              date = moment(date).format("DD/MM/YYYY").toString();
+              var username = data.autor.nome;
+
+              var descricao = data.descricao;
+              var arquivado = data.arquivado;
+              var ficheiros = data.ficheiros;
+              var comentarios = data.observacoes;
+              var membros = data.membros;
+              var privado = data.privado;
+
+              var userInCaso = true;
+              if (privado && !admin) {
+                userInCaso = false;
+                for (var i = 0; i < membros.length; i++) {
+                  if (
+                    membros[i].nome == currentUsername ||
+                    membros[i].nome == currentUser.Nome
+                  ) {
+                    userInCaso = true;
+                    break;
+                  }
+                }
+              }
+
+              if (userInCaso == false) {
+                redirect = (
+                  <Redirect
+                    to={{
+                      pathname: "/casos",
+                    }}
+                  />
+                );
+              }
+
+              this_.setState({
+                redirect: redirect,
+                title: title,
+                data: date,
+                username: username,
+                descricao: descricao,
+                arquivado: arquivado,
+                docs: ficheiros,
+                comments: comentarios,
+                membros: membros,
+                loading: false,
+              });
+            }
           })
           .catch(function (error) {
             console.log(error);

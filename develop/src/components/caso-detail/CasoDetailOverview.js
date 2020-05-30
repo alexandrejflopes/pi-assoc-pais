@@ -387,7 +387,7 @@ class CasoDetailOverview extends React.Component {
               />
             </Form>
           ) : (
-            <ButtonGroup>
+            <ButtonGroup size="sm">
               <Button
                 disabled={this.state.arquivado == true ? true : false}
                 style={{ margin: "3px" }}
@@ -395,19 +395,20 @@ class CasoDetailOverview extends React.Component {
               >
                 <i class="material-icons">edit</i>Atualizar Membros
               </Button>
-              <Button
-                style={{ margin: "3px" }}
-                onClick={this.props.arquiveOrReverse}
-              >
-                <i class="material-icons">archive</i> Arquivar/Desarquivar
-              </Button>
+
               <Button
                 disabled={this.state.arquivado == true ? true : false}
                 style={{ margin: "3px" }}
                 onClick={this.editTitle}
               >
                 <i class="material-icons">edit</i> Editar título
-              </Button>{" "}
+              </Button>
+              <Button
+                style={{ margin: "3px" }}
+                onClick={this.props.arquiveOrReverse}
+              >
+                <i class="material-icons">archive</i> Arquivar / Desarquivar
+              </Button>
             </ButtonGroup>
           )}
           {this.state.editingTitle ? (
