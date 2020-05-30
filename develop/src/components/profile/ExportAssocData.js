@@ -23,15 +23,19 @@ import {
 import {FormText} from "react-bootstrap";
 import {
   exportAssocCasosExplanation,
-  exportAssocDataExplanation, exportAssocDataOnProcess, exportAssocDataSuccess,
+  exportAssocDataExplanation,
+  exportAssocDataOnProcess,
+  exportAssocDataSuccess, exportCasosError,
+  exportCasosOnProcess, exportCasosSuccess,
   exportChildrenDataError,
   exportMembersDataError,
   exportProfileExplanation,
   exportUserDataError,
   exportUserDataOnProcess,
-  exportUserDataSucess
+  exportUserDataSuccess
 } from "../../utils/messages_strings";
 import {
+  exportAllCasosToPDF,
   exportAllChildrenToCSV,
   exportAllParentsToCSV,
   exportParentToCSV
@@ -122,7 +126,25 @@ class ExportAssocData extends React.Component {
 
 
   exportAllCasos(){
-    // TODO: cloud function de export de todos os casos
+    showToast(exportCasosOnProcess[languageCode], 4000, toastTypes.INFO);
+
+    exportAllCasosToPDF()
+      .then((file) => {
+        if(file==null){
+          showToast(exportCasosError[languageCode], 8000, toastTypes.ERROR);
+          return;
+        }
+        const url = window.URL.createObjectURL(new Blob([file]));
+        // creat anchor tag with download attr
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', "Casos.pdf");
+        link.setAttribute('display', "none");
+        document.body.appendChild(link);
+        // 4. Force download
+        link.click();
+        showToast(exportCasosSuccess[languageCode], 5000, toastTypes.SUCCESS);
+      });
   }
 
   render() {

@@ -579,6 +579,34 @@ function exportAllChildrenToCSV() {
 }
 
 /*
+ * export cases to PDF
+ * */
+function exportAllCasosToPDF() {
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/exportCasosPDF";
+
+  const request = async () => {
+    let file = new Blob();
+    await fetch(uri)
+      .then((resp) => resp.blob()) // Transform the data into blob / file
+      .then(function (data) {
+        console.log("Export PDF success");
+        file = data;
+      })
+      .catch(function (error) {
+        console.log("Export error: " + error);
+      });
+
+    return file;
+  };
+
+  return request();
+}
+
+/*
  * delete user account
  * */
 function deleteAccount(email) {
@@ -603,6 +631,29 @@ function deleteAccount(email) {
       });
 
     return deletedParent;
+  };
+
+  return request();
+}
+
+function deleteAccountEmailNotification(nome, email) {
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/sendAccountEliminationEmail?" +
+    "email=" +
+    email +
+    "&" +
+    "nome=" +
+    nome;
+
+  const request = async () => {
+    await fetch(uri)
+      .then()
+      .catch(function (error) {
+        console.log("Error sending account delete email: " + error);
+      });
   };
 
   return request();
@@ -657,4 +708,6 @@ export {
   exportAllChildrenToCSV,
   deleteAccount,
   uploadAssocLogo,
+  exportAllCasosToPDF,
+  deleteAccountEmailNotification,
 };

@@ -195,6 +195,37 @@ async function addNewCaso() {
   return request();
 }
 
+
+/*
+* function to delete an issue/case
+* */
+function eraseCaso(id) {
+  const project_id = firebaseConfig.projectId;
+  let uri =
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/deleteCaso?" +
+    "id=" + id;
+
+  const request = async () => {
+    let response = {};
+    await fetch(uri)
+      .then((resp) => resp.json()) // Transform the data into blob / file
+      .then(function (resp) {
+        response = resp;
+        console.log("Case removed successfully");
+      })
+      .catch(function (error) {
+        response = null;
+        console.log("Delete case error: " + error);
+      });
+
+    return response;
+  };
+
+  return request();
+}
+
 // ---------------- NOVAS VERSOES --------------
 
-export { initCasosExemplo, showAvailableCasos };
+export { initCasosExemplo, showAvailableCasos, eraseCaso};

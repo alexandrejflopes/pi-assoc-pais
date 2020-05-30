@@ -98,6 +98,10 @@ export const deleteChildPrompt = {
   pt_PT: "Eliminar educando?",
 };
 
+export const deleteCasoPrompt = {
+  pt_PT: "Eliminar caso?",
+};
+
 export const success_geral = {
   pt_PT: "Sucesso",
 };

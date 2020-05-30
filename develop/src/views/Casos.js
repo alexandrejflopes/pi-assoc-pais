@@ -14,12 +14,14 @@ import {
   CardFooter,
   Badge,
   Button,
+  ButtonGroup,
   FormCheckbox,
 } from "shards-react";
 import { Link, Redirect } from "react-router-dom";
 
 import PageTitle from "../components/common/PageTitle";
 import {
+  eraseCaso,
   initCasosExemplo,
   showAvailableCasos,
 } from "../firebase_scripts/casos";
@@ -30,7 +32,26 @@ import {
   seeMoreButton,
   showArquivedCases,
   casesLoading,
+  showToast,
+  toastTypes,
 } from "../utils/general_utils";
+import {
+  deleteAccountPrompt,
+  deleteCasoPrompt,
+  erase,
+} from "../utils/common_strings";
+import ConfirmationDialog from "../components/dialog/ConfirmationDialog";
+import {
+  confirmDeleteAccount,
+  confirmDeleteCaso,
+  deleteAccountGenericErrorMsg,
+  deleteCasoError,
+  deleteCasoSuccess,
+} from "../utils/messages_strings";
+import {
+  deleteAccount,
+  deleteAccountEmailNotification,
+} from "../firebase_scripts/profile_functions";
 var dateFormat = require("dateformat");
 
 class Casos extends React.Component {
@@ -89,11 +110,17 @@ class Casos extends React.Component {
       redirect: null,
       ListaCasosNaoArquivados: [],
       showCasosArquivados: false,
+      deleteDialogOpen: false,
+      casoIdToDelete: null,
     };
 
     this.closeCasoDetails = this.closeCasoDetails.bind(this);
     this.showCasoDetails = this.showCasoDetails.bind(this);
     this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.closeDeleteCasoDialog = this.closeDeleteCasoDialog.bind(this);
+    this.openDeleteCasoDialog = this.openDeleteCasoDialog.bind(this);
+    this.deleteSelectedCaso = this.deleteSelectedCaso.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
   }
 
@@ -152,6 +179,51 @@ class Casos extends React.Component {
 
   closeCasoDetails() {
     this.setState({ casoDetail: null });
+  }
+
+  closeDeleteCasoDialog() {
+    this.setState({ deleteDialogOpen: false });
+  }
+
+  openDeleteCasoDialog(e) {
+    const id = e.target.id;
+    console.log("id to delete -> " + id);
+    this.setState({ casoIdToDelete: id });
+    this.setState({ deleteDialogOpen: true });
+  }
+
+  deleteSelectedCaso(confirmation) {
+    const this_ = this;
+    this_.closeDeleteCasoDialog();
+
+    if (confirmation) {
+      eraseCaso(this.state.casoIdToDelete)
+        .then((result) => {
+          if (result != null) {
+            if (result.error == null) {
+              console.log("deletedCaso :)");
+              showToast(
+                deleteCasoSuccess[languageCode],
+                5000,
+                toastTypes.SUCCESS
+              );
+              this_.componentDidMount();
+            } else {
+              console.log("result error 1: " + JSON.stringify(result));
+              showToast(deleteCasoError[languageCode], 6000, toastTypes.ERROR);
+            }
+          } else {
+            console.log("result error 2: " + JSON.stringify(result));
+            showToast(deleteCasoError[languageCode], 6000, toastTypes.ERROR);
+          }
+        })
+        .catch((error) => {
+          if (Object.keys(error).length !== 0) {
+            console.log("delete caso error: " + JSON.stringify(error));
+            showToast(deleteCasoError[languageCode], 6000, toastTypes.ERROR);
+          }
+        });
+    }
   }
 
   showCasoDetails(e) {
@@ -260,41 +332,59 @@ class Casos extends React.Component {
                         </p>
                       </CardBody>
                       <CardFooter className="border-top d-flex">
-                        <div className="card-post__author d-flex">
-                          <img
-                            className="card-post__author-avatar card-post__author-avatar--small"
-                            src={
-                              post.autor.photo
-                                ? post.autor.photo
-                                : "https://www.gravatar.com/avatar/2c5fa499f927cb256c8da6bc60fb7937?d=mp"
-                            }
-                          ></img>
-                          <div className="d-flex flex-column justify-content-center ml-3">
-                            <span className="card-post__author-name">
-                              {post.autor.nome}
-                            </span>
-                            <small className="text-muted">
-                              {" "}
-                              {post.data_criacao
-                                ? dateFormat(
-                                    new Date(post.data_criacao._seconds * 1000),
-                                    "dd-mm-yyyy, h:MM:ss TT"
-                                  )
-                                : "-"}
-                            </small>
-                          </div>
-                        </div>
-                        <div className="my-auto ml-auto">
-                          <Button
-                            size="sm"
-                            theme="primary"
-                            id={`${post.id}`}
-                            onClick={this.showCasoDetails}
-                          >
-                            <i className="fa fa-search mr-1" />{" "}
-                            {seeMoreButton[languageCode]}
-                          </Button>
-                        </div>
+                        <Row>
+                          <Col sm="12" style={{ margin: "15px" }}>
+                            <Row>
+                              <img
+                                className="card-post__author-avatar card-post__author-avatar--small"
+                                src={
+                                  post.autor.photo
+                                    ? post.autor.photo
+                                    : "https://www.gravatar.com/avatar/2c5fa499f927cb256c8da6bc60fb7937?d=mp"
+                                }
+                              />
+                              <div className="d-flex flex-column justify-content-center ml-3">
+                                <span className="card-post__author-name">
+                                  {post.autor.nome}
+                                </span>
+                                <small className="text-muted">
+                                  {" "}
+                                  {post.data_criacao
+                                    ? dateFormat(
+                                        new Date(
+                                          post.data_criacao._seconds * 1000
+                                        ),
+                                        "dd-mm-yyyy, h:MM:ss TT"
+                                      )
+                                    : "-"}
+                                </small>
+                              </div>
+                            </Row>
+                          </Col>
+                          <Col sm="12">
+                            <ButtonGroup size="sm">
+                              <Button
+                                size="sm"
+                                theme="danger"
+                                id={`${post.id}`}
+                                onClick={this.openDeleteCasoDialog}
+                              >
+                                <i className="fa fa-trash mr-1" />{" "}
+                                {erase[languageCode]}
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                theme="primary"
+                                id={`${post.id}`}
+                                onClick={this.showCasoDetails}
+                              >
+                                <i className="fa fa-search mr-1" />{" "}
+                                {seeMoreButton[languageCode]}
+                              </Button>
+                            </ButtonGroup>
+                          </Col>
+                        </Row>
                       </CardFooter>
                     </Card>
                     {this.state.redirect}
@@ -320,49 +410,75 @@ class Casos extends React.Component {
                         </p>
                       </CardBody>
                       <CardFooter className="border-top d-flex">
-                        <div className="card-post__author d-flex">
-                          <img
-                            className="card-post__author-avatar card-post__author-avatar--small"
-                            src={
-                              post.autor.photo
-                                ? post.autor.photo
-                                : "https://www.gravatar.com/avatar/2c5fa499f927cb256c8da6bc60fb7937?d=mp"
-                            }
-                          ></img>
-                          <div className="d-flex flex-column justify-content-center ml-3">
-                            <span className="card-post__author-name">
-                              {post.autor.nome}
-                            </span>
-                            <small className="text-muted">
-                              {" "}
-                              {post.data_criacao
-                                ? dateFormat(
-                                    new Date(post.data_criacao._seconds * 1000),
-                                    "dd-mm-yyyy, h:MM:ss TT"
-                                  )
-                                : "-"}
-                            </small>
-                          </div>
-                        </div>
-                        <div className="my-auto ml-auto">
-                          <Button
-                            size="sm"
-                            theme="primary"
-                            id={`${post.id}`}
-                            onClick={this.showCasoDetails}
-                          >
-                            <i className="fa fa-search mr-1" />{" "}
-                            {seeMoreButton[languageCode]}
-                          </Button>
-                        </div>
+                        <Row>
+                          <Col sm="12" style={{ margin: "15px" }}>
+                            <Row>
+                              <img
+                                className="card-post__author-avatar card-post__author-avatar--small"
+                                src={
+                                  post.autor.photo
+                                    ? post.autor.photo
+                                    : "https://www.gravatar.com/avatar/2c5fa499f927cb256c8da6bc60fb7937?d=mp"
+                                }
+                              ></img>
+                              <div className="d-flex flex-column justify-content-center ml-3">
+                                <span className="card-post__author-name">
+                                  {post.autor.nome}
+                                </span>
+                                <small className="text-muted">
+                                  {" "}
+                                  {post.data_criacao
+                                    ? dateFormat(
+                                        new Date(
+                                          post.data_criacao._seconds * 1000
+                                        ),
+                                        "dd-mm-yyyy, h:MM:ss TT"
+                                      )
+                                    : "-"}
+                                </small>
+                              </div>
+                            </Row>
+                          </Col>
+                          <Col sm="12">
+                            <ButtonGroup size="sm">
+                              <Button
+                                size="sm"
+                                theme="danger"
+                                id={`${post.id}`}
+                                onClick={this.openDeleteCasoDialog}
+                              >
+                                <i className="fa fa-trash mr-1" />{" "}
+                                {erase[languageCode]}
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                theme="primary"
+                                id={`${post.id}`}
+                                onClick={this.showCasoDetails}
+                              >
+                                <i className="fa fa-search mr-1" />{" "}
+                                {seeMoreButton[languageCode]}
+                              </Button>
+                            </ButtonGroup>
+                          </Col>
+                        </Row>
                       </CardFooter>
                     </Card>
                   </Col>
                 ))
               : ""}
           </Row>
-
           {this.state.casoDetail}
+
+          {this.state.deleteDialogOpen ? (
+            <ConfirmationDialog
+              open={this.state.deleteDialogOpen}
+              result={this.deleteSelectedCaso}
+              title={deleteCasoPrompt[languageCode]}
+              message={confirmDeleteCaso[languageCode]}
+            />
+          ) : null}
         </Container>
       );
     } else {

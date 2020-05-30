@@ -36,9 +36,18 @@ const jsonOrCsvParamsErrorMessage = {
 
 export const rolesFileErrorMessage = {
   pt_PT:
-    "Houve um erro no processamente de cargos. As razões incluem: " +
+    "Houve um erro no processamento de cargos. As razões incluem: " +
     " - o ficheiro de texto dos cargos não tem o formato adequado;" +
-    " - há membros no CSV com cargos não presentes no ficheiro dos cargos fornecido;" +
+    " - há membros no CSV com cargos não presentes no ficheiro de cargos fornecido;" +
+    "Para mais informações, consulte o manual de utilização.\n" +
+    "Obrigado.",
+};
+
+export const rolesFileErrorMessage_NewAssoc = {
+  pt_PT:
+    "Houve um erro no processamento de cargos. As razões incluem: " +
+    " - o ficheiro de texto dos cargos não tem o formato adequado;" +
+    " - o cargo que introduziu na secção 'Sobre si' não está presente no ficheiro de cargos fornecido;" +
     "Para mais informações, consulte o manual de utilização.\n" +
     "Obrigado.",
 };
@@ -121,6 +130,18 @@ const errorSignOut = {
   pt_PT: "Erro ao fazer logout, tente novamente",
 };
 
+export const deleteCasoError = {
+  pt_PT: "Houve um problema a eliminar o caso. Por favor, tente novamente.",
+};
+
+export const emailAlreadyInUse = {
+  pt_PT: "O email que inseriu já está a ser usado por outro utilizador. Por favor, forneça outro email.",
+};
+
+export const emailUsageCheckError = {
+  pt_PT: "Houve um problema a verificar o seu email. Por favor, tente novamente.",
+};
+
 // ------------------ STRINGS RELATED TO PROFILE ------------------
 
 // -------------------------------------- OTHERS --------------------------------------
@@ -160,16 +181,20 @@ export const deleteAccountExplanation = {
     "dados antes de apagar a sua conta.",
 };
 
+export const exportCasosOnProcess = {
+  pt_PT: "A processar as informações dos casos. Por favor, aguarde.",
+};
+
 export const exportUserDataOnProcess = {
-  pt_PT: "A processar as suas informações.",
+  pt_PT: "A processar as suas informações. Por favor, aguarde.",
 };
 
 export const exportAssocDataOnProcess = {
-  pt_PT: "A processar as informações da associação.",
+  pt_PT: "A processar as informações da associação. Por favor, aguarde.",
 };
 
 export const changeEmailOnProcess = {
-  pt_PT: "A proceder à mudança de email...",
+  pt_PT: "A proceder à mudança de email... Por favor, aguarde.",
 };
 
 // ------- ERRORS
@@ -237,6 +262,11 @@ export const exportUserDataError = {
     "Ocorreu um erro a processar as suas informações. Por favor, tente novamente mais tarde.",
 };
 
+export const exportCasosError = {
+  pt_PT:
+    "Ocorreu um erro a processar as suas informações. Por favor, tente novamente mais tarde.",
+};
+
 export const emailAlreadyTaken = {
   pt_PT: "Houve um problema a atualizar o email. Por favor, tente novamente.",
 };
@@ -269,6 +299,12 @@ export const installError = {
   pt_PT:
     "Houve um ou mais erros durante a instalação.\nPor favor, verifique forneceu todos os dados " +
     "conforme o manual de utilização. Se sim, por favor, tente novamente.",
+};
+
+export const installDefaultLogoError = {
+  pt_PT:
+    "Houve um problema a processar o logótipo por omissão.\nPor favor, forneça um logótipo para a associação ou" +
+    " contacte o responsável pela instalação da plataforma.\n Obrigado."
 };
 
 export const uploadLogoError = {
@@ -304,6 +340,12 @@ export const assocUpdateLogoError = {
 };
 
 // ------- CONFIRMATIONS / PROMPTS
+
+export const confirmDeleteCaso = {
+  pt_PT:
+    "Tem a certeza que pretender eliminar este caso?\n" +
+    "Esta ação não é revertível.",
+};
 
 export const confirmDeleteChild = {
   pt_PT:
@@ -351,11 +393,15 @@ export const deleteAccountSuccess = {
   pt_PT: "Conta eliminada com sucesso",
 };
 
+export const exportCasosSuccess = {
+  pt_PT: "Casos exportados com sucesso.",
+};
+
 export const exportAssocDataSuccess = {
   pt_PT: "Informações exportadas com sucesso.",
 };
 
-export const exportUserDataSucess = {
+export const exportUserDataSuccess = {
   pt_PT: "Informações exportadas com sucesso.",
 };
 
@@ -413,6 +459,10 @@ export const assocDataUpdateSuccess = {
 
 export const assocUpdateLogoSuccess = {
   pt_PT: "Logótipo atualizado com sucesso.",
+};
+
+export const deleteCasoSuccess = {
+  pt_PT: "Caso eliminado.",
 };
 
 

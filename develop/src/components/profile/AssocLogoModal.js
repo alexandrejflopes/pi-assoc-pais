@@ -81,7 +81,7 @@ class AssocLogoModal extends React.Component {
 
     /*
     * this will catch the error of trying to get the reference for the
-    * defaultAvatar reference, which does not exist
+    * defaultPhoto reference, which does not exist
     * */
     try{
       let previousPhotoRef = storage.refFromURL(originalPhotoURL);

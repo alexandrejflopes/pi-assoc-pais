@@ -18,7 +18,7 @@ import {
 import {FormText} from "react-bootstrap";
 import {
   exportUserDataOnProcess,
-  exportProfileExplanation, exportUserDataSucess, exportUserDataError
+  exportProfileExplanation, exportUserDataSuccess, exportUserDataError
 } from "../../utils/messages_strings";
 import {
   exportParentToCSV,
@@ -83,7 +83,7 @@ class ExportProfile extends React.Component {
         document.body.appendChild(link);
         // 4. Force download
         link.click();
-        showToast(exportUserDataSucess[languageCode], 5000, toastTypes.SUCCESS);
+        showToast(exportUserDataSuccess[languageCode], 5000, toastTypes.SUCCESS);
       });
   }
 

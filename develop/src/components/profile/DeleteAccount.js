@@ -27,7 +27,7 @@ import {
   erase
 } from "../../utils/common_strings";
 import {
-  deleteAccount,
+  deleteAccount, deleteAccountEmailNotification,
   userLogOut
 } from "../../firebase_scripts/profile_functions";
 import ConfirmationDialog from "../dialog/ConfirmationDialog";
@@ -83,6 +83,7 @@ class DeleteAccount extends React.Component {
     this_.closeDialog();
 
     const email = this_.state.parent[parentsParameters.EMAIL[languageCode]];
+    const nome = this_.state.parent[parentsParameters.NAME[languageCode]];
     console.log("email da conta a eliminar -> " + email);
 
     if(confirmation){
@@ -93,6 +94,7 @@ class DeleteAccount extends React.Component {
             console.log("deletedParent recebido depois do delete email -> " + upParentString);
             this_.deleteParentAndChildrenPhotos();
             this_.openSuccessDialog();
+            deleteAccountEmailNotification(nome, email).then();
           }
           else{
             console.log("result error: " + JSON.stringify(result));
