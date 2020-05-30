@@ -14,7 +14,12 @@ import { Link, Redirect } from "react-router-dom";
 import { commitChangesQuotasMessage } from "../../utils/messages_strings";
 import { languageCode } from "../../utils/general_utils";
 
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 import PageTitle from "../common/PageTitle";
 import Quotas_Modal from "./QuotasModal";
 
@@ -58,11 +63,14 @@ class Quotas_Page extends Component {
 
   componentDidMount() {
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
     if (currentUser != null) {
       if (this_.state.email != null) {
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/getParent?" +
           "id=" +
           this_.state.email;
         const request = async () => {

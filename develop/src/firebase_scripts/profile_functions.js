@@ -12,9 +12,9 @@ import {
   parentsParameters,
   studentsParameters,
 } from "../utils/general_utils";
-import {hello} from "../utils/common_strings";
+import { hello } from "../utils/common_strings";
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 async function fetchUserDoc(email) {
   console.log("profile email to fetch: " + email);
@@ -71,14 +71,14 @@ function getNewParams() {
     project_id +
     ".cloudfunctions.net/api/getAllNewParams";
 
-  console.log("new params uri: " + uri);
+  //console.log("new params uri: " + uri);
 
   const request = async () => {
     let paramsDoc = {};
     await fetch(uri)
       .then((resp) => resp.json()) // Transform the data into json
       .then(function (data) {
-        console.log("paramsDoc recebido -> ", JSON.stringify(data));
+        //console.log("paramsDoc recebido -> ", JSON.stringify(data));
         paramsDoc = data;
       })
       .catch(function (error) {
@@ -390,12 +390,12 @@ function deleteEducandoFromParent(parentEmail, childName) {
 }
 
 /*
-* function to check if the current email exists in Firebase auth
-* */
+ * function to check if the current email exists in Firebase auth
+ * */
 
 function emailExistsInFBAuth(email) {
-
-  return firebase_auth.fetchSignInMethodsForEmail(email)
+  return firebase_auth
+    .fetchSignInMethodsForEmail(email)
     .then((providers) => {
       // if no providers, then user does no exist
       return !(!providers || providers.length === 0);
@@ -406,16 +406,16 @@ function emailExistsInFBAuth(email) {
 }
 
 /*
-* function to check if an email exists in DB
-* */
+ * function to check if an email exists in DB
+ * */
 function emailExistsInDB(email) {
-
   console.log("email to check in DB: " + email);
 
   // in case of, for some reason, the current email is not in the DB
-  let parentRef = firestore.collection('parents').doc(email);
+  let parentRef = firestore.collection("parents").doc(email);
 
-  return parentRef.get()
+  return parentRef
+    .get()
     .then((doc) => {
       console.log("doc para DB <" + email + ">: " + JSON.stringify(doc.data()));
       if (!doc.exists) {
@@ -426,13 +426,11 @@ function emailExistsInDB(email) {
     })
     .catch((error) => {
       console.log("erro para DB <" + email + ">: " + JSON.stringify(error));
-      return false
+      return false;
     });
-
 }
 
 function updateParentEmail(currentEmail, newEmail) {
-
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -448,7 +446,10 @@ function updateParentEmail(currentEmail, newEmail) {
     await fetch(uri)
       .then((resp) => resp.json()) // Transform the data into json
       .then(function (data) {
-        console.log("parentUpdated no request update email -> ", JSON.stringify(data));
+        console.log(
+          "parentUpdated no request update email -> ",
+          JSON.stringify(data)
+        );
         updatedParent = data;
       })
       .catch(function (error) {
@@ -459,15 +460,12 @@ function updateParentEmail(currentEmail, newEmail) {
   };
 
   return request();
-
 }
 
-
 /*
-* export PDF with parent data
-* */
-function exportParentToPDF(email){
-
+ * export PDF with parent data
+ * */
+function exportParentToPDF(email) {
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -495,10 +493,9 @@ function exportParentToPDF(email){
 }
 
 /*
-* export CSV with parent data
-* */
-function exportParentToCSV(email){
-
+ * export CSV with parent data
+ * */
+function exportParentToCSV(email) {
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -526,10 +523,9 @@ function exportParentToCSV(email){
 }
 
 /*
-* export all parents data to a CSV
-* */
-function exportAllParentsToCSV(){
-
+ * export all parents data to a CSV
+ * */
+function exportAllParentsToCSV() {
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -555,10 +551,9 @@ function exportAllParentsToCSV(){
 }
 
 /*
-* export all children data to a CSV
-* */
-function exportAllChildrenToCSV(){
-
+ * export all children data to a CSV
+ * */
+function exportAllChildrenToCSV() {
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -583,12 +578,10 @@ function exportAllChildrenToCSV(){
   return request();
 }
 
-
 /*
-* delete user account
-* */
-function deleteAccount(email){
-
+ * delete user account
+ * */
+function deleteAccount(email) {
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -613,14 +606,12 @@ function deleteAccount(email){
   };
 
   return request();
-
 }
 
 /*
  * send email to parent to notify it was imported to platform
  */
 async function sendChangeEmailAuth(nome, email) {
-
   const project_id = firebaseConfig.projectId;
   let uri =
     "https://us-central1-" +
@@ -665,5 +656,5 @@ export {
   exportAllParentsToCSV,
   exportAllChildrenToCSV,
   deleteAccount,
-  uploadAssocLogo
+  uploadAssocLogo,
 };

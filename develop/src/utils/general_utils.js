@@ -25,9 +25,9 @@ export const regular_role = {
 };
 
 export const auth_providers_names = {
-  GOOGLE : "google.com",
-  FACEBOOK : "facebook.com",
-  PASSWORD : "password"
+  GOOGLE: "google.com",
+  FACEBOOK: "facebook.com",
+  PASSWORD: "password",
 };
 
 const membersCSVparamsIndexes = {
@@ -79,38 +79,38 @@ const notAvailableDesignation = {
 export const cargoDocKey = "titulo";
 
 export const assocParameters = {
-  ZIP : {
-    "pt_PT": "Código Postal"
+  ZIP: {
+    pt_PT: "Código Postal",
   },
-  DAYS_TO_DELETE_REGISTRATION : {
-    "pt_PT": "DeleteRegistosSemPagar"
+  DAYS_TO_DELETE_REGISTRATION: {
+    pt_PT: "DeleteRegistosSemPagar",
   },
-  DESCRIPTION : {
-    "pt_PT": "Descrição"
+  DESCRIPTION: {
+    pt_PT: "Descrição",
   },
-  EMAIL : {
-    "pt_PT": "Email da Associação"
+  EMAIL: {
+    pt_PT: "Email da Associação",
   },
-  IBAN : {
-    "pt_PT": "IBAN"
+  IBAN: {
+    pt_PT: "IBAN",
   },
-  CITY : {
-    "pt_PT": "Localidade"
+  CITY: {
+    pt_PT: "Localidade",
   },
-  LOGO : {
-    "pt_PT": "Logótipo"
+  LOGO: {
+    pt_PT: "Logótipo",
   },
-  STREET : {
-    "pt_PT": "Morada"
+  STREET: {
+    pt_PT: "Morada",
   },
-  NAME : {
-    "pt_PT": "Nome da Associação de Pais"
+  NAME: {
+    pt_PT: "Nome da Associação de Pais",
   },
-  FEE : {
-    "pt_PT": "Quota"
+  FEE: {
+    pt_PT: "Quota",
   },
-  PHONE : {
-    "pt_PT": "Telemóvel"
+  PHONE: {
+    pt_PT: "Telemóvel",
   },
 };
 
@@ -264,8 +264,56 @@ export const newCaseButton = {
   pt_PT: "Abrir um novo caso",
 };
 
+export const showArquivedCases = {
+  pt_PT: "Mostrar casos arquivados",
+};
+
+export const casesLoading = {
+  pt_PT: "A obter casos...",
+};
+
+export const approvalPageLoading = {
+  pt_PT: "A obter pedidos...",
+};
+
+export const formFeedback = {
+  pt_PT: "Por favor, preencha este campo",
+};
+
+export const studentName = {
+  pt_PT: "Nome Aluno",
+};
+
+export const studentYear = {
+  pt_PT: "Ano Escolaridade",
+};
+
+export const newCargoTransactionButton = {
+  pt_PT: "Iniciar mudança de cargos",
+};
+
 export const seeMoreButton = {
   pt_PT: "Ver mais",
+};
+
+export const newCargosTitle = {
+  pt_PT: "Nova Transição de Cargos",
+};
+
+export const newCargosHeaderName = {
+  pt_PT: "Nome",
+};
+
+export const newCargosHeaderEmail = {
+  pt_PT: "Email",
+};
+
+export const newCargosHeaderCargoAtual = {
+  pt_PT: "Cargo Atual",
+};
+
+export const newCargosHeaderNovoCargo = {
+  pt_PT: "Novo Cargo",
 };
 
 // ---------------------------------------------- OBJECTS ---------------------------------------------

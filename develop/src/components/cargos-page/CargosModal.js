@@ -3,6 +3,7 @@
 import React, { Fragment, useState } from "react";
 import ReactDOM from "react-dom";
 import Modal from "react-bootstrap/Modal";
+import { Redirect } from "react-router";
 import {
   ListGroup,
   ListGroupItem,
@@ -22,7 +23,12 @@ import {
   toastTypes,
   saveButton,
   closeButton,
-  newCaseButton,
+  newCargoTransactionButton,
+  newCargosTitle,
+  newCargosHeaderName,
+  newCargosHeaderEmail,
+  newCargosHeaderCargoAtual,
+  newCargosHeaderNovoCargo,
 } from "../../utils/general_utils";
 import { Multiselect } from "multiselect-react-dropdown";
 import { addCasoError, sucessoGeral } from "../../utils/messages_strings";
@@ -35,19 +41,25 @@ import {
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
 
-class CasosModal extends React.Component {
+class CargosModal extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      show: false,
+      admin: false,
+      redirect: null,
+
       membersComplete: [],
       membrosSelected: [],
       options: [],
-      show: false,
+
       checkBoxStatus: false,
       caseTitle: "",
       descricao: "",
     };
+
+    this.componentDidMount = this.componentDidMount.bind(this);
 
     this.createCase = this.createCase.bind(this);
     this.handleChangeDescricao = this.handleChangeDescricao.bind(this);
@@ -63,6 +75,26 @@ class CasosModal extends React.Component {
     this.onRemoveMembro = this.onRemoveMembro.bind(this);
     this.loadParents();
   }
+
+  componentDidMount() {
+    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if (currentUser != null) {
+      var admin_ = currentUser.Admin;
+      this.setState({ admin: admin_ });
+    } else {
+      //Redirect to login
+      var redirect = (
+        <Redirect
+          to={{
+            pathname: "/",
+          }}
+        />
+      );
+      this.setState({ redirect: redirect });
+    }
+  }
+
+  //---------------
 
   handleChangeCheckBoxMembers(e) {
     const id = e.target.id;
@@ -107,6 +139,7 @@ class CasosModal extends React.Component {
         }
       });
       if (options.length != 0) {
+        console.log(membersArrayComplete);
         this.setState({
           membersComplete: membersArrayComplete,
           options: options,
@@ -176,7 +209,6 @@ class CasosModal extends React.Component {
       membrosSelected,
     } = this.state;
     const this_ = this;
-    const project_id = firebaseConfig.projectId;
 
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
@@ -204,6 +236,8 @@ class CasosModal extends React.Component {
         }
       }
 
+      const project_id = firebaseConfig.projectId;
+
       let uri =
         "https://us-central1-" +
         project_id +
@@ -227,7 +261,7 @@ class CasosModal extends React.Component {
         currentUser.Email +
         "&" +
         "foto_autor=" +
-        encodeURIComponent(currentUser.photo);
+        currentUser.photo;
 
       const request = async () => {
         await fetch(uri)
@@ -252,24 +286,74 @@ class CasosModal extends React.Component {
   render() {
     return (
       <>
-        <Button
-          size="md"
-          theme="success"
-          id="new_case"
-          onClick={this.showModal}
-        >
-          <i className="fa fa-plus mr-1" /> {newCaseButton[languageCode]}
-        </Button>
+        {this.state.admin ? (
+          <Button
+            size="md"
+            theme="success"
+            id="new_case"
+            onClick={this.showModal}
+          >
+            <i className="fa fa-plus mr-1" />{" "}
+            {newCargoTransactionButton[languageCode]}
+          </Button>
+        ) : (
+          ""
+        )}
+        {this.state.redirect}
 
         <Modal show={this.state.show} onHide={this.closeModal}>
           <Modal.Header closeButton>
-            <Modal.Title>Novo caso</Modal.Title>
+            <Modal.Title>{newCargosTitle[languageCode]}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <ListGroup flush>
               <ListGroupItem className="p-3">
                 <Col>
-                  <Form>
+                  <table
+                    className="table table-striped"
+                    style={{
+                      display: "block",
+                      overflow: "auto",
+                      whitespace: "nowrap",
+                    }}
+                  >
+                    <thead className="bg-light">
+                      <tr>
+                        <th scope="col" className="border-0">
+                          {newCargosHeaderName[languageCode]}
+                        </th>
+                        <th scope="col" className="border-0">
+                          {newCargosHeaderEmail[languageCode]}
+                        </th>
+                        <th scope="col" className="border-0">
+                          {newCargosHeaderCargoAtual[languageCode]}
+                        </th>
+                        <th scope="col" className="border-0">
+                          {newCargosHeaderNovoCargo[languageCode]}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {this.state.membersComplete.map((membro, idx) => (
+                        <tr>
+                          <td>{membro.nome}</td>
+
+                          <td>{membro.id}</td>
+                          <td></td>
+                          <td>
+                            <select name="cars" id="cars">
+                              <option value="volvo">Volvo</option>
+                              <option value="saab">Saab</option>
+                              <option value="mercedes">Mercedes</option>
+                              <option value="audi">Audi</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {/*<Form>
                     <FormGroup>
                       <label htmlFor="configAssocName">Título do caso</label>
                       <FormInput
@@ -289,7 +373,7 @@ class CasosModal extends React.Component {
                       </FormFeedback>
                     </FormGroup>
 
-                    {/* Descricao Textarea */}
+          
                     <FormGroup>
                       <label htmlFor="novoCasoDescricao">
                         Descrição (opcional)
@@ -315,7 +399,7 @@ class CasosModal extends React.Component {
                         checked={this.state.checkBoxStatus}
                         onChange={this.handleChangeCheckBox}
                       >
-                        {/* eslint-disable-next-line */}Este caso é privado.
+                        Este caso é privado.
                       </FormCheckbox>
                     </FormGroup>
 
@@ -333,7 +417,7 @@ class CasosModal extends React.Component {
                     ) : (
                       ""
                     )}
-                  </Form>
+                  </Form>*/}
                 </Col>
               </ListGroupItem>
             </ListGroup>
@@ -353,4 +437,4 @@ class CasosModal extends React.Component {
   }
 }
 
-export default CasosModal;
+export default CargosModal;

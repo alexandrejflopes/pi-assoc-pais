@@ -57,9 +57,12 @@ class ApprovalModal extends React.Component {
     var dadosFinaisAluno = null;
     var dicionarioAlunos = {};
 
+    const project_id = firebaseConfig.projectId;
     //Get student parameters from database
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/getAllNewParams";
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getAllNewParams";
     const request = async () => {
       let resposta;
       await fetch(uri)
@@ -171,8 +174,12 @@ class ApprovalModal extends React.Component {
 
     var dadosFinaisPai = null;
 
+    const project_id = firebaseConfig.projectId;
+
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/getAllNewParams";
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getAllNewParams";
     const request = async () => {
       let resposta;
       await fetch(uri)
@@ -279,16 +286,19 @@ class ApprovalModal extends React.Component {
     const { dados } = this.state;
     const this_ = this;
 
+    const project_id = firebaseConfig.projectId;
+
     firestore
       .collection("parents")
       .doc(dados.Email)
       .delete()
       .then(function () {
-        console.log("Document successfully deleted!");
         this_.closeModal();
         this_.state.parentComponent.reload();
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/sendRejectedEmail?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/sendRejectedEmail?" +
           "email=" +
           dados.Email +
           "&" +

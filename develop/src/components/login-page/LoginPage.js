@@ -11,7 +11,12 @@ import {
 import { Link, Redirect } from "react-router-dom";
 import BlockUi from "react-block-ui";
 import { Loader } from "react-loaders";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 import { toast, Bounce } from "react-toastify";
 
 //import * as UsersService from "../../services/users/api_user";
@@ -20,7 +25,8 @@ import bg1 from "../../assets/mother.png";
 import {
   languageCode,
   parentsParameters,
-  showToast, toastTypes
+  showToast,
+  toastTypes,
 } from "../../utils/general_utils";
 import {
   errorLoginFB,
@@ -30,7 +36,8 @@ import {
 import {
   signInWithFacebook,
   signInWithGoogle,
-  signInWithLink, signInWithMicrosoft
+  signInWithLink,
+  signInWithMicrosoft,
 } from "../../utils/common_strings";
 
 class Login extends CostumForm {
@@ -77,11 +84,15 @@ class Login extends CostumForm {
 
     const currentUser = firebase_auth.currentUser;
 
+    const project_id = firebaseConfig.projectId;
+
     if (currentUser != null) {
       alert(currentUser.email);
       var email = currentUser.email;
       let uri =
-        "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/getParent?" +
         "id=" +
         email;
       const request = async () => {
@@ -92,7 +103,11 @@ class Login extends CostumForm {
             var dataDoc = data;
             console.log(data);
             if (dataDoc === undefined) {
-              showToast(errorNoLogedInUser[languageCode], 3000, toastTypes.WARNING);
+              showToast(
+                errorNoLogedInUser[languageCode],
+                3000,
+                toastTypes.WARNING
+              );
             } else {
               if (email === dataDoc.Email && dataDoc["Validated"] === false) {
                 var red;
@@ -183,7 +198,9 @@ class Login extends CostumForm {
           window.localStorage.removeItem("emailForSignIn");
 
           let uri =
-            "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+            "https://us-central1-" +
+            project_id +
+            ".cloudfunctions.net/api/getParent?" +
             "id=" +
             email;
           const request = async () => {
@@ -280,6 +297,7 @@ class Login extends CostumForm {
 
   googleSignIn() {
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
     var provider = new firebase.auth.GoogleAuthProvider();
     firebase
       .auth()
@@ -288,7 +306,9 @@ class Login extends CostumForm {
         var email = result.user.email;
 
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/getParent?" +
           "id=" +
           email;
         const request = async () => {
@@ -397,6 +417,7 @@ class Login extends CostumForm {
 
   FBSignIn() {
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
     var provider = new firebase.auth.FacebookAuthProvider();
     firebase
       .auth()
@@ -405,7 +426,9 @@ class Login extends CostumForm {
         var email = result.user.email;
 
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/getParent?" +
           "id=" +
           email;
         const request = async () => {
@@ -517,6 +540,7 @@ class Login extends CostumForm {
 
     const { credentials } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     const data = {};
 
@@ -548,9 +572,11 @@ class Login extends CostumForm {
         });
 
       //Passar para api_user.js
-      console.log(credentials.email);
+      //console.log(credentials.email);
       let uri =
-        "https://us-central1-associacao-pais.cloudfunctions.net/api/getParent?" +
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/getParent?" +
         "id=" +
         credentials.email;
       const request = async () => {
@@ -559,7 +585,7 @@ class Login extends CostumForm {
           .then((resp) => resp.json()) // Transform the data into json
           .then(function (data) {
             var dataDoc = data;
-            console.log(data);
+            //console.log(data);
             if (dataDoc === undefined) {
               var message = errorNoLogedInUser[languageCode];
               toast.configure();
@@ -576,7 +602,9 @@ class Login extends CostumForm {
                 dataDoc["Validated"] === false
               ) {
                 let uri =
-                  "https://us-central1-associacao-pais.cloudfunctions.net/api/sendAuthenticationEmail?" +
+                  "https://us-central1-" +
+                  project_id +
+                  ".cloudfunctions.net/api/sendAuthenticationEmail?" +
                   "email=" +
                   dataDoc.Email +
                   "&" +
@@ -611,7 +639,9 @@ class Login extends CostumForm {
                 dataDoc["Validated"] === true
               ) {
                 let uri =
-                  "https://us-central1-associacao-pais.cloudfunctions.net/api/sendAuthenticationEmail?" +
+                  "https://us-central1-" +
+                  project_id +
+                  ".cloudfunctions.net/api/sendAuthenticationEmail?" +
                   "email=" +
                   dataDoc.Email +
                   "&" +
@@ -642,12 +672,16 @@ class Login extends CostumForm {
                 );
                 this_.setState({ msg: mensagem });
               } else {
-                showToast(errorNoLogedInUser[languageCode], 3000, toastTypes.WARNING);
+                showToast(
+                  errorNoLogedInUser[languageCode],
+                  3000,
+                  toastTypes.WARNING
+                );
               }
             }
           })
           .catch(function (error) {
-            console.log("error2");
+            //console.log("error2");
             alert(error);
           });
         return resposta;
@@ -713,7 +747,10 @@ class Login extends CostumForm {
                             )}
                           </Col>
 
-                          <Col md={12} style={{ textAlign: "center", margin : "3px" }}>
+                          <Col
+                            md={12}
+                            style={{ textAlign: "center", margin: "3px" }}
+                          >
                             <Button
                               color="info"
                               style={{
@@ -721,12 +758,18 @@ class Login extends CostumForm {
                                 textAlign: "center",
                               }}
                             >
-                              <i className="fas fa-envelope" style={{marginRight: "10px"}}/>
+                              <i
+                                className="fas fa-envelope"
+                                style={{ marginRight: "10px" }}
+                              />
                               {signInWithLink[languageCode]}
                             </Button>
                           </Col>
 
-                          <Col md={12} style={{ textAlign: "center", margin : "3px" }}>
+                          <Col
+                            md={12}
+                            style={{ textAlign: "center", margin: "3px" }}
+                          >
                             <Button
                               color="danger"
                               onClick={this.googleSignIn}
@@ -735,12 +778,18 @@ class Login extends CostumForm {
                                 textAlign: "center",
                               }}
                             >
-                              <i className="fab fa-google" style={{marginRight: "10px"}}/>
+                              <i
+                                className="fab fa-google"
+                                style={{ marginRight: "10px" }}
+                              />
                               {signInWithGoogle[languageCode]}
                             </Button>
                           </Col>
 
-                          <Col md={12} style={{ textAlign: "center" , margin : "3px"}}>
+                          <Col
+                            md={12}
+                            style={{ textAlign: "center", margin: "3px" }}
+                          >
                             <Button
                               color="primary"
                               onClick={this.FBSignIn}
@@ -749,7 +798,10 @@ class Login extends CostumForm {
                                 textAlign: "center",
                               }}
                             >
-                              <i className="fab fa-facebook-f" style={{marginRight: "10px"}}/>
+                              <i
+                                className="fab fa-facebook-f"
+                                style={{ marginRight: "10px" }}
+                              />
                               {signInWithFacebook[languageCode]}
                             </Button>
                           </Col>

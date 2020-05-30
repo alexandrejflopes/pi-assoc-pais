@@ -24,8 +24,19 @@ import MembersFileUpload from "../config-inicial/MembersFileUpload";
 import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
 import { saveRegistToDB } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 import ApprovalModal from "./ApprovalModal";
+import {
+  formFeedback,
+  studentName,
+  studentYear,
+  languageCode,
+} from "../../utils/general_utils";
 
 class Approval_Page extends Component {
   constructor(props) {
@@ -185,7 +196,9 @@ class Approval_Page extends Component {
               <Fragment>
                 <hr />
                 <FormGroup>
-                  <label htmlFor="studentName">Nome Aluno</label>
+                  <label htmlFor="studentName">
+                    {studentName[languageCode]}
+                  </label>
                   <FormInput
                     invalid={this_.state.nomeAlunoFeedBack[x]}
                     onChange={(e) => {
@@ -206,13 +219,15 @@ class Approval_Page extends Component {
                     valid={false}
                     style={{ display: "d-block" }}
                   >
-                    Por favor, preencha este campo
+                    {formFeedback[languageCode]}
                   </FormFeedback>
                 </FormGroup>
 
                 {/* Descricao Textarea */}
                 <FormGroup>
-                  <label htmlFor="studentYear">Ano Escolaridade</label>
+                  <label htmlFor="studentYear">
+                    {studentYear[languageCode]}
+                  </label>
                   <FormInput
                     invalid={this_.state.anoEscolaridadeFeedBack[x]}
                     onChange={(e) => {
@@ -233,7 +248,7 @@ class Approval_Page extends Component {
                     valid={false}
                     style={{ display: "d-block" }}
                   >
-                    Por favor, preencha este campo
+                    {formFeedback[languageCode]}
                   </FormFeedback>
                 </FormGroup>
                 {dadosFinaisAluno}
@@ -265,8 +280,11 @@ class Approval_Page extends Component {
 
   getParentsToApprove() {
     var this_ = this;
+    const project_id = firebaseConfig.projectId;
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/getParents";
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getParents";
     const request = async () => {
       let resposta;
       await fetch(uri)
@@ -377,7 +395,7 @@ class Approval_Page extends Component {
                     valid={false}
                     style={{ display: "d-block" }}
                   >
-                    Por favor, preencha este campo
+                    {formFeedback[languageCode]}
                   </FormFeedback>
                 </FormGroup>
               );

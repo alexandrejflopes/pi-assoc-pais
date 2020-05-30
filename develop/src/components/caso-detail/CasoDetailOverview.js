@@ -16,7 +16,12 @@ import {
   CardFooter,
 } from "shards-react";
 
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 import { addDocError, sucessoGeral } from "../../utils/messages_strings";
 import { Multiselect } from "multiselect-react-dropdown";
 import ListGroupReact from "react-bootstrap/ListGroup";
@@ -108,8 +113,12 @@ class CasoDetailOverview extends React.Component {
 
     this.setState({ buttonSave: "A gravar...", buttonsEditDisabled: true });
 
+    const project_id = firebaseConfig.projectId;
+
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/updateTituloCaso?" +
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/updateTituloCaso?" +
       "id=" +
       id +
       "&titulo=" +
@@ -230,6 +239,7 @@ class CasoDetailOverview extends React.Component {
     const { membersToAdd, id, membersComplete, options } = this.state;
     const this_ = this;
     var listaMembros = [];
+    const project_id = firebaseConfig.projectId;
 
     for (var i = 0; i < membersToAdd.length; i++) {
       listaMembros.push(membersComplete[membersToAdd[i].id]);
@@ -239,7 +249,9 @@ class CasoDetailOverview extends React.Component {
       this_.setState({ buttonsEditDisabled: true, buttonSave: "A gravar..." });
 
       let uri =
-        "https://us-central1-associacao-pais.cloudfunctions.net/api/updateMembrosCaso?" +
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/updateMembrosCaso?" +
         "id=" +
         id +
         "&membros=" +

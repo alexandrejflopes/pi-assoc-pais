@@ -1,6 +1,6 @@
-import {firebaseConfig, firestore, storageRef} from "../firebase-config";
+import { firebaseConfig, firestore, storageRef } from "../firebase-config";
 import React from "react";
-import {languageCode, parentsParameters} from "../utils/general_utils";
+import { languageCode, parentsParameters } from "../utils/general_utils";
 
 function addCasosExemplo() {
   let casosRef = firestore.collection("casos");
@@ -45,7 +45,7 @@ function addCasosExemplo() {
 
   for (let i = 0; i < casosExemplo.length; i++) {
     //alert("caso atual -> " + JSON.stringify(casosExemplo[i]));
-    console.log("caso atual -> ", casosExemplo[i]);
+    //console.log("caso atual -> ", casosExemplo[i]);
 
     const titulo = encodeURIComponent(casosExemplo[i].titulo);
     const descricao = encodeURIComponent(casosExemplo[i].descricao);
@@ -54,8 +54,12 @@ function addCasosExemplo() {
     const nome_autor = casosExemplo[i].nome_autor;
     const id_autor = casosExemplo[i].id_autor;
 
+    const project_id = firebaseConfig.projectId;
+
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/addCaso?" +
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/addCaso?" +
       "titulo=" +
       titulo +
       "&" +
@@ -74,15 +78,10 @@ function addCasosExemplo() {
       "id_autor=" +
       id_autor;
 
-    //alert("urI -> " + uri);
-    console.log("urI -> ", uri);
-
     const request = async () => {
       await fetch(uri)
         .then(function (data) {
-          console.log(data);
           //alert("Caso adicionado com sucesso.");
-          console.log("Caso adicionado com sucesso.");
         })
         .catch(function (error) {
           console.log(error);
@@ -124,15 +123,11 @@ async function showAvailableCasos() {
   const project_id = firebaseConfig.projectId;
 
   let uri =
-    "https://us-central1-" + project_id + ".cloudfunctions.net/api/getUserAvailableCasos?" +
+    "https://us-central1-" +
+    project_id +
+    ".cloudfunctions.net/api/getUserAvailableCasos?" +
     "id=" +
-    id +
-    "&" +
-    "nome=" +
-    encodeURIComponent(nome) +
-    "&" +
-    "foto=" +
-    foto;
+    id;
 
   const request = async () => {
     let casos;

@@ -25,7 +25,12 @@ import {
 } from "../firebase_scripts/casos";
 import CasosModal from "../components/casos/CasosModal";
 
-import { languageCode, seeMoreButton } from "../utils/general_utils";
+import {
+  languageCode,
+  seeMoreButton,
+  showArquivedCases,
+  casesLoading,
+} from "../utils/general_utils";
 var dateFormat = require("dateformat");
 
 class Casos extends React.Component {
@@ -50,7 +55,7 @@ class Casos extends React.Component {
 
       Updated: false,
       // Third list of posts.
-      ListaCasos: [
+      ListaCasosArquivados: [
         {
           id: 1,
           autor: "John James",
@@ -82,8 +87,8 @@ class Casos extends React.Component {
       ],
       casoDetail: null,
       redirect: null,
-      ListaCasosPrivados: [],
-      showPrivateCasos: false,
+      ListaCasosNaoArquivados: [],
+      showCasosArquivados: false,
     };
 
     this.closeCasoDetails = this.closeCasoDetails.bind(this);
@@ -101,23 +106,22 @@ class Casos extends React.Component {
       const casosPromise = showAvailableCasos();
 
       casosPromise.then((result) => {
-        console.log(result);
-        var publicCases = [];
-        var privateCases = [];
+        var arquivedCases = [];
+        var nonArquivedCases = [];
         if (result != null) {
           for (var i = 0; i < result.length; i++) {
             var case_selected = result[i];
-            if (case_selected.privado == true) {
-              privateCases.push(case_selected);
+            if (case_selected.arquivado == false) {
+              nonArquivedCases.push(case_selected);
             } else {
-              publicCases.push(case_selected);
+              arquivedCases.push(case_selected);
             }
           }
         }
 
         this_.setState({
-          ListaCasos: publicCases,
-          ListaCasosPrivados: privateCases,
+          ListaCasosArquivados: arquivedCases,
+          ListaCasosNaoArquivados: nonArquivedCases,
           Updated: true,
         });
       });
@@ -135,15 +139,15 @@ class Casos extends React.Component {
   }
 
   handleChangeCheckBox() {
-    let { showPrivateCasos } = this.state;
+    let { showCasosArquivados } = this.state;
     var newValue = false;
-    if (showPrivateCasos) {
+    if (showCasosArquivados) {
       newValue = false;
     } else {
       newValue = true;
     }
 
-    this.setState({ showPrivateCasos: newValue });
+    this.setState({ showCasosArquivados: newValue });
   }
 
   closeCasoDetails() {
@@ -155,12 +159,12 @@ class Casos extends React.Component {
     const this_ = this;
     var red = null;
 
-    for (var i = 0; i < this.state.ListaCasos.length; i++) {
+    for (var i = 0; i < this.state.ListaCasosArquivados.length; i++) {
       if (
-        this.state.ListaCasos[i].id != undefined &&
-        this.state.ListaCasos[i].id == id
+        this.state.ListaCasosArquivados[i].id != undefined &&
+        this.state.ListaCasosArquivados[i].id == id
       ) {
-        var caso = this.state.ListaCasos[i];
+        var caso = this.state.ListaCasosArquivados[i];
 
         red = (
           <Redirect
@@ -176,12 +180,12 @@ class Casos extends React.Component {
     }
 
     if (red == null) {
-      for (var i = 0; i < this.state.ListaCasosPrivados.length; i++) {
+      for (var i = 0; i < this.state.ListaCasosNaoArquivados.length; i++) {
         if (
-          this.state.ListaCasosPrivados[i].id != undefined &&
-          this.state.ListaCasosPrivados[i].id == id
+          this.state.ListaCasosNaoArquivados[i].id != undefined &&
+          this.state.ListaCasosNaoArquivados[i].id == id
         ) {
-          var caso = this.state.ListaCasosPrivados[i];
+          var caso = this.state.ListaCasosNaoArquivados[i];
 
           red = (
             <Redirect
@@ -199,8 +203,11 @@ class Casos extends React.Component {
   }
 
   render() {
-    //console.log("state no render -> ", this.state);
-    const { ListaCasos, ListaCasosPrivados, showPrivateCasos } = this.state;
+    const {
+      ListaCasosArquivados,
+      ListaCasosNaoArquivados,
+      showCasosArquivados,
+    } = this.state;
 
     if (this.state.Updated) {
       return (
@@ -225,17 +232,17 @@ class Casos extends React.Component {
           >
             <FormCheckbox
               id="showCasosPrivados"
-              checked={this.state.showPrivateCasoss}
+              checked={this.state.showCasosArquivados}
               onChange={this.handleChangeCheckBox}
             >
-              Mostrar casos privados
+              {showArquivedCases[languageCode]}
             </FormCheckbox>
           </Row>
 
           {/* First Row of Cases */}
           <Row>
-            {ListaCasos != null
-              ? ListaCasos.map((post, idx) => (
+            {ListaCasosNaoArquivados != null
+              ? ListaCasosNaoArquivados.map((post, idx) => (
                   <Col lg="4" key={idx}>
                     <Card small className="card-post mb-4">
                       <CardBody>
@@ -294,10 +301,8 @@ class Casos extends React.Component {
                   </Col>
                 ))
               : ""}
-          </Row>
-          <Row>
-            {ListaCasosPrivados != null && showPrivateCasos
-              ? ListaCasosPrivados.map((post, idx) => (
+            {ListaCasosArquivados != null && showCasosArquivados
+              ? ListaCasosArquivados.map((post, idx) => (
                   <Col lg="4" key={idx}>
                     <Card small className="card-post mb-4">
                       <CardBody>
@@ -381,7 +386,7 @@ class Casos extends React.Component {
               transform: "translate(-50%, -50%)",
             }}
           >
-            <h2>A obter casos...</h2>
+            <h2>{casesLoading[languageCode]}</h2>
           </Row>
           {this.state.redirect}
         </Container>

@@ -24,12 +24,18 @@ import MembersFileUpload from "../config-inicial/MembersFileUpload";
 import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
 import { saveRegistToDB } from "../../firebase_scripts/installation";
 import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
 import ApprovalModal from "./ApprovalModal";
 import {
   cleanButton,
   languageCode,
   assocParameters,
+  approvalPageLoading,
 } from "../../utils/general_utils";
 
 class Approval_Page extends Component {
@@ -339,8 +345,11 @@ class Approval_Page extends Component {
 
   getParentsToApprove() {
     var this_ = this;
+    const project_id = firebaseConfig.projectId;
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/getParents";
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getParents";
     const request = async () => {
       let resposta;
       await fetch(uri)
@@ -533,42 +542,45 @@ class Approval_Page extends Component {
         <ListGroupItem className="p-3">
           <Col>
             <Row>
-              {this.state.resgistosPorAprovar && this.state.dicionarioRegistos
-                ? this.state.resgistosPorAprovar.map((post, idx) => (
-                    <Col lg="4" key={idx}>
-                      <Card small className="card-post mb-4">
-                        <CardBody>
-                          <h5 className="card-title">{post.Nome}</h5>
-                          <p
-                            className="card-text text-muted"
-                            style={{
-                              whiteSpace: "nowrap",
-                              width: "inherit",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {post.Email}
-                          </p>
-                        </CardBody>
-                        <CardFooter className="border-top d-flex">
-                          <div className="card-post__author d-flex"></div>
-                          <div className="my-auto ml-auto">
-                            <ApprovalModal
-                              dados={
-                                this.state.dicionarioRegistos
-                                  ? this.state.dicionarioRegistos[post.Email]
-                                  : ""
-                              }
-                              parentComponent={this}
-                              componentDidMount={this.componentDidMount}
-                            />
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    </Col>
-                  ))
-                : "A obter pedidos..."}
+              {this.state.resgistosPorAprovar &&
+              this.state.dicionarioRegistos ? (
+                this.state.resgistosPorAprovar.map((post, idx) => (
+                  <Col lg="4" key={idx}>
+                    <Card small className="card-post mb-4">
+                      <CardBody>
+                        <h5 className="card-title">{post.Nome}</h5>
+                        <p
+                          className="card-text text-muted"
+                          style={{
+                            whiteSpace: "nowrap",
+                            width: "inherit",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {post.Email}
+                        </p>
+                      </CardBody>
+                      <CardFooter className="border-top d-flex">
+                        <div className="card-post__author d-flex"></div>
+                        <div className="my-auto ml-auto">
+                          <ApprovalModal
+                            dados={
+                              this.state.dicionarioRegistos
+                                ? this.state.dicionarioRegistos[post.Email]
+                                : ""
+                            }
+                            parentComponent={this}
+                            componentDidMount={this.componentDidMount}
+                          />
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  </Col>
+                ))
+              ) : (
+                <div>{approvalPageLoading[languageCode]}</div>
+              )}
             </Row>
           </Col>
           {this.state.redirect}

@@ -35,6 +35,8 @@ import {
   sucessoGeral,
 } from "../utils/messages_strings";
 
+import { firebaseConfig } from "../firebase-config";
+
 import PageTitle from "../components/common/PageTitle";
 import {
   initCasosExemplo,
@@ -145,9 +147,9 @@ class Casos extends React.Component {
 
   componentDidMount() {
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
     if (currentUser !== null) {
       var user = currentUser.Nome;
-      //console.log("User-> " + user);
       this.setState({ currentUsername: user });
 
       //No get caso devemos ver se currentUsername está nos membros, se não estiver, fazer redirect para casos
@@ -170,84 +172,106 @@ class Casos extends React.Component {
   getCaso() {
     const { id, currentUsername } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if (currentUser != null || currentUsername != "") {
+      var admin = false;
+      if (currentUser != null) {
+        admin = currentUser.Admin;
+      }
 
-    let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/getCaso?" +
-      "id=" +
-      id;
+      let uri =
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/getCaso?" +
+        "id=" +
+        id;
 
-    const request = async () => {
-      await fetch(uri)
-        .then((resp) => resp.json()) // Transform the data into json
-        .then(function (data) {
-          var title = data.titulo;
+      const request = async () => {
+        await fetch(uri)
+          .then((resp) => resp.json()) // Transform the data into json
+          .then(function (data) {
+            var title = data.titulo;
 
-          var date = new Date(data.data_criacao._seconds * 1000).toString();
-          date = moment(date).format("DD/MM/YYYY").toString();
-          var username = data.autor.nome;
+            var date = new Date(data.data_criacao._seconds * 1000).toString();
+            date = moment(date).format("DD/MM/YYYY").toString();
+            var username = data.autor.nome;
 
-          var descricao = data.descricao;
-          var arquivado = data.arquivado;
-          var ficheiros = data.ficheiros;
-          var comentarios = data.observacoes;
-          var membros = data.membros;
-          var privado = data.privado;
+            var descricao = data.descricao;
+            var arquivado = data.arquivado;
+            var ficheiros = data.ficheiros;
+            var comentarios = data.observacoes;
+            var membros = data.membros;
+            var privado = data.privado;
 
-          var userInCaso = true;
-          if (privado) {
-            userInCaso = false;
-            for (var i = 0; i < membros.length; i++) {
-              if (
-                membros[i].nome == currentUsername ||
-                membros[i].nome == currentUser.Nome
-              ) {
-                userInCaso = true;
-                break;
+            var userInCaso = true;
+            if (privado && !admin) {
+              userInCaso = false;
+              for (var i = 0; i < membros.length; i++) {
+                if (
+                  membros[i].nome == currentUsername ||
+                  membros[i].nome == currentUser.Nome
+                ) {
+                  userInCaso = true;
+                  break;
+                }
               }
             }
-          }
 
-          var redirect = null;
-          if (userInCaso == false) {
-            redirect = (
-              <Redirect
-                to={{
-                  pathname: "/casos",
-                }}
-              />
-            );
-          }
+            var redirect = null;
+            if (userInCaso == false) {
+              redirect = (
+                <Redirect
+                  to={{
+                    pathname: "/casos",
+                  }}
+                />
+              );
+            }
 
-          this_.setState({
-            redirect: redirect,
-            title: title,
-            data: date,
-            username: username,
-            descricao: descricao,
-            arquivado: arquivado,
-            docs: ficheiros,
-            comments: comentarios,
-            membros: membros,
-            loading: false,
+            this_.setState({
+              redirect: redirect,
+              title: title,
+              data: date,
+              username: username,
+              descricao: descricao,
+              arquivado: arquivado,
+              docs: ficheiros,
+              comments: comentarios,
+              membros: membros,
+              loading: false,
+            });
+          })
+          .catch(function (error) {
+            console.log(error);
+            this_.setState({ loading: false });
           });
-        })
-        .catch(function (error) {
-          console.log(error);
-          this_.setState({ loading: false });
-        });
-    };
+      };
 
-    request();
+      request();
+    } else {
+      //Redirect to login
+      var redirect = (
+        <Redirect
+          to={{
+            pathname: "/",
+          }}
+        />
+      );
+      this.setState({ redirect: redirect });
+    }
   }
 
   getCasoWithoutFiles() {
     const { id } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/getCaso?" +
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getCaso?" +
       "id=" +
       id;
 
@@ -316,6 +340,7 @@ class Casos extends React.Component {
   finalizeAddDoc() {
     const { id, titleToAdd, linkToAdd } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     if (id != "") {
       if (titleToAdd == "") {
@@ -326,7 +351,9 @@ class Casos extends React.Component {
         this_.setState({ buttonSave: "A gravar...", buttonDisabled: true });
         //Guardar na base de dados
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/addAnexoCaso?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/addAnexoCaso?" +
           "id=" +
           id +
           "&" +
@@ -376,6 +403,7 @@ class Casos extends React.Component {
   finalizeAddComment() {
     const { id, commentToAdd } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
@@ -394,7 +422,9 @@ class Casos extends React.Component {
           });
           //Guardar na base de dados
           let uri =
-            "https://us-central1-associacao-pais.cloudfunctions.net/api/addCommentCaso?" +
+            "https://us-central1-" +
+            project_id +
+            ".cloudfunctions.net/api/addCommentCaso?" +
             "id=" +
             id +
             "&" +
@@ -455,10 +485,9 @@ class Casos extends React.Component {
   deleteComment(e) {
     const this_ = this;
     var id = e.target.id;
-    console.log(e.target.id);
+    const project_id = firebaseConfig.projectId;
 
     var comment = this.state.comments[id];
-    console.log(comment);
 
     if (comment === undefined) {
       showToast(deleteCommentError[languageCode], 5000, toastTypes.ERROR);
@@ -470,7 +499,9 @@ class Casos extends React.Component {
 
       if (idCaso !== undefined) {
         let uri =
-          "https://us-central1-associacao-pais.cloudfunctions.net/api/removeCommentCaso?" +
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/removeCommentCaso?" +
           "id=" +
           idCaso +
           "&user_id=" +
@@ -532,6 +563,7 @@ class Casos extends React.Component {
     var user_id = comment.user.id;
     var seconds = comment.tempo._seconds;
     var nanoseconds = comment.tempo._nanoseconds;
+    const project_id = firebaseConfig.projectId;
 
     this_.setState({
       buttonCommentSave: "A gravar...",
@@ -539,7 +571,9 @@ class Casos extends React.Component {
     });
     //Guardar na base de dados
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/editCommentCaso?" +
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/editCommentCaso?" +
       "id=" +
       idCaso +
       "&" +
@@ -607,6 +641,7 @@ class Casos extends React.Component {
   finalizeEditDescription(e) {
     const this_ = this;
     var id = this.state.id;
+    const project_id = firebaseConfig.projectId;
 
     var descricao = this.state.descricaoToAdd;
 
@@ -616,7 +651,9 @@ class Casos extends React.Component {
     });
     //Guardar na base de dados
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/editDescricaoCaso?" +
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/editDescricaoCaso?" +
       "id=" +
       id +
       "&" +
@@ -661,6 +698,7 @@ class Casos extends React.Component {
   arquiveOrReverse() {
     var { arquivado, id } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     var newValue = true;
 
@@ -669,7 +707,9 @@ class Casos extends React.Component {
     }
 
     let uri =
-      "https://us-central1-associacao-pais.cloudfunctions.net/api/archiveCaso?" +
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/archiveCaso?" +
       "id=" +
       id +
       "&" +
@@ -720,8 +760,7 @@ class Casos extends React.Component {
             transform: "translate(-50%, -50%)",
           }}
         >
-          {" "}
-          <h1>A carregar...</h1>
+          <Row>{this.state.redirect}</Row> <h1>A carregar...</h1>
         </Container>
       );
     } else {
