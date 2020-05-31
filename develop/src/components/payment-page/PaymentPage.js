@@ -66,6 +66,9 @@ class Payment_Page extends CostumForm {
       .signOut()
       .then(function () {
         // Sign-out successful.
+        window.localStorage.removeItem("userDoc");
+        window.localStorage.removeItem("newParamsInputTypes");
+        window.localStorage.removeItem("assocDoc");
         window.location = "/login";
       })
       .catch(function (error) {
