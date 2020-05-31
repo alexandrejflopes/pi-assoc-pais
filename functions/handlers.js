@@ -1168,6 +1168,59 @@ exports.getUserCargos = functions.https.onRequest((request, response) => {
     });
 
 });
+
+/**
+ * Função executa a transição d eum cargo.
+ * Isto inclui tomar com aceite o documento de transição e fazer o update das variáveis admin e cargo do utilizador associado.
+ * Leva como argumento o id do documento da coleção cargoTransition correspondente á transição a ser efetuada.
+ */
+exports.executeCargoTransition = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    
+    let id = request.query.id;
+
+    return db.collection('cargoTransition').doc(id).get().then(doc => {
+        if (!doc.exists) {
+            console.log('No such document!');
+            return response.status(404).send({"error":"No such document"});
+        }
+        let email = doc.get('email');
+        let cargo = doc.get('cargo');
+        return db.collection('cargos').get().then(snapshot => {
+            let c = 0;
+            let admin = false;
+            snapshot.forEach((doc) => {
+                if (doc.get('titulo') === cargo) {
+                    admin = doc.get('admin');
+                    c = c + 1;
+                }
+            });
+            if (c === 0) {
+                console.log("Nome de cargo desconhecido : ", cargo);
+                return response.status(404).send({"error":"No such document"});
+            }
+
+            let transitionUpdate = db.collection('cargoTransition').doc(id).update({'aceite':true});
+            let parentUpdate = db.collection('parents').doc(email).update({'Cargo':cargo, 'Admin':admin});
+            
+            return Promise.all([transitionUpdate, parentUpdate]).then((query_snapshots) => {
+                return response.status(204).send();
+            })
+            .catch(err => {
+                console.log('Update error:', err);
+                return response.status(405).send({"error" : err});
+            });
+        })
+        .catch(err => {
+            console.log('Query error:', err);
+            return response.status(405).send({"error" : err});
+        });
+    })
+    .catch(err => {
+        console.log('Query error:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
 /**
  * Funções relacionadas com as partes das cotas dos enc de educação
  */
@@ -1814,7 +1867,7 @@ exports.sendAccountEliminationEmail = functions.https.onRequest((request, respon
 });
 /**
  * Função que manda email a vários utilizadores relativamente a uma transferência de cargo para os mesmos.
- * Formato do argumento membros : [{"id":"email@gmail.com", "nome":"Edgar", "cargo":"Vogal"}]
+ * Formato do argumento membros : [{"id":"email@gmail.com", "nome":"Edgar", "cargo":"Vogal", "data":"10-10-2020"}]
  */
 exports.sendCargoChangeEmail = functions.https.onRequest((request, response) => {
     let members = JSON.parse(request.query.membros);
@@ -1823,8 +1876,10 @@ exports.sendCargoChangeEmail = functions.https.onRequest((request, response) => 
         let nome = members[i]["nome"];
         let email = members[i]["id"];
         let cargo = members[i]["cargo"];
+        let data = members[i]["data"];
         let message = "Olá, "+nome+"\n\nFoi feita um transição do cargo "+cargo+" para si. Para aceitar esse cargo terá de realizar a confirmação na plataforma.\n\nSe considera que se trata de um erro, por favor ignore este email ou contacte os órgãos sociais da associação.\n\nAtenciosamente,\nA Equipa";
         let subject = `Transferência de cargo - Autenticação para associação de pais - ${APP_NAME}!`;
+        createCargoTransition(nome, email, data, cargo);
         sendEmail(email, subject, message);
     }
     return response.status(204).send();
@@ -1845,7 +1900,22 @@ async function sendEmail(email, subject, message) {
     //console.log('New welcome email sent to:', email);
     return null;
 }
+/**
+ * Função auxiliar que cria os documentos de CargoTransition
+ */
+async function createCargoTransition(nome, email, data, cargo) {
+    let db = admin.firestore();
 
+    let document = {'nome':nome, 'email':email, 'data':data, 'cargo':cargo, 'aceite':false}
+    db.collection('cargoTransition').add(document).then(ref => {
+        console.log("Added document");
+        return document
+    })
+    .catch(err => {
+        console.log("Error creating cargoTransition Document-> ,", err);
+        return response.status(405).send({"error" : err});
+    });
+}
 /**
  * Funções relacionadas com a exportação de dados
  */
