@@ -567,7 +567,8 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
 
     // add remaining necessary parameters
     parentDoc["Cotas"] = [];
-    parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
+    //parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
+    parentDoc["Data inscricao"] = new Date();
     // only regulars with payed dues are validated
     parentDoc["Validated"] = !(!parentDoc["Admin"] && !parentDoc["Quotas pagas"]);
     parentDoc["blocked"] = false; // imported parents are not blocked initially

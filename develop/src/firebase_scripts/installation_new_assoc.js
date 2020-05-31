@@ -55,7 +55,8 @@ function createInstallerParent(nome, email, cargo) {
   parentDoc[parentsParameters.CC[languageCode]] = "";
   parentDoc[parentsParameters.FEES[languageCode]] = [];
   parentDoc[parentsParameters.ZIPCODE[languageCode]] = "";
-  parentDoc[parentsParameters.REGISTER_DATE[languageCode]] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
+  //parentDoc[parentsParameters.REGISTER_DATE[languageCode]] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
+  parentDoc[parentsParameters.REGISTER_DATE[languageCode]] = new Date();
   // adicionar array para educandos
   parentDoc[parentsParameters.CHILDREN[languageCode]] = [];
   parentDoc[parentsParameters.EMAIL[languageCode]] = email;
