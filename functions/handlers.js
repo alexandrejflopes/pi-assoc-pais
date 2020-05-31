@@ -1222,6 +1222,25 @@ exports.executeCargoTransition = functions.https.onRequest((request, response) =
     });
 });
 /**
+ * Função que quando chamada sem argumentos retorna todos os documentos da coleção cargoTransitions relativos
+ * ás transições de cargo.
+ */
+exports.getCargoTransitions = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let a = [];
+    db.collection('cargoTransition').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let data = doc.data();
+            a.push(data);
+        });
+        return response.send(a);
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
  * Funções relacionadas com as partes das cotas dos enc de educação
  */
 

@@ -40,6 +40,7 @@ const {
   alterParentEmail,
   getUserCargos,
   executeCargoTransition,
+  getCargoTransitions,
   addCota,
   updateCota,
   confirmarPaganteCota,
@@ -105,6 +106,7 @@ app.get('/addFirstPayment',addFirstPayment);
 app.get('/alterParentEmail',alterParentEmail);
 app.get('/getUserCargos',getUserCargos);
 app.get('/executeCargoTransition',executeCargoTransition);
+app.get('/getCargoTransitions',getCargoTransitions);
 app.get('/addCota',addCota);
 app.get('/updateCota',updateCota);
 app.get('/confirmarPaganteCota',confirmarPaganteCota);
