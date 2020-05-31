@@ -33,7 +33,7 @@ import {
   showArquivedCases,
   casesLoading,
   showToast,
-  toastTypes,
+  toastTypes, parentsParameters,
 } from "../utils/general_utils";
 import {
   deleteAccountPrompt,
@@ -112,6 +112,7 @@ class Casos extends React.Component {
       showCasosArquivados: false,
       deleteDialogOpen: false,
       casoIdToDelete: null,
+      currentUser : null
     };
 
     this.closeCasoDetails = this.closeCasoDetails.bind(this);
@@ -128,8 +129,9 @@ class Casos extends React.Component {
     //initCasosExemplo();
     const this_ = this;
 
-    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    let currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
     if (currentUser != null) {
+      this.setState({currentUser : currentUser});
       const casosPromise = showAvailableCasos();
 
       casosPromise.then((result) => {
@@ -363,15 +365,30 @@ class Casos extends React.Component {
                           </Col>
                           <Col sm="12">
                             <ButtonGroup size="sm">
-                              <Button
-                                size="sm"
-                                theme="danger"
-                                id={`${post.id}`}
-                                onClick={this.openDeleteCasoDialog}
-                              >
-                                <i className="fa fa-trash mr-1" />{" "}
-                                {erase[languageCode]}
-                              </Button>
+                              {
+                                this.state.currentUser[parentsParameters.ADMIN[languageCode]] ?
+                                  (<Button
+                                    size="sm"
+                                    theme="danger"
+                                    id={`${post.id}`}
+                                    onClick={this.openDeleteCasoDialog}
+                                  >
+                                    <i className="fa fa-trash mr-1" />{" "}
+                                    {erase[languageCode]}
+                                  </Button>)
+                                  :
+                                  (this.state.currentUser[parentsParameters.EMAIL[languageCode]]===post.autor.id ?
+                                    <Button
+                                      size="sm"
+                                      theme="danger"
+                                      id={`${post.id}`}
+                                      onClick={this.openDeleteCasoDialog}
+                                    >
+                                      <i className="fa fa-trash mr-1" />{" "}
+                                      {erase[languageCode]}
+                                    </Button> :
+                                    "")
+                              }
 
                               <Button
                                 size="sm"
@@ -441,15 +458,30 @@ class Casos extends React.Component {
                           </Col>
                           <Col sm="12">
                             <ButtonGroup size="sm">
-                              <Button
-                                size="sm"
-                                theme="danger"
-                                id={`${post.id}`}
-                                onClick={this.openDeleteCasoDialog}
-                              >
-                                <i className="fa fa-trash mr-1" />{" "}
-                                {erase[languageCode]}
-                              </Button>
+                              {
+                                this.state.currentUser[parentsParameters.ADMIN[languageCode]] ?
+                                  (<Button
+                                    size="sm"
+                                    theme="danger"
+                                    id={`${post.id}`}
+                                    onClick={this.openDeleteCasoDialog}
+                                  >
+                                    <i className="fa fa-trash mr-1" />{" "}
+                                    {erase[languageCode]}
+                                  </Button>)
+                                  :
+                                  (this.state.currentUser[parentsParameters.EMAIL[languageCode]]===post.autor.id ?
+                                    <Button
+                                      size="sm"
+                                      theme="danger"
+                                      id={`${post.id}`}
+                                      onClick={this.openDeleteCasoDialog}
+                                    >
+                                      <i className="fa fa-trash mr-1" />{" "}
+                                      {erase[languageCode]}
+                                    </Button> :
+                                    "")
+                              }
 
                               <Button
                                 size="sm"
