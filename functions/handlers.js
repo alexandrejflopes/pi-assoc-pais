@@ -1231,6 +1231,7 @@ exports.getCargoTransitions = functions.https.onRequest((request, response) => {
     db.collection('cargoTransition').get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
+            data['id'] = doc.id;
             a.push(data);
         });
         return response.send(a);
