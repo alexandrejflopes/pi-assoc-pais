@@ -12,7 +12,7 @@ const loadingInfo = {
 
 export const daysToDeleteRegistTipMessage = {
   pt_PT:
-    "Número de dias após o qual os pedidos de registo não aprovados e sem quota paga são eliminados automaticamente."
+    "Número de dias após o qual os pedidos de registo não aprovados e sem quota paga são eliminados automaticamente.",
 };
 
 const jsonParamsErrorMessage = {
@@ -135,11 +135,13 @@ export const deleteCasoError = {
 };
 
 export const emailAlreadyInUse = {
-  pt_PT: "O email que inseriu já está a ser usado por outro utilizador. Por favor, forneça outro email.",
+  pt_PT:
+    "O email que inseriu já está a ser usado por outro utilizador. Por favor, forneça outro email.",
 };
 
 export const emailUsageCheckError = {
-  pt_PT: "Houve um problema a verificar o seu email. Por favor, tente novamente.",
+  pt_PT:
+    "Houve um problema a verificar o seu email. Por favor, tente novamente.",
 };
 
 // ------------------ STRINGS RELATED TO PROFILE ------------------
@@ -168,7 +170,7 @@ export const exportAssocCasosExplanation = {
   pt_PT:
     "Pode descarregar uma cópia de todos os casos criados pelos utilizadores da plataforma, incluindo comentários, " +
     "membros (no caso de casos privados) e informações sobre os documentos associados aos casos. " +
-    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo."
+    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
 };
 
 export const deleteAccountExplanation = {
@@ -304,7 +306,7 @@ export const installError = {
 export const installDefaultLogoError = {
   pt_PT:
     "Houve um problema a processar o logótipo por omissão.\nPor favor, forneça um logótipo para a associação ou" +
-    " contacte o responsável pela instalação da plataforma.\n Obrigado."
+    " contacte o responsável pela instalação da plataforma.\n Obrigado.",
 };
 
 export const uploadLogoError = {
@@ -339,7 +341,28 @@ export const assocUpdateLogoError = {
     "Houve um problema a atualizar o logótipo. Por favor, tente novamente.",
 };
 
+export const cargosGetError = {
+  pt_PT: "Erro ao obter cargos da base de dados. Por favor, tente novamente.",
+};
+
+export const cargosUpdateError = {
+  pt_PT: "Erro ao gravar a transição. Por favor, tente novamente.",
+};
+
+export const cargosNothingToUpdateWarning = {
+  pt_PT: "Transição sem dados para atualizar.",
+};
+
+export const erroUpdateCargos = {
+  pt_PT: "Erro ao fazer o update. Por favor, tente novamente.",
+};
+
 // ------- CONFIRMATIONS / PROMPTS
+export const confirmAceitarCargo = {
+  pt_PT:
+    "Tem a certeza que pretender aceitar o cargo?\n" +
+    "Esta ação não é revertível.",
+};
 
 export const confirmDeleteCaso = {
   pt_PT:
@@ -464,7 +487,6 @@ export const assocUpdateLogoSuccess = {
 export const deleteCasoSuccess = {
   pt_PT: "Caso eliminado.",
 };
-
 
 export {
   loadingInfo,

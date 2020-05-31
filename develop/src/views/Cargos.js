@@ -17,7 +17,7 @@ const CargosPage = (e) => (
       className="page-header"
       style={{ marginTop: "10px", marginBottom: "20px" }}
     >
-      <CargosModal />
+      {/*<CargosModal />*/}
     </Row>
     <Row
       style={{

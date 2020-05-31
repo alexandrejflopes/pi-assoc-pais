@@ -288,6 +288,14 @@ export const studentYear = {
   pt_PT: "Ano Escolaridade",
 };
 
+export const cargosSemCargo = {
+  pt_PT: "Sem Cargo",
+};
+
+export const cargosSemMudanca = {
+  pt_PT: "Sem Mudança",
+};
+
 export const newCargoTransactionButton = {
   pt_PT: "Iniciar mudança de cargos",
 };

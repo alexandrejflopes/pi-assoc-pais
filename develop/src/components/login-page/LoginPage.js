@@ -87,7 +87,7 @@ class Login extends CostumForm {
     const project_id = firebaseConfig.projectId;
 
     if (currentUser != null) {
-      alert(currentUser.email);
+      //alert(currentUser.email);
       var email = currentUser.email;
       let uri =
         "https://us-central1-" +
@@ -101,7 +101,8 @@ class Login extends CostumForm {
           .then((resp) => resp.json()) // Transform the data into json
           .then(function (data) {
             var dataDoc = data;
-            console.log(data);
+
+            //console.log(data);
             if (dataDoc === undefined) {
               showToast(
                 errorNoLogedInUser[languageCode],
@@ -166,7 +167,7 @@ class Login extends CostumForm {
             }
           })
           .catch(function (error) {
-            console.log("error3");
+            //console.log("error3");
             alert(error);
           });
         return resposta;
@@ -298,12 +299,23 @@ class Login extends CostumForm {
   googleSignIn() {
     const this_ = this;
     const project_id = firebaseConfig.projectId;
+
     var provider = new firebase.auth.GoogleAuthProvider();
     firebase
       .auth()
       .signInWithPopup(provider)
       .then(function (result) {
         var email = result.user.email;
+
+        var message = "A carregar...";
+        toast.configure();
+        toast(message, {
+          transition: Bounce,
+          closeButton: true,
+          autoClose: 5000,
+          position: "top-right",
+          type: "info",
+        });
 
         let uri =
           "https://us-central1-" +
@@ -573,6 +585,16 @@ class Login extends CostumForm {
 
       //Passar para api_user.js
       //console.log(credentials.email);
+      var message = "A carregar...";
+      toast.configure();
+      toast(message, {
+        transition: Bounce,
+        closeButton: true,
+        autoClose: 5000,
+        position: "top-right",
+        type: "info",
+      });
+
       let uri =
         "https://us-central1-" +
         project_id +

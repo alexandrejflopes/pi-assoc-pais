@@ -62,9 +62,10 @@ class Casos extends React.Component {
     var ficheiros = [];
     var comentarios = [];
     var membros = [];
+
     if (!props.history.location.state) {
       //Buscar id ao url
-      console.log(window.location.href);
+      //console.log(window.location.href);
       var url = window.location.href;
       var urlParts = url.toString().split("/");
       id = urlParts[urlParts.length - 1];
@@ -117,6 +118,7 @@ class Casos extends React.Component {
       editingDescription: false,
       buttonEditDescriptionDisabled: false,
       buttonsEditDescriptionDisabled: false,
+      emailAutor: "",
     };
 
     this.getCasoWithoutFiles = this.getCasoWithoutFiles.bind(this);
@@ -217,6 +219,7 @@ class Casos extends React.Component {
               var date = new Date(data.data_criacao._seconds * 1000).toString();
               date = moment(date).format("DD/MM/YYYY").toString();
               var username = data.autor.nome;
+              var emailAutor = data.autor.id;
 
               var descricao = data.descricao;
               var arquivado = data.arquivado;
@@ -259,6 +262,7 @@ class Casos extends React.Component {
                 docs: ficheiros,
                 comments: comentarios,
                 membros: membros,
+                emailAutor: emailAutor,
                 loading: false,
               });
             }
@@ -386,7 +390,6 @@ class Casos extends React.Component {
         const request = async () => {
           await fetch(uri)
             .then(function (data) {
-              console.log(data);
               showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
 
               var documentos = this_.state.docs;
@@ -798,6 +801,7 @@ class Casos extends React.Component {
                   id={this.state.id}
                   data={this.state.data}
                   username={this.state.username}
+                  emailAutor={this.state.emailAutor}
                   arquivado={true}
                   membros={this.state.membros}
                   updateMembers={this.updateMembers}
@@ -811,6 +815,7 @@ class Casos extends React.Component {
                     title={this.state.title}
                     data={this.state.data}
                     username={this.state.username}
+                    emailAutor={this.state.emailAutor}
                     arquivado={false}
                     membros={this.state.membros}
                     updateMembers={this.updateMembers}

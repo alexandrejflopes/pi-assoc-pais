@@ -29,9 +29,18 @@ import {
   newCargosHeaderEmail,
   newCargosHeaderCargoAtual,
   newCargosHeaderNovoCargo,
+  cargosSemCargo,
+  cargosSemMudanca,
 } from "../../utils/general_utils";
+import * as moment from "moment";
 import { Multiselect } from "multiselect-react-dropdown";
-import { addCasoError, sucessoGeral } from "../../utils/messages_strings";
+import {
+  addCasoError,
+  sucessoGeral,
+  cargosGetError,
+  cargosNothingToUpdateWarning,
+  cargosUpdateError,
+} from "../../utils/messages_strings";
 import {
   firestore,
   firebase_auth,
@@ -49,30 +58,22 @@ class CargosModal extends React.Component {
       show: false,
       admin: false,
       redirect: null,
+      listaCargos: [],
+      cargosAtuais: {},
+      changes: {},
 
       membersComplete: [],
       membrosSelected: [],
       options: [],
-
-      checkBoxStatus: false,
-      caseTitle: "",
-      descricao: "",
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
-
-    this.createCase = this.createCase.bind(this);
-    this.handleChangeDescricao = this.handleChangeDescricao.bind(this);
-    this.handleChangeCaseTitle = this.handleChangeCaseTitle.bind(this);
-    this.handleChangeCheckBox = this.handleChangeCheckBox.bind(this);
+    this.createTransaction = this.createTransaction.bind(this);
+    this.change = this.change.bind(this);
     this.showModal = this.showModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.loadParents = this.loadParents.bind(this);
-    this.handleChangeCheckBoxMembers = this.handleChangeCheckBoxMembers.bind(
-      this
-    );
-    this.onSelectMembro = this.onSelectMembro.bind(this);
-    this.onRemoveMembro = this.onRemoveMembro.bind(this);
+
     this.loadParents();
   }
 
@@ -92,24 +93,6 @@ class CargosModal extends React.Component {
       );
       this.setState({ redirect: redirect });
     }
-  }
-
-  //---------------
-
-  handleChangeCheckBoxMembers(e) {
-    const id = e.target.id;
-
-    var array = this.state.membersCheckBoxStatus;
-    var prev = array[id];
-    var newVal;
-    if (prev) {
-      newVal = false;
-    } else {
-      newVal = true;
-    }
-
-    array[id] = newVal;
-    this.setState({ membersCheckBoxStatus: array });
   }
 
   loadParents() {
@@ -139,7 +122,7 @@ class CargosModal extends React.Component {
         }
       });
       if (options.length != 0) {
-        console.log(membersArrayComplete);
+        //console.log(membersArrayComplete);
         this.setState({
           membersComplete: membersArrayComplete,
           options: options,
@@ -149,137 +132,131 @@ class CargosModal extends React.Component {
   }
 
   showModal() {
-    this.setState({ show: true });
+    const project_id = firebaseConfig.projectId;
+    const this_ = this;
+
+    let uri =
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getUserCargos";
+
+    const request = async () => {
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          var cargosList = [];
+          var currentCargosList = {};
+          var cargos = data.cargos;
+          var users = data.users;
+
+          cargosList.push(cargosSemMudanca[languageCode]);
+          for (var i = 0; i < cargos.length; i++) {
+            cargosList.push(cargos[i]);
+          }
+          for (var x = 0; x < users.length; x++) {
+            var json = users[x];
+            currentCargosList[json.id] = json.Cargo;
+          }
+
+          showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
+
+          this_.setState({
+            listaCargos: cargosList,
+            cargosAtuais: currentCargosList,
+            show: true,
+          });
+        })
+        .catch(function (error) {
+          showToast(cargosGetError[languageCode], 5000, toastTypes.ERROR);
+        });
+    };
+
+    request();
   }
 
   closeModal() {
     this.setState({
       show: false,
-      caseTitle: "",
-      descricao: "",
       membrosSelected: [],
-      checkBoxStatus: false,
     });
   }
 
-  handleChangeCheckBox() {
-    let { checkBoxStatus } = this.state;
-    var newValue = false;
-    if (checkBoxStatus) {
-      newValue = false;
-    } else {
-      newValue = true;
-    }
+  change(event) {
+    var index = event.target.id;
+    var changes = this.state.changes;
 
-    this.setState({ checkBoxStatus: newValue });
+    changes[index] = event.target.value;
+    this.setState({ changes: changes });
   }
 
-  handleChangeCaseTitle(e) {
-    this.setState({ caseTitle: e.target.value });
-  }
-
-  handleChangeDescricao(e) {
-    this.setState({ descricao: e.target.value });
-  }
-
-  onSelectMembro(selectedList, selectedItem) {
-    var array = this.state.membrosSelected;
-    array.push(selectedItem.id);
-    this.setState({ membrosSelected: array });
-  }
-
-  onRemoveMembro(selectedList, removedItem) {
-    const { membrosSelected } = this.state;
-    var array = membrosSelected;
-
-    var index = array.indexOf(removedItem.id);
-    if (index !== -1) {
-      array.splice(index, 1);
-    }
-
-    this.setState({ membrosSelected: array });
-  }
-
-  createCase() {
-    const {
-      checkBoxStatus,
-      caseTitle,
-      descricao,
-      membersComplete,
-      membrosSelected,
-    } = this.state;
+  createTransaction() {
+    const { changes, membersComplete, cargosAtuais } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
-    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    var tamanho = Object.keys(changes).length;
+    var keys = Object.keys(changes);
 
-    if (caseTitle === "") {
-      var message = "Título do caso em falta!";
-      toast.configure();
-      toast(message, {
-        transition: Bounce,
-        closeButton: true,
-        autoClose: 2000,
-        position: "top-right",
-        type: "error",
-      });
+    if (tamanho == 0) {
+      showToast(
+        cargosNothingToUpdateWarning[languageCode],
+        5000,
+        toastTypes.WARNING
+      );
     } else {
+      var mudanca = false;
       var listaMembros = [];
-      var privateVal = false;
+      var data_ = new Date();
+      var data = moment(data_).format("DD-MM-YYYY").toString();
 
-      if (checkBoxStatus) {
-        privateVal = true;
-
-        var listaCompletaMembros = membersComplete;
-
-        for (var i = 0; i < membrosSelected.length; i++) {
-          listaMembros.push(listaCompletaMembros[membrosSelected[i]]);
+      for (var i = 0; i < tamanho; i++) {
+        if (
+          changes[keys[i]] != cargosSemMudanca[languageCode] &&
+          changes[keys[i]] != cargosAtuais[membersComplete[keys[i]].id]
+        ) {
+          mudanca = true;
+          listaMembros.push({
+            nome: membersComplete[keys[i]].nome,
+            id: membersComplete[keys[i]].id,
+            cargo: changes[keys[i]],
+            data: data,
+          });
         }
       }
 
-      const project_id = firebaseConfig.projectId;
+      if (mudanca) {
+        let uri =
+          "https://us-central1-" +
+          project_id +
+          ".cloudfunctions.net/api/sendCargoChangeEmail?" +
+          "membros=" +
+          encodeURIComponent(JSON.stringify(listaMembros));
 
-      let uri =
-        "https://us-central1-" +
-        project_id +
-        ".cloudfunctions.net/api/addCaso?" +
-        "titulo=" +
-        encodeURIComponent(caseTitle) +
-        "&" +
-        "descricao=" +
-        encodeURIComponent(descricao) +
-        "&" +
-        "membros=" +
-        encodeURIComponent(JSON.stringify(listaMembros)) +
-        "&" +
-        "privado=" +
-        privateVal +
-        "&" +
-        "nome_autor=" +
-        encodeURIComponent(currentUser.Nome) +
-        "&" +
-        "id_autor=" +
-        currentUser.Email +
-        "&" +
-        "foto_autor=" +
-        currentUser.photo;
+        const request = async () => {
+          await fetch(uri)
+            .then(function (data) {
+              showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
 
-      const request = async () => {
-        await fetch(uri)
-          .then(function (data) {
-            console.log("Caso adicionado com sucesso.");
-            showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
+              this_.props.getTransitions();
+              this_.closeModal();
+            })
+            .catch(function (error) {
+              showToast(
+                cargosUpdateError[languageCode],
+                5000,
+                toastTypes.ERROR
+              );
+            });
+        };
 
-            this_.setState({ caseTitle: "", descricao: "" });
-            this_.closeModal();
-            this_.props.componentDidMount();
-          })
-          .catch(function (error) {
-            console.log(error);
-            showToast(addCasoError[languageCode], 5000, toastTypes.ERROR);
-          });
-      };
-
-      request();
+        request();
+      } else {
+        showToast(
+          cargosNothingToUpdateWarning[languageCode],
+          5000,
+          toastTypes.WARNING
+        );
+      }
     }
   }
 
@@ -301,7 +278,7 @@ class CargosModal extends React.Component {
         )}
         {this.state.redirect}
 
-        <Modal show={this.state.show} onHide={this.closeModal}>
+        <Modal size="lg" show={this.state.show} onHide={this.closeModal}>
           <Modal.Header closeButton>
             <Modal.Title>{newCargosTitle[languageCode]}</Modal.Title>
           </Modal.Header>
@@ -339,85 +316,26 @@ class CargosModal extends React.Component {
                           <td>{membro.nome}</td>
 
                           <td>{membro.id}</td>
-                          <td></td>
                           <td>
-                            <select name="cars" id="cars">
-                              <option value="volvo">Volvo</option>
-                              <option value="saab">Saab</option>
-                              <option value="mercedes">Mercedes</option>
-                              <option value="audi">Audi</option>
+                            {this.state.cargosAtuais[membro.id]
+                              ? this.state.cargosAtuais[membro.id]
+                              : "-"}
+                          </td>
+                          <td>
+                            <select
+                              name="cargos"
+                              id={idx}
+                              onChange={this.change}
+                            >
+                              {this.state.listaCargos.map((cargo, index) => (
+                                <option value={cargo}>{cargo}</option>
+                              ))}
                             </select>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-
-                  {/*<Form>
-                    <FormGroup>
-                      <label htmlFor="configAssocName">Título do caso</label>
-                      <FormInput
-                        id="novoCasoTitulo"
-                        type="text"
-                        placeholder="Breve título do situação que origina o caso."
-                        value={this.state.caseTitle}
-                        onChange={this.handleChangeCaseTitle}
-                        required
-                      />
-                      <FormFeedback
-                        id="novoCasoTituloFeedback"
-                        valid={false}
-                        style={{ display: "none" }}
-                      >
-                        Por favor, preencha este campo
-                      </FormFeedback>
-                    </FormGroup>
-
-          
-                    <FormGroup>
-                      <label htmlFor="novoCasoDescricao">
-                        Descrição (opcional)
-                      </label>
-                      <FormTextarea
-                        id="novoCasoDescricao"
-                        placeholder="Descrição breve da situação que origina o caso."
-                        value={this.state.descricao}
-                        onChange={this.handleChangeDescricao}
-                      />
-                      <FormFeedback
-                        id="novoCasoDescricaoFeedback"
-                        valid={false}
-                        style={{ display: "none" }}
-                      >
-                        Por favor, preencha este campo
-                      </FormFeedback>
-                    </FormGroup>
-
-                    <FormGroup>
-                      <FormCheckbox
-                        id="novoCasoPrivadoCheckbox"
-                        checked={this.state.checkBoxStatus}
-                        onChange={this.handleChangeCheckBox}
-                      >
-                        Este caso é privado.
-                      </FormCheckbox>
-                    </FormGroup>
-
-                    {this.state.checkBoxStatus ? (
-                      <FormGroup>
-                        <label htmlFor="membros">Membros</label>
-                        <Multiselect
-                          options={this.state.options} // Options to display in the dropdown
-                          onSelect={this.onSelectMembro} // Function will trigger on select event
-                          onRemove={this.onRemoveMembro}
-                          displayValue="name" // Property name to display in the dropdown options
-                          showCheckbox={true}
-                        />
-                      </FormGroup>
-                    ) : (
-                      ""
-                    )}
-                  </Form>*/}
                 </Col>
               </ListGroupItem>
             </ListGroup>
@@ -427,7 +345,7 @@ class CargosModal extends React.Component {
             <Button theme="danger" onClick={this.closeModal}>
               {closeButton[languageCode]}
             </Button>
-            <Button theme="success" onClick={this.createCase}>
+            <Button theme="success" onClick={this.createTransaction}>
               {saveButton[languageCode]}
             </Button>
           </Modal.Footer>

@@ -43,6 +43,7 @@ class CasoDetailOverview extends React.Component {
       title: props.title,
       data: props.data,
       username: props.username,
+      emailAutor: props.emailAutor,
       arquivado: props.arquivado,
       membros: props.membros,
       memberNames: "",
@@ -54,6 +55,7 @@ class CasoDetailOverview extends React.Component {
       membersToAdd: [],
       options: [],
       membersComplete: [],
+      currentUser: null,
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -71,6 +73,11 @@ class CasoDetailOverview extends React.Component {
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount(updating) {
     this._isMounted = true;
+
+    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if (currentUser != null) {
+      this.setState({ currentUser: currentUser });
+    }
 
     var memberNames = "";
 
@@ -403,12 +410,32 @@ class CasoDetailOverview extends React.Component {
               >
                 <i class="material-icons">edit</i> Editar título
               </Button>
-              <Button
-                style={{ margin: "3px" }}
-                onClick={this.props.arquiveOrReverse}
-              >
-                <i class="material-icons">archive</i> Arquivar / Desarquivar
-              </Button>
+
+              {this.state.currentUser != null ? (
+                this.state.currentUser[
+                  parentsParameters.ADMIN[languageCode]
+                ] ? (
+                  <Button
+                    style={{ margin: "3px" }}
+                    onClick={this.props.arquiveOrReverse}
+                  >
+                    <i class="material-icons">archive</i> Arquivar / Desarquivar
+                  </Button>
+                ) : this.state.currentUser[
+                    parentsParameters.EMAIL[languageCode]
+                  ] === this.state.emailAutor ? (
+                  <Button
+                    style={{ margin: "3px" }}
+                    onClick={this.props.arquiveOrReverse}
+                  >
+                    <i class="material-icons">archive</i> Arquivar / Desarquivar
+                  </Button>
+                ) : (
+                  ""
+                )
+              ) : (
+                ""
+              )}
             </ButtonGroup>
           )}
           {this.state.editingTitle ? (

@@ -94,6 +94,10 @@ export const deleteAccountPrompt = {
   pt_PT: "Apagar conta?",
 };
 
+export const aceitarCargoPrompt = {
+  pt_PT: "Aceitar cargo?",
+};
+
 export const deleteChildPrompt = {
   pt_PT: "Eliminar educando?",
 };

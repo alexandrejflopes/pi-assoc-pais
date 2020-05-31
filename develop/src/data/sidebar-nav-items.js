@@ -50,7 +50,7 @@ export default function () {
       title: "Casos",
       htmlBefore: '<i class="material-icons">description</i>',
       to: "/casos",
-    }, /*
+    } /*
     {
       title: "Pedidos por Aprovar",
       htmlBefore: '<i class="material-icons">description</i>',
@@ -70,11 +70,17 @@ export default function () {
       title: "Ver Login Page",
       htmlBefore: '<i class="material-icons">settings</i>',
       to: "/login",
-    },*/
+    },*/,
     {
       title: "Quotas",
       htmlBefore: '<i class="material-icons">euro</i>',
       to: "/quotas",
+    },
+    ,
+    {
+      title: "Cargos",
+      htmlBefore: '<i class="material-icons">loop</i>',
+      to: "/cargos",
     },
   ];
 }

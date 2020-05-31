@@ -390,7 +390,7 @@ class ApprovalModal extends React.Component {
                         <label htmlFor="zipCode">Código Postal</label>
                         <FormInput
                           id="zipCode"
-                          value={this.state.dados.ZIP}
+                          value={this.state.dados["Código Postal"]}
                           disabled={true}
                         />
                       </Col>
