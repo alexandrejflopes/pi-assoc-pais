@@ -2269,3 +2269,4 @@ exports.updateDadosAssociacao = functions.https.onRequest((request, response) =>
         return response.status(405).send({"error" : err});
     });
 });
+
