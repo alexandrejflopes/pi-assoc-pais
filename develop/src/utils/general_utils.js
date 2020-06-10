@@ -11,6 +11,10 @@ import { firebase_auth } from "../firebase-config";
 
 // -------------------------------------------- CONSTANTS --------------------------------------------
 
+export const deletedAtribute = "deleted";
+export const validatedAtribute = "Validated";
+export const blockedAtribute = "blocked";
+
 const defaultIBAN = "PT50 1234 4321 12345678901 72";
 const defaultAvatar =
   "https://www.gravatar.com/avatar/00000000000000000000000000000000";
@@ -77,6 +81,7 @@ const notAvailableDesignation = {
 };
 
 export const cargoDocKey = "titulo";
+export const roleAdminPermissionDesignation = "admin";
 
 export const assocParameters = {
   ZIP: {
@@ -214,7 +219,7 @@ const parentsParameters = {
   },
   FEES: {
     pt_PT: "Cotas",
-  },
+  }
 };
 
 const studentsParameters = {

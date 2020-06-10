@@ -2,11 +2,10 @@ import React from "react";
 import {Container, Row, Col, CardHeader, Card} from "shards-react";
 
 import ConfigForm from "../components/config-inicial/ConfigForm";
-import {languageCode, parentsParameters} from "../utils/general_utils";
+import {languageCode} from "../utils/general_utils";
 import {Redirect} from "react-router-dom";
 import {initDoc} from "../firebase-config";
-import routes from "../routes";
-import {DefaultLayout} from "../layouts";
+import {configFormTitle} from "../utils/page_titles_strings";
 
 
 class AssocConfiguration extends React.Component {
@@ -27,16 +26,13 @@ class AssocConfiguration extends React.Component {
       .get()
       .then((doc) => {
         if (doc.exists === false) {
-          console.log("não há nada instalado");
           this.setState({installationExists : false});
         }
         else {
-          console.log("está instalado");
           this.setState({installationExists : true});
         }
       })
       .catch((err) => {
-        console.log("Error getting initial doc");
       });
   }
 
@@ -77,7 +73,7 @@ class AssocConfiguration extends React.Component {
             <Col lg="12" md="12" sm="12">
               <Card small>
                 <CardHeader className="border-bottom">
-                  <h6 className="m-0">Configuração</h6>
+                  <h6 className="m-0">{configFormTitle[languageCode]}</h6>
                 </CardHeader>
                 <ConfigForm />
               </Card>

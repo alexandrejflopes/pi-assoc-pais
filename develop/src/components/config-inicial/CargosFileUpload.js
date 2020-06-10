@@ -3,7 +3,7 @@ import {FormFeedback} from "shards-react";
 
 const CargosFileUpload = () => (
   <div className="custom-file mb-3">
-    <input id="configAssocCargos" type="file" className="custom-file-input" accept="text/plain" required/>
+    <input id="configAssocCargos" type="file" className="custom-file-input" accept=".json" required/>
     <label className="custom-file-label" htmlFor="customFile2">
       Escolha um ficheiro...
     </label>

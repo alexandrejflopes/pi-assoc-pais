@@ -21,10 +21,17 @@ import {
   validZip,
 } from "../../firebase_scripts/installation";
 import {
-  defaultAvatar,
+  blockedAtribute,
+  defaultAvatar, deletedAtribute,
   getGravatarURL,
-  languageCode, notAvailableDesignation,
-  parentsParameters, regular_role, showToast, studentsParameters, toastTypes,
+  languageCode,
+  notAvailableDesignation,
+  parentsParameters,
+  regular_role,
+  showToast,
+  studentsParameters,
+  toastTypes,
+  validatedAtribute,
 } from "../../utils/general_utils";
 import {
   firestore,
@@ -300,13 +307,13 @@ class Register_Page extends Component {
         var key = keys[i];
         parentJson[key] = extraArray[key];
       }
-      parentJson.Validated = false;
+      parentJson[deletedAtribute] = false;
+      parentJson[validatedAtribute] = false;
       parentJson[parentsParameters.PAYED_FEE[languageCode]] = false;
-      var date = new Date();
-      parentJson[parentsParameters.REGISTER_DATE[languageCode]] = date;
+      parentJson[parentsParameters.REGISTER_DATE[languageCode]] = new Date();
       parentJson[parentsParameters.FEES[languageCode]] = [];
       parentJson[parentsParameters.CC[languageCode]] = cc;
-      parentJson.blocked = false;
+      parentJson[blockedAtribute] = false;
       parentJson[parentsParameters.ADMIN[languageCode]] = false;
       parentJson[parentsParameters.ROLE[languageCode]] = regular_role[languageCode];
       parentJson[parentsParameters.STREET[languageCode]] = morada;
@@ -340,6 +347,7 @@ class Register_Page extends Component {
 
           x++;
         });
+        studentJson[deletedAtribute] = false;
         studentArray.push(studentJson);
       }
       parentJson[parentsParameters.CHILDREN[languageCode]] = studentArray;

@@ -6,9 +6,14 @@ import firebase from "firebase";
 
 import {
   defaultLogoFile,
+  deletedAtribute,
   getGravatarURL,
   languageCode,
-  parentsParameters, showToast, toastTypes
+  parentsParameters,
+  roleAdminPermissionDesignation,
+  showToast,
+  toastTypes,
+  validatedAtribute
 } from "../utils/general_utils";
 import {
   jsonParamsErrorMessage,
@@ -21,7 +26,6 @@ import {
 } from "../utils/messages_strings";
 import {
   getAndSaveJSONparamsData,
-  createDefaultUser,
   sendImportEmailToParent,
   uploadDefaultLogo,
   uploadNewLogo,
@@ -32,7 +36,7 @@ import {
   installGotErrors,
   validEmail,
   showEmailWarning,
-  setupTXTRoles, saveRolesInDB, saveDefaultLogoURL
+  saveRolesInDB, saveDefaultLogoURL
 } from "./installation";
 
 
@@ -50,6 +54,7 @@ const rolesErrorMessage = rolesFileErrorMessage_NewAssoc[languageCode];
 function createInstallerParent(nome, email, cargo) {
   const docRef = firestore.collection("parents");
   let parentDoc = {};
+  parentDoc[deletedAtribute] = false;
   parentDoc[parentsParameters.ADMIN[languageCode]] = true;
   parentDoc[parentsParameters.ROLE[languageCode]] = cargo;
   parentDoc[parentsParameters.CC[languageCode]] = "";
@@ -68,7 +73,7 @@ function createInstallerParent(nome, email, cargo) {
   parentDoc[parentsParameters.JOB[languageCode]] = "";
   parentDoc[parentsParameters.PAYED_FEE[languageCode]] = true; // TODO: check this
   parentDoc[parentsParameters.PHONE[languageCode]] = "";
-  parentDoc["Validated"] = true; // imported parents are validated
+  parentDoc[validatedAtribute] = true; // imported parents are validated
   parentDoc["blocked"] = false; // imported parents are not blocked initially
   // avatar
   parentDoc[parentsParameters.PHOTO[languageCode]] = getGravatarURL(email);
@@ -103,23 +108,9 @@ function readAndCheckRolesFile(rolesFile, callback) {
     rolesFileString = rolesReader.result;
     let rolesFileCorrect = false; // control the correctness of roles file
     try{
-      // if there's no information in the file, it's invalid
-      if(rolesFileString.trim().length===0){
-        throw "Too few data in TEXT file to process";
-      }
-
-      const rolesList = setupTXTRoles(rolesFileString);
-      const cargoValue = document.getElementById("configAssocAdminCargo").value;
-
-      if(parentsRolesAreValid(rolesList, cargoValue)){
-        rolesFileCorrect = true;
-        saveRolesInDB(rolesList);
-        callback(rolesFileCorrect);
-      }
-      else{
-        rolesFileCorrect = false;
-        callback(rolesFileCorrect);
-      }
+      // try to parse the JSON file uploaded
+      const json = JSON.parse(rolesFileString);
+      validateRolesJSON(json, rolesFileString, callback);
     }
     catch (e) {
       // catch error if the TXT is improperly formatted, for example
@@ -130,11 +121,72 @@ function readAndCheckRolesFile(rolesFile, callback) {
   rolesReader.readAsText(rolesFile, "UTF-8");
 }
 
+function validateRolesJSON(json, rolesFileString, callback) {
+  let rolesFileCorrect = false;
+  const rolesNum = Object.keys(json).length;
+  // if no roles provided, then do not accept the file
+  if(rolesNum===0){
+    throw "No roles provided (roles file is an empty JSON)";
+  }
+
+  for(let role in json){
+    const roleDoc = json[role];
+    const roleDocKeys = Object.keys(roleDoc);
+    // each role only has one permission (admin - yes or no)
+    if(roleDocKeys.length!==1){
+      throw "Less or more than one permission provided for role <" + role + ">";
+    }
+    let permission = roleDoc[roleAdminPermissionDesignation];
+
+    // if no value for admin permission, file is invalid
+    if(permission==null){
+      throw "No admin permission for role <" + role + ">";
+    }
+
+    // admin permission only has two values: true or false
+    if(permission!=="false" && permission!=="true"){
+      throw "Invalid value for admin permission for role <" + role + ">";
+    }
+  }
+
+  // if there's no information in the file, it's invalid
+  if(rolesFileString.trim().length===0){
+    throw "Too few data in ROLES file to process";
+  }
+
+  // get roles from JSON as an array, removing spaces around
+  const rolesList = Object.keys(json).map(r => r.trim());
+
+  let duplicateFilteredRolesList = [];
+
+  for(let i in rolesList){
+    const currentRole = rolesList[i];
+    if(!duplicateFilteredRolesList.includes(currentRole)){
+      duplicateFilteredRolesList.push(currentRole);
+    }
+  }
+
+  if(rolesList.length!==duplicateFilteredRolesList.length){
+    throw "There are duplicated roles in JSON";
+  }
+
+  const cargoValue = document.getElementById("configAssocAdminCargo").value;
+
+  if(parentsRolesAreValid(rolesList, cargoValue)){
+    rolesFileCorrect = true;
+    saveRolesInDB(rolesList, json);
+    callback(rolesFileCorrect);
+  }
+  else{
+    rolesFileCorrect = false;
+    callback(rolesFileCorrect);
+  }
+}
+
 function parentsRolesAreValid(rolesArray, roleInInput){
   let parentsRolesValid = true;
-  console.log("roleInInput -> " + roleInInput);
   if(!rolesArray.includes(roleInInput.trim())){
-    console.log("txt não inclui <" + roleInInput.trim() + ">");
+    console.log("json não inclui <" + roleInInput.trim() + ">");
     parentsRolesValid = false;
   }
 
@@ -362,7 +414,6 @@ function continueInstallation(inputsInfo, logoURL) {
       initDoc
         .set(doc)
         .then(function () {
-          createDefaultUser();
           sendImportEmailToParent(installerNome, installerEmail).then();
           alert(sucessImportMessage); // alert to block the page
           //showToast(sucessImportMessage, 5000, toastTypes.SUCCESS);

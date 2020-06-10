@@ -12,7 +12,6 @@ import {
   parentsParameters,
   studentsParameters,
 } from "../utils/general_utils";
-import { hello } from "../utils/common_strings";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -48,14 +47,17 @@ async function fetchUserDoc(email) {
 }
 
 function userLogOut() {
-  window.localStorage.removeItem("userDoc");
-  window.localStorage.removeItem("newParamsInputTypes");
-  window.localStorage.removeItem("assocDoc");
-  //window.localStorage.removeItem("emailForSignIn");
   firebase_auth
     .signOut()
     .then(function () {
       // Sign-out successful.
+      // clear local storage
+      window.localStorage.removeItem("userDoc");
+      window.localStorage.removeItem("newParamsInputTypes");
+      window.localStorage.removeItem("assocDoc");
+      window.localStorage.removeItem("admin");
+      window.localStorage.removeItem("email");
+      //window.localStorage.removeItem("emailForSignIn");
       window.location = "/login";
     })
     .catch(function (error) {

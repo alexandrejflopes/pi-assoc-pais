@@ -37,7 +37,7 @@ const jsonOrCsvParamsErrorMessage = {
 export const rolesFileErrorMessage = {
   pt_PT:
     "Houve um erro no processamento de cargos. As razões incluem: " +
-    " - o ficheiro de texto dos cargos não tem o formato adequado;" +
+    " - o ficheiro JSON dos cargos não tem o formato adequado;" +
     " - há membros no CSV com cargos não presentes no ficheiro de cargos fornecido;" +
     "Para mais informações, consulte o manual de utilização.\n" +
     "Obrigado.",
@@ -46,7 +46,7 @@ export const rolesFileErrorMessage = {
 export const rolesFileErrorMessage_NewAssoc = {
   pt_PT:
     "Houve um erro no processamento de cargos. As razões incluem: " +
-    " - o ficheiro de texto dos cargos não tem o formato adequado;" +
+    " - o ficheiro JSON dos cargos não tem o formato adequado;" +
     " - o cargo que introduziu na secção 'Sobre si' não está presente no ficheiro de cargos fornecido;" +
     "Para mais informações, consulte o manual de utilização.\n" +
     "Obrigado.",
@@ -165,12 +165,12 @@ export const exportAssocDataExplanation = {
     "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
 };
 
-// TODO: check export to ZIP
+
 export const exportAssocCasosExplanation = {
   pt_PT:
     "Pode descarregar uma cópia de todos os casos criados pelos utilizadores da plataforma, incluindo comentários, " +
     "membros (no caso de casos privados) e informações sobre os documentos associados aos casos. " +
-    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
+    "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro PDF para o disco do seu dispositivo.",
 };
 
 export const deleteAccountExplanation = {

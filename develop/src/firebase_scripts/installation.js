@@ -20,7 +20,13 @@ import {
   parentsParameters,
   notAvailableDesignation,
   zipCodeRegexes,
-  defaultAvatar, showToast, toastTypes, emailRegex, cargoDocKey
+  defaultAvatar,
+  showToast,
+  toastTypes,
+  emailRegex,
+  cargoDocKey,
+  deletedAtribute,
+  validatedAtribute, blockedAtribute, roleAdminPermissionDesignation
 } from "../utils/general_utils";
 import {
   jsonParamsErrorMessage,
@@ -553,28 +559,31 @@ function saveParentsAndChildrenFromFileDatatoDB(parentsList, childrenList) {
       delete childDoc[Object.keys(childDoc)[0]]; // remove 0 because the element at 1 shifted to 0 in the line above
 
       childDoc[studentsParameters.PHOTO[languageCode]] = defaultAvatar;
+      childDoc[deletedAtribute] = false;
 
       parentChildren.push(childDoc);
     }
 
+    parentDoc[deletedAtribute] = false;
+
     // add children document array to parent's documento
-    parentDoc["Educandos"] = parentChildren;
+    parentDoc[parentsParameters.CHILDREN[languageCode]] = parentChildren;
 
     // convert admin boolean from CSV from string to boolean
-    parentDoc["Admin"] = parentDoc["Admin"] === "true";
+    parentDoc[parentsParameters.ADMIN[languageCode]] = parentDoc[parentsParameters.ADMIN[languageCode]] === "true";
     // convert dues payment boolean from CSV from string to boolean (if not available, it gets false as well)
-    parentDoc["Quotas pagas"] = parentDoc["Quotas pagas"] === "true";
+    parentDoc[parentsParameters.PAYED_FEE[languageCode]] = parentDoc[parentsParameters.PAYED_FEE[languageCode]] === "true";
 
     // add remaining necessary parameters
-    parentDoc["Cotas"] = [];
+    parentDoc[parentsParameters.FEES[languageCode]] = [];
     //parentDoc["Data inscricao"] = new Date().toJSON().split("T")[0]; // get date on format: 2015-03-25
-    parentDoc["Data inscricao"] = new Date();
-    // only regulars with payed dues are validated
-    parentDoc["Validated"] = !(!parentDoc["Admin"] && !parentDoc["Quotas pagas"]);
-    parentDoc["blocked"] = false; // imported parents are not blocked initially
+    parentDoc[parentsParameters.REGISTER_DATE[languageCode]] = new Date();
+    // only regulars with payed dues are validated (admins are always valid)
+    parentDoc[validatedAtribute] = !(!parentDoc[parentsParameters.ADMIN[languageCode]] && !parentDoc[parentsParameters.PAYED_FEE[languageCode]]);
+    parentDoc[blockedAtribute] = false; // imported parents are not blocked initially
 
     // avatar
-    parentDoc["photo"] = getGravatarURL(email);
+    parentDoc[parentsParameters.PHOTO[languageCode]] = getGravatarURL(email);
 
     const parentRef = docRef.doc(email); // email as document id
 
@@ -685,30 +694,79 @@ function readAndCheckRolesFile(rolesFile, callback) {
     rolesFileString = rolesReader.result;
     let rolesFileCorrect = false; // control the correctness of roles file
     try{
-      // if there's no information in the file, it's invalid
-      if(rolesFileString.trim().length===0){
-        throw "Too few data in TEXT file to process";
-      }
+      // try to parse the JSON file uploaded
+      const json = JSON.parse(rolesFileString);
 
-      const rolesList = setupTXTRoles(rolesFileString);
-
-      if(parentsRolesAreValid(rolesList, membersDocsList)){
-        rolesFileCorrect = true;
-        saveRolesInDB(rolesList);
-        callback(rolesFileCorrect);
-      }
-      else{
-        rolesFileCorrect = false;
-        callback(rolesFileCorrect);
-      }
+      validateRolesJSON(json, rolesFileString, callback);
     }
     catch (e) {
-      // catch error if the TXT is improperly formatted, for example
+      console.log(e);
+      // catch error if the JSON is improperly formatted, for example
       rolesFileCorrect = false;
       callback(rolesFileCorrect);
     }
   };
   rolesReader.readAsText(rolesFile, "UTF-8");
+}
+
+function validateRolesJSON(json, rolesFileString, callback) {
+  let rolesFileCorrect = false;
+  const rolesNum = Object.keys(json).length;
+  // if no roles provided, then do not accept the file
+  if(rolesNum===0){
+    throw "No roles provided (roles file is an empty JSON)";
+  }
+
+  for(let role in json){
+    const roleDoc = json[role];
+    const roleDocKeys = Object.keys(roleDoc);
+    // each role only has one permission (admin - yes or no)
+    if(roleDocKeys.length!==1){
+      throw "Less or more than one permission provided for role <" + role + ">";
+    }
+    let permission = roleDoc[roleAdminPermissionDesignation];
+
+    // if no value for admin permission, file is invalid
+    if(permission==null){
+      throw "No admin permission for role <" + role + ">";
+    }
+
+    // admin permission only has two values: true or false
+    if(permission!=="false" && permission!=="true"){
+      throw "Invalid value for admin permission for role <" + role + ">";
+    }
+  }
+
+  // if there's no information in the file, it's invalid
+  if(rolesFileString.trim().length===0){
+    throw "Too few data in ROLES file to process";
+  }
+
+  // get roles from JSON as an array, removing spaces around
+  const rolesList = Object.keys(json).map(r => r.trim());
+
+  let duplicateFilteredRolesList = [];
+
+  for(let i in rolesList){
+    const currentRole = rolesList[i];
+    if(!duplicateFilteredRolesList.includes(currentRole)){
+      duplicateFilteredRolesList.push(currentRole);
+    }
+  }
+
+  if(rolesList.length!==duplicateFilteredRolesList.length){
+    throw "There are duplicated roles in JSON";
+  }
+
+  if(parentsRolesAreValid(rolesList, membersDocsList)){
+    rolesFileCorrect = true;
+    saveRolesInDB(rolesList, json);
+    callback(rolesFileCorrect);
+  }
+  else{
+    rolesFileCorrect = false;
+    callback(rolesFileCorrect);
+  }
 }
 
 /*
@@ -717,11 +775,9 @@ function readAndCheckRolesFile(rolesFile, callback) {
  * */
 export function setupTXTRoles(fileString){
   const allLines = fileString.split(/\r\n|\n/).filter((item) => item); // remove empty strings
-  console.log("allLinesTXT -> ", allLines);
 
   // if there's no information in the file, it's invalid
   if(allLines.length===0){
-    console.log("sem dados nas linhas do txt");
     throw "Too few data in TXT file to process"
   }
 
@@ -730,7 +786,6 @@ export function setupTXTRoles(fileString){
     let cargosNaLinha = allLines[i].split(/[,]+/).filter((item) => item).map(s => s.trim()); // remove empty strings and trailing spaces
     cargos = cargos.concat(cargosNaLinha); // add this roles to the main array
   }
-  console.log("cargos lidos -> " + cargos);
   return cargos;
 }
 
@@ -738,20 +793,24 @@ export function setupTXTRoles(fileString){
  * for each role imported, save it as a document in Firestore
  * - for each role: {"titulo" (from cargoDocKey constant) : <role_name>}
  * */
-export function saveRolesInDB(rolesArray){
+export function saveRolesInDB(rolesArray, json){
   const cargosRef = firestore.collection("cargos");
   for(let pos in rolesArray){
     const cargo = rolesArray[pos];
+    const permission = json[cargo][roleAdminPermissionDesignation] !== "false";
 
-    const cargoDoc = {[cargoDocKey] : cargo};
+    const cargoDoc = {
+      [cargoDocKey] : cargo,
+      [roleAdminPermissionDesignation] : permission
+    };
     const docRef = cargosRef.doc(cargo);
     docRef
       .set(cargoDoc)
       .then(function () {
-        console.log("Cargo <" + cargo + "> guardado com sucesso.");
+        //console.log("Cargo <" + cargo + "> guardado com sucesso.");
       })
       .catch(function (error) {
-        console.log("erro ao guardar cargo <" + cargo + ">");
+        //console.log("erro ao guardar cargo <" + cargo + ">");
         installGotErrors = true;
       });
   }
@@ -763,15 +822,11 @@ export function saveRolesInDB(rolesArray){
  * */
 function parentsRolesAreValid(rolesArray, parentsDocList){
   let parentsRolesValid = true;
-  console.log("parentsDocList");
-  console.log("----------------");
-  console.log(parentsDocList);
   for(let pos in parentsDocList){
     const parentDoc = parentsDocList[pos];
-    console.log("parentDoc atual >" + JSON.stringify(parentDoc));
     const parentRole = parentDoc[parentsParameters.ROLE[languageCode]];
     if(!rolesArray.includes(parentRole)){
-      console.log("txt não inclui <" + parentRole + ">");
+      //console.log("json não inclui <" + parentRole + ">");
       parentsRolesValid = false;
       break;
     }
@@ -821,29 +876,6 @@ function notifyAllParents() {
   }
 }
 
-// TODO: remove after authentication has been strongly implemented
-function createDefaultUser() {
-  const docRefUser = firestore.doc("initialConfigs/defaultUser");
-
-  const defaultEmail = "dgomes@pi-assoc-pais.com";
-  const defaultPassword = "pass";
-  const defaultName = "Diogo Gomes";
-
-  const defaultUser = {
-    email: defaultEmail,
-    password: defaultPassword,
-    nome: defaultName,
-  };
-
-  docRefUser
-    .set(defaultUser)
-    .then(function () {
-      //console.log("defaultUserDoc -> ", defaultUser);
-    })
-    .catch(function (error) {
-      alert("Erro: " + error);
-    });
-}
 
 // --------- upload logos ---------
 
@@ -1232,7 +1264,6 @@ function continueInstallation(inputsInfo, logoURL) {
       initDoc
         .set(doc)
         .then(function () {
-          createDefaultUser();
           notifyAllParents();
           alert(sucessImportMessage); // alert to block the page
           //showToast(sucessImportMessage, 5000, toastTypes.SUCCESS);
@@ -1250,7 +1281,6 @@ function continueInstallation(inputsInfo, logoURL) {
 export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         // functions reused in installation of a brand new association
         getAndSaveJSONparamsData,
-        createDefaultUser,
         sendImportEmailToParent,
         uploadDefaultLogo,
         uploadNewLogo,
@@ -1265,4 +1295,7 @@ export { install, saveRegistToDB, saveCaseToDB, getGravatarURL,
         // functions used in tests
         checkJSONparamsEntitiesAndTypes,
         compareCSVandJsonParameters,
-        getandSaveCSVdata};
+        getandSaveCSVdata,
+        readAndCheckRolesFile,
+        validateRolesJSON,
+        setupCSVData};

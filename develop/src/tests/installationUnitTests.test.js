@@ -2,8 +2,8 @@ import "firebase/storage"
 import {
   checkJSONparamsEntitiesAndTypes,
   compareCSVandJsonParameters,
-  getandSaveCSVdata,
-  setupTXTRoles,
+  getandSaveCSVdata, readAndCheckRolesFile, setupCSVData,
+  setupTXTRoles, validateRolesJSON,
   validZip
 } from "../firebase_scripts/installation";
 import valid1 from "./json-params-test-files/valid-jsons/v1";
@@ -21,7 +21,19 @@ import invalid7 from "./json-params-test-files/invalid-jsons/7";
 // invalid JSON number 8 has incorrect syntax on purpose, but cannot be imported with bad syntax
 import invalid9 from "./json-params-test-files/invalid-jsons/9";
 
+import cargosValid from "./cargos-test-files/cargosJSON_valid";
 import cargosValid1 from "./cargos-test-files/cargosDoCSV.txt";
+import cargosInvalid1 from "./cargos-test-files/invalids/cargosJSON_invalid1";
+import cargosInvalid2 from "./cargos-test-files/invalids/cargosJSON_invalid2_EmptyJson";
+// invalid JSON number 3 has incorrect syntax on purpose, but cannot be imported with bad syntax
+//import cargosInvalid3 from "./cargos-test-files/invalids/cargosJSON_invalid3_SINTAX";
+import cargosInvalid4 from "./cargos-test-files/invalids/cargosJSON_invalid4";
+import cargosInvalid5 from "./cargos-test-files/invalids/cargosJSON_invalid5";
+import cargosInvalid6 from "./cargos-test-files/invalids/cargosJSON_invalid6";
+// invalid JSON number 7 has incorrect syntax on purpose (is empty), but cannot be imported with bad syntax
+//import cargosInvalid7 from "./cargos-test-files/invalids/cargosJSON_invalid7_EMPTY";
+import cargosInvalid8 from "./cargos-test-files/invalids/cargosJSON_invalid8";
+import cargosMissing from "./cargos-test-files/cargosJSON_valid_MissingRoles";
 
 const fs = require('fs');
 
@@ -117,6 +129,74 @@ test('Returns expected array when valid roles text file', () => {
 
   let data = fs.readFileSync("C:\\Users\\User\\Desktop\\Ambiente de Trabalho\\Universidade\\Ano 3\\Semestre 2\\PI\\Projeto\\AssocPais\\develop\\src\\tests\\cargos-test-files\\cargosDoCSV.txt", 'utf8');
   expect(setupTXTRoles(data)).toEqual(expect.arrayContaining(["Presidente do Conselho Executivo", "Vice-Presidente", "Tesoureiro(a)", "Vogal","Associado"]));
+
+});
+
+
+test('Throws exception when invalid roles file is provided', () => {
+  expect(() => {
+    validateRolesJSON(cargosInvalid1, cargosValid1.toString());
+  }).toThrowError('No admin permission');
+  expect(() => {
+    validateRolesJSON(cargosInvalid2, cargosInvalid2.toString());
+  }).toThrowError('No roles provided');
+  expect(() => {
+    validateRolesJSON(cargosInvalid4, cargosInvalid4.toString());
+  }).toThrowError('Less or more than one permission provided for role');
+  expect(() => {
+    validateRolesJSON(cargosInvalid5, cargosInvalid5.toString());
+  }).toThrowError('Less or more than one permission provided for role');
+  expect(() => {
+    validateRolesJSON(cargosInvalid6, cargosInvalid6.toString());
+  }).toThrowError('Invalid value for admin permission');
+  expect(() => {
+    validateRolesJSON(cargosInvalid8, cargosInvalid8.toString());
+  }).toThrowError('duplicated roles');
+});
+
+test('Returns false when there is a mismatch between members roles from csv and json roles file', done => {
+  function callback(data) {
+    try {
+      expect(data).toBe(false);
+      done();
+    } catch (error) {
+      done(error);
+    }
+  }
+
+  const membersDocsList = setupCSVData("Número de Sócio;Cargo;Quotas pagas;Nome;NIF;Cartão Cidadão;Email;Telemóvel;Profissão ;Morada;Código Postal;Localidade;Admin;um parametro\n" +
+    "54353;  Presidente do Conselho Executivo  ;true;Diogo Gomes;894274893;CC1;dgomes@pi-assoc-pais.com;987585;Professor;Rua do Colegio;0000-000;Aveiro;true;v1\n" +
+    "98978;Vice-Presidente;false;Vera Teixeira;895758866;CC2;vera@pi-assoc-pais.com;6895655;Investigadora;Avenida do Sol;5555-555;Espinho;true;v2\n" +
+    "33244;Tesoureiro(a);true;Luísa Santos;937498483;nd;luisa.santos@pi-assoc-pais.com;3975489;Professor;Rua do Colegio;4444-444;Estarreja;true;v3\n" +
+    "65362;Vogal;true;Olivério Baptista;894274893;CC4;oliverio@pi-assoc-pais.com;97545409;GNR;Avenida do Sol;1234-321;Estarreja;true;v4\n" +
+    "92839;Associado(a);false;Mário Silva;937498483;CC5;mario.silva@pi-assoc-pais.com;765243;Professor;Avenida do Sol;7777-888;Espinho;false;v5\n" +
+    "12764;Associado(a);true;Joana Marçal;895758866;CC6;joana_marcal@pi-assoc-pais.com;6895655;Gestora;Rua do Colegio;4555-535;Aveiro;false;v6\n", true);
+
+
+  validateRolesJSON(cargosMissing, cargosMissing.toString(), callback);
+
+});
+
+test('Returns true when members roles from csv and json roles file match', done => {
+  function callback(data) {
+    try {
+      expect(data).toBe(true);
+      done();
+    } catch (error) {
+      done(error);
+    }
+  }
+
+  const membersDocsList = setupCSVData("Número de Sócio;Cargo;Quotas pagas;Nome;NIF;Cartão Cidadão;Email;Telemóvel;Profissão ;Morada;Código Postal;Localidade;Admin;um parametro\n" +
+    "54353;  Presidente do Conselho Executivo  ;true;Diogo Gomes;894274893;CC1;dgomes@pi-assoc-pais.com;987585;Professor;Rua do Colegio;0000-000;Aveiro;true;v1\n" +
+    "98978;Vice-Presidente;false;Vera Teixeira;895758866;CC2;vera@pi-assoc-pais.com;6895655;Investigadora;Avenida do Sol;5555-555;Espinho;true;v2\n" +
+    "33244;Tesoureiro(a);true;Luísa Santos;937498483;nd;luisa.santos@pi-assoc-pais.com;3975489;Professor;Rua do Colegio;4444-444;Estarreja;true;v3\n" +
+    "65362;Vogal;true;Olivério Baptista;894274893;CC4;oliverio@pi-assoc-pais.com;97545409;GNR;Avenida do Sol;1234-321;Estarreja;true;v4\n" +
+    "92839;Associado(a);false;Mário Silva;937498483;CC5;mario.silva@pi-assoc-pais.com;765243;Professor;Avenida do Sol;7777-888;Espinho;false;v5\n" +
+    "12764;Associado(a);true;Joana Marçal;895758866;CC6;joana_marcal@pi-assoc-pais.com;6895655;Gestora;Rua do Colegio;4555-535;Aveiro;false;v6\n", true);
+
+
+  validateRolesJSON(cargosValid, cargosValid.toString(), callback);
 
 });
 

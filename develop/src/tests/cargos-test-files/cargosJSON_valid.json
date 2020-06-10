@@ -1,0 +1,22 @@
+{
+	"Presidente do Conselho Executivo" : 
+		{ 
+			"admin" : "true"
+		},
+	"Vice-Presidente" : 
+		{ 
+			"admin" : "true"
+		},
+	"Tesoureiro(a)" : 
+		{ 
+			"admin" : "true"
+		},
+	"Vogal" : 
+		{ 
+			"admin" : "true"
+		},
+	"Associado(a)" : 
+		{ 
+			"admin" : "false"
+		}
+}

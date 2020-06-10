@@ -91,5 +91,11 @@ export const newAssocLogoModalTitle = {
 
 
 
+// -----------------------------------  ASSOC. CONFIG  -----------------------------------
+
+
+export const configFormTitle = {
+  "pt_PT" : "Configuração"
+};
 
 
