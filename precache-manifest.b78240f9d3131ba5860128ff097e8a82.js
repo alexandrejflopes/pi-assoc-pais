@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "4ca9418efdf1d1da8317b8697f2cfb0f",
+    "revision": "112da4f69524ff8e5b788767159c96ed",
     "url": "/pi-assoc-pais/index.html"
   },
   {
@@ -12,8 +12,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/pi-assoc-pais/static/js/2.ede01721.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "eb2f2c951d2ad7cdb1ca",
-    "url": "/pi-assoc-pais/static/js/main.140b61e8.chunk.js"
+    "revision": "052791a4c867a859c797",
+    "url": "/pi-assoc-pais/static/js/main.4fd72f1d.chunk.js"
   },
   {
     "revision": "03361f4ec0ce09680b1e",
