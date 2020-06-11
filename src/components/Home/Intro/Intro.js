@@ -4,6 +4,7 @@ function Intro() {
 
     return (
         <div id="intro">
+
             <section id="fh5co-intro">
                 <div class="container">
                     <div class="row row-bottom-padded-lg">
@@ -22,7 +23,7 @@ function Intro() {
                             <div class="fh5co-text">
                                 <i class="fh5co-intro-icon fas fa-cogs"></i>
                                 <h2>Solução configurável</h2>
-                                <p>Escolhe o título, logo e vários outro parâmetros para melhor costumizares a tua plataforma</p>
+                                <p>Escolhe título, logótipo e outros parâmetros para melhor customizares a tua plataforma</p>
                             </div>
                         </div>
                         <div className="fh5co-block to-animate">
@@ -60,6 +61,11 @@ function Intro() {
                                 <h2>Manual de instruções</h2>
                                 <p>Documentação de tudo o que é necessário para iniciar a plataforma</p>
                             </div>
+                        </div>
+                        <div className="col-md-12" style={{ marginTop: "100px", textAlign: "center"}}>
+                            <iframe width="800" height="480"
+                                    src="https://www.youtube.com/embed/bipmQ-HEFT8">
+                            </iframe>
                         </div>
                     </div>
                 </div>

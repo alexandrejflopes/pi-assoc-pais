@@ -20,7 +20,9 @@ function HomeSection() {
                                 </div>
                             </div>
                         </div>
+
                     </div>
+
                 </div>
                 <div class="slant"></div>
             </section>
