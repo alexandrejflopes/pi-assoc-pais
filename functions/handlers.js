@@ -836,7 +836,29 @@ exports.updateParent = functions.https.onRequest((request, response) => {
 
     let docRef = db.collection('parents').doc(id);
 
+    let nome;
+    let foto;
+    if ('Nome' in doc){
+        nome = doc['Nome'];
+    }
+    else {
+        nome = null;
+    }
+    if ('photo' in doc){
+        foto = doc['photo'];
+    }
+    else {
+        foto = null;
+    }
+
     docRef.update(doc).then((parent)=>{
+        if ('Nome' in doc || 'photo' in doc) {
+            alterNomeFotoInCasos(id, nome, foto);
+        }
+        if ('Nome' in doc) {
+            alterNomeInCotas(id, nome);
+            alterNomeInCargoTransitions(id, nome);
+        }
         docRef.get().then(doc => {
             if (!doc.exists) {
                 console.log('No such document!');
@@ -859,6 +881,114 @@ exports.updateParent = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+
+async function alterNomeFotoInCasos(email, nome, foto) {
+    let db = admin.firestore();
+    
+    return db.collection('casos').get().then(snapshot => {
+        arr = [];
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['autor'] && data['autor']['id'] === email) {
+                if (nome) {
+                    data['autor']['nome'] = nome;
+                }
+                if (foto) {
+                    data['autor']['photo'] = foto;
+                }
+                c = c + 1;
+            }
+            if (data['membros']) {
+                for (i = 0; i < data['membros'].length; i++) {
+                    if (data['membros'][i]['id'] === email){
+                        if (nome) {
+                            data['membros'][i]['nome'] = nome;
+                        }
+                        if (foto) {
+                            data['membros'][i]['photo'] = foto;
+                        }
+                        c = c + 1;
+                    }
+                }
+            }
+            if (data['observacoes']) {
+                for (i = 0; i < data['observacoes'].length; i++) {
+                    if (data['observacoes'][i]['user']['id'] === email){
+                        if (nome) {
+                            data['observacoes'][i]['user']['nome'] = nome;
+                        }
+                        if (foto) {
+                            data['observacoes'][i]['user']['photo'] = foto;
+                        }
+                        c = c + 1;
+                    }
+                }
+            }
+            if (c !== 0) {
+                let v = db.collection('casos').doc(doc.id).update(data);
+                arr.push(v);
+            }
+        });
+        return arr;
+    })
+    .catch(err => {
+        console.log('Error altering nome/foto in casos:', err);
+        return err;
+    });
+}
+
+async function alterNomeInCotas(email, nome) {
+    let db = admin.firestore();
+    
+    return db.collection('cotas').get().then(snapshot => {
+        arr = [];
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['Pagante'] && data['Pagante']['Id'] === email) {
+                data['Pagante']['Nome'] = nome;
+                c = c + 1;
+            }
+            if (data['Recetor'] && data['Recetor']['Id'] === email) {
+                data['Recetor']['Nome'] = nome;
+                c = c + 1;
+            }
+            if (c !== 0) {
+                let v = db.collection('cotas').doc(doc.id).update(data);
+                arr.push(v);
+            }
+        });
+        return arr;
+    })
+    .catch(err => {
+        console.log('Error altering nome in cotas:', err);
+        return err;
+    });
+}
+
+async function alterNomeInCargoTransitions(email, nome) {
+    let db = admin.firestore();
+    
+    db.collection('cargoTransition').get().then(snapshot => {
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['email'] && data['email'] === email) {
+                data['nome'] = nome;
+                c = c + 1;
+            }
+            if (c !== 0) {
+                db.collection('cargoTransition').doc(doc.id).update(data);
+            }
+        });
+        return;
+    })
+    .catch(err => {
+        console.log('Error altering email in cargo Transitions:', err);
+        return err;
+    });
+}
 /**
  * Função que elimina um parent
  * Leva como argumento o email do parent
@@ -1248,8 +1378,7 @@ exports.getCargoTransitions = functions.https.onRequest((request, response) => {
 /**
  * Função que adiciona um cota á coleção de cotas
  * Leva como argumentos: id (do utilizador ao qual se vai adicionar a cota/pagante), nome (do utilizador ao qual se vai adicionar a cota),
- * ano (letivo da cota), valor (a pagar pela cota), recetor_id, recetor_nome, confirmado_recetor, confirmado_emissor
- * A cota vai ter um campo Notas com uma string vazia.
+ * ano (letivo da cota), valor (a pagar pela cota), recetor_id, recetor_nome, confirmado_recetor, confirmado_emissor e notas
  * Os argumentos confirmado_recetor, confirmado_emissor, recetor_id e recetor_nome se não forem dados, os seus valores vão ser
  * automáticamente falso ou null, por default dependendo do tipo do atributo.
  */
@@ -1263,8 +1392,9 @@ exports.addCota = functions.https.onRequest((request, response) => {
     let recetor_nome = request.query.recetor_nome;
     let confirmado_recetor = (request.query.confirmado_recetor === "true");
     let confirmado_emissor = (request.query.confirmado_emissor === "true");
+    let notas = request.query.notas;
 
-    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":""};
+    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":notas};
 
     if (recetor_id){
         cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
@@ -1273,7 +1403,7 @@ exports.addCota = functions.https.onRequest((request, response) => {
         cota["Recetor"] = null;
     }
 
-    db.collection('quotas').add(cota).then(ref => {
+    db.collection('cotas').add(cota).then(ref => {
         console.log("Added cota");
         return response.send(cota);
     })
@@ -2223,6 +2353,12 @@ async function convertCasoToPDF(pdf, doc){
         pdf.fontSize(14).text('     Editado: '+(doc.get("observacoes")[i]["editado"] ? 'Sim' : 'Não')+'\n');
         pdf.fontSize(14).text('     Data (UTC): '+to.getUTCDate()+'/'+(to.getUTCMonth()+1)+'/'+to.getUTCFullYear()+' '+to.getUTCHours()+':'+to.getUTCMinutes()+':'+to.getUTCSeconds()+'\n');
         pdf.fontSize(14).text('     Conteúdo: '+doc.get("observacoes")[i]["conteudo"]+'\n');
+    }
+    pdf.fontSize(14).text('\nFicheiros: \n');
+    for(i = 0;i<doc.get("ficheiros").length;i++) {
+        pdf.fontSize(14).text('-> Ficheiro '+i+': \n');
+        pdf.fontSize(14).text('     Nome: '+doc.get("ficheiros")[i]["nome"]+' \n');
+        pdf.fontSize(14).text('     Referência: '+doc.get("ficheiros")[i]["referencia"]+'\n');
     }
     pdf.fontSize(14).text('\n\n');
 }
