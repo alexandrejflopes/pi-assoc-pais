@@ -41,10 +41,10 @@ auth: {
 exports.getCasos = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let a = [];
-    db.collection('casos').get().then((snapshot) => {
+    db.collection('casos').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
-            data["id"] = doc.id;
+            data["id"] = doc.id; 
             a.push(data);
         });
         return response.send(a);
@@ -73,7 +73,8 @@ exports.addCaso = functions.https.onRequest((request, response) => {
     caso["ficheiros"] = [];
     caso["arquivado"] = false;
     caso["observacoes"] = [];
-    caso["autor"] = {"nome":request.query.nome_autor, "id":request.query.id_autor, "photo":request.query.foto_autor};
+    caso["autor"] = {"nome":request.query.nome_autor, "id":request.query.id_autor, "photo":request.query.foto_autor, "deleted":false};
+    caso["deleted"] = false;
     
     if (request.query.privado === "true"){
         caso["membros"] = JSON.parse(request.query.membros);
@@ -114,7 +115,7 @@ exports.deleteCaso = functions.https.onRequest((request, response) => {
 
     let id = request.query.id;
 
-    db.collection('casos').doc(id).delete().then((caso)=>{
+    db.collection('casos').doc(id).update({"deleted":true}).then((caso)=>{
         return response.send(caso);
     }).catch(err => {
         console.log("Failed to delete -> ", err);
@@ -186,8 +187,25 @@ exports.updateMembrosCaso = functions.https.onRequest((request, response) => {
             if (c === 0) {
                 members.push(doc.get("autor"))
             }
-            return db.collection('casos').doc(id).update({"membros":members}).then((caso)=>{
-                return response.send(caso);
+            return db.collection('parents').where("deleted","==", false).get().then(snapshot => {
+                let l = []
+                snapshot.forEach((doc) => {
+                    l.push(doc.id);
+                });
+                console.log("Lista -> ", l)
+                for (i=0;i<members.length;i++) {
+                    if (!l.includes(members[i]['id'])) {
+                        console.log("Failed to update membros, update contains nonexistent/deleted members ->", members[i]['id']);
+                        return response.status(405).send({"error" : "Failed to update membros, update contains nonexistent/deleted members"});
+                    }
+                    members[i]["deleted"] = false;
+                }
+                return db.collection('casos').doc(id).update({"membros":members}).then((caso)=>{
+                    return response.send(caso);
+                }).catch(err => {
+                    console.log("Failed to update membros -> ", err);
+                    return response.status(405).send({"error" : err});
+                });
             }).catch(err => {
                 console.log("Failed to update membros -> ", err);
                 return response.status(405).send({"error" : err});
@@ -254,14 +272,15 @@ exports.removeMembroCaso = functions.https.onRequest((request, response) => {
         return t.get(docRef).then(doc => {
             let data = doc.data();
             members = data["membros"];
-            for (i = 0; i < members.length; i++){
-                //console.log(typeof members[i]["id"]);
-                //console.log(typeof member_id);
-                if(members[i]["id"] === member_id){
-                    members.splice(i,1);
-                    //console.log("CANCELED");
+            let i = 0;
+            while (i < members.length) {
+                if (members[i]["id"] === member_id) {
+                    members.splice(i, 1);
                 }
-            }
+                else {
+                    ++i;
+                }
+            }            
             response.send(members);
             return (t.update(docRef,{"membros":members}));
         }).catch(err => {
@@ -344,7 +363,7 @@ exports.addCommentCaso = functions.https.onRequest((request, response) => {
         return t.get(docRef).then(doc => {
             let data = doc.data();
             observacoes = data["observacoes"];
-            observacoes.push({"user":{"nome":user_name,"id":user_id, "photo":user_photo}, "conteudo":observacao, "tempo":new Date(), "editado":false});
+            observacoes.push({"user":{"nome":user_name,"id":user_id, "photo":user_photo, "deleted":false}, "conteudo":observacao, "tempo":new Date(), "editado":false, "deleted":false});
             response.send(observacoes);
             return (t.update(docRef,{"observacoes":observacoes}));
         })
@@ -382,15 +401,8 @@ exports.removeCommentCaso = functions.https.onRequest((request, response) => {
             let data = doc.data();
             observacoes = data["observacoes"];
             for (i = 0; i < observacoes.length; i++){
-                //console.log("database user id ->",observacoes[i]["user"]["id"]," | type:",typeof observacoes[i]["user"]["id"]);
-                //console.log("input user id ->",user_id," | type:",typeof user_id);
-                //console.log("database seconds ->",observacoes[i]["tempo"]["_seconds"]," | type:",typeof observacoes[i]["tempo"]["_seconds"]);
-                //console.log("input seconds ->",timestamp_sec," | type:",typeof timestamp_sec);
-                //console.log("database nanoseconds ->",observacoes[i]["tempo"]["_nanoseconds"]," | type:",typeof observacoes[i]["tempo"]["_nanoseconds"]);
-                //console.log("input nanoseconds ->",timestamp_nanosecs," | type:",typeof timestamp_nanosecs);
                 if(observacoes[i]["user"]["id"] === user_id && observacoes[i]["tempo"]["_seconds"]===timestamp_sec && observacoes[i]["tempo"]["_nanoseconds"]===timestamp_nanosecs ){
-                    observacoes.splice(i,1);
-                    //console.log("CANCELED");
+                    observacoes[i]['deleted'] = true;
                 }
             }
             response.send(observacoes);
@@ -497,7 +509,7 @@ exports.removeAnexoCaso = functions.https.onRequest((request, response) => {
     let id = request.query.id;
     let file_name = request.query.nome_ficheiro;
     let file_ref = request.query.referencia;
-
+    
     let docRef = db.collection('casos').doc(id);
 
     let transaction = db.runTransaction(t => {
@@ -505,11 +517,14 @@ exports.removeAnexoCaso = functions.https.onRequest((request, response) => {
         return t.get(docRef).then(doc => {
             let data = doc.data();
             anexos = data["ficheiros"];
-            for (i = 0; i < anexos.length; i++){
-                if(anexos[i]["nome"] === file_name && anexos[i]["referencia"] === file_ref){
-                    anexos.splice(i,1);
+            let i= 0;
+            while (i < anexos.length) {
+                if (anexos[i]["nome"] === file_name && anexos[i]["referencia"] === file_ref) {
+                    anexos.splice(i, 1);
+                } else {
+                    ++i;
                 }
-            }
+            }            
             response.send(anexos);
             return (t.update(docRef,{"ficheiros":anexos}));
         }).catch(err => {
@@ -560,7 +575,7 @@ async function getNonAdminCasos(response, user_id) {
     let db = admin.firestore();
     let availableCases = [];
     
-    db.collection('casos').get().then((snapshot) => {
+    db.collection('casos').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let c = 0;
             for (i=0;i<doc.get('membros').length;i++) {
@@ -580,6 +595,7 @@ async function getNonAdminCasos(response, user_id) {
                 caso["ficheiros"] = doc.get("ficheiros");
                 caso["membros"] = doc.get("membros");
                 caso["observacoes"] = doc.get("observacoes");
+                caso["deleted"] = doc.get("deleted");
                 availableCases.push(caso);
             }
         });
@@ -595,7 +611,7 @@ async function getAdminCasos(response) {
     let db = admin.firestore();
     let availableCases = [];
     
-    db.collection('casos').get().then((snapshot) => {
+    db.collection('casos').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let caso = {};
             caso["id"] = doc.id;
@@ -608,6 +624,7 @@ async function getAdminCasos(response) {
             caso["ficheiros"] = doc.get("ficheiros");
             caso["membros"] = doc.get("membros");
             caso["observacoes"] = doc.get("observacoes");
+            caso["deleted"] = doc.get("deleted");
             availableCases.push(caso);
         });
         return response.send(availableCases);
@@ -670,10 +687,10 @@ exports.updateTituloCaso = functions.https.onRequest((request, response) => {
 exports.getParents = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let a = [];
-    db.collection('parents').get().then((snapshot) => {
+    db.collection('parents').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
-            data["id"] = doc.id;
+            data["id"] = doc.id; 
             a.push(data);
         });
         return response.send(a);
@@ -714,12 +731,20 @@ exports.getParent = functions.https.onRequest((request, response) =>{
  */
 exports.getEducandos = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
-    let a = [];
-    db.collection('parents').get().then((snapshot) => {
+    let a = {};
+    db.collection('parents').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let encarregado = {};
-            encarregado[doc.id] = doc.get("Educandos")
-            a.push(encarregado);
+            let educandos = doc.get("Educandos");
+            let i = 0;
+            while (i < educandos.length) {
+                if (educandos[i]["deleted"]) {
+                    educandos.splice(i, 1);
+                } else {
+                    ++i;
+                }
+            }
+            a[doc.id] = educandos;
         });
         return response.send(a);
     })
@@ -734,9 +759,11 @@ exports.getEducandos = functions.https.onRequest((request, response) => {
 exports.getParentsNumeroSocio = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let a = [];
-    db.collection('parents').get().then((snapshot) => {
+    db.collection('parents').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
-            a.push(doc.get("Número de Sócio"));
+            if (!doc.get("deleted")) {
+                a.push(doc.get("Número de Sócio"));
+            }
         });
         return response.send(a);
     })
@@ -762,6 +789,7 @@ exports.addEducando = functions.https.onRequest((request, response) => {
             let data = doc.data();
             educandos = data["Educandos"];
             //educandos = doc.get("Educandos");
+            educando["deleted"] = false;
             educandos.push(educando);
             data["Educandos"] = educandos;
             response.send(data);
@@ -797,10 +825,12 @@ exports.removeEducando = functions.https.onRequest((request, response) => {
         return t.get(docRef).then(doc => {
             let data = doc.data();
             educandos = data["Educandos"];
-            for (i = 0; i < educandos.length; i++){
-                if(educandos[i]["Nome"] === nome_educando){
-                    educandos.splice(i,1);
+            let i = 0;
+            while (i < educandos.length) {
+                if (educandos[i]["Nome"] === nome_educando) {
+                    educandos[i]["deleted"] = true;
                 }
+                ++i;
             }
             data["Educandos"] = educandos;
             response.send(data);
@@ -885,7 +915,7 @@ exports.updateParent = functions.https.onRequest((request, response) => {
 async function alterNomeFotoInCasos(email, nome, foto) {
     let db = admin.firestore();
     
-    return db.collection('casos').get().then(snapshot => {
+    return db.collection('casos').where("deleted", "==", false).get().then(snapshot => {
         arr = [];
         snapshot.forEach((doc) => {
             let c = 0;
@@ -941,7 +971,7 @@ async function alterNomeFotoInCasos(email, nome, foto) {
 async function alterNomeInCotas(email, nome) {
     let db = admin.firestore();
     
-    return db.collection('cotas').get().then(snapshot => {
+    return db.collection('cotas').where("deleted", "==", false).get().then(snapshot => {
         arr = [];
         snapshot.forEach((doc) => {
             let c = 0;
@@ -970,7 +1000,7 @@ async function alterNomeInCotas(email, nome) {
 async function alterNomeInCargoTransitions(email, nome) {
     let db = admin.firestore();
     
-    db.collection('cargoTransition').get().then(snapshot => {
+    db.collection('cargoTransition').where("deleted", "==", false).get().then(snapshot => {
         snapshot.forEach((doc) => {
             let c = 0;
             let data = doc.data();
@@ -1008,7 +1038,7 @@ exports.deleteParent = functions.https.onRequest((request, response) => {
             //console.log('Document data:', doc.data());
             let data = doc.data();
             data["id"] = doc.id;
-            db.collection('parents').doc(id).delete().then((parent)=>{
+            db.collection('parents').doc(id).update({"deleted":false}).then((parent)=>{
                 return response.send(data);
             }).catch(err => {
                 console.log("Failed to delete -> ", err);
@@ -1037,13 +1067,23 @@ exports.deleteAccount = functions.https.onRequest((request, response) => {
             console.log('No such document!');
             return response.status(404).send({"error":"No such document"});
         }
+        else if (doc.get("deleted")){
+            console.log('User already deleted!');
+            return response.status(404).send({"error":"User already deleted"});
+        }
+        else if (doc.get("admin")){
+            console.log('User has admin cargo!');
+            return response.status(404).send({"error":"User is admin"});
+        }
         else {
             //console.log('Document data:', doc.data());
             let data = doc.data();
             data["id"] = doc.id;
-            db.collection('parents').doc(id).delete().then((parent)=>{
+            db.collection('parents').doc(id).update({"deleted":true}).then((parent)=>{
                 return admin.auth().getUserByEmail(id).then((userRecord) => {
                     return admin.auth().deleteUser(userRecord.uid).then(() => {
+                        alterParentDeletedStatusInCotas(id, true)
+                        alterParentDeletedInCasos(id, true)
                         return response.send(data);
                     })
                     .catch(err => {
@@ -1067,6 +1107,77 @@ exports.deleteAccount = functions.https.onRequest((request, response) => {
         return response.status(405).send({"error" : err});
     });
 });
+async function alterParentDeletedStatusInCotas(email, deleted) {
+    let db = admin.firestore();
+    
+    return db.collection('cotas').where("deleted", "==", false).get().then(snapshot => {
+        arr = [];
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['Pagante'] && data['Pagante']['Id'] === email) {
+                data['Pagante']['deleted'] = deleted;
+                c = c + 1;
+            }
+            if (data['Recetor'] && data['Recetor']['Id'] === email) {
+                data['Recetor']['deleted'] = deleted;
+                c = c + 1;
+            }
+            if (c !== 0) {
+                let v = db.collection('cotas').doc(doc.id).update(data);
+                arr.push(v);
+            }
+        });
+        return arr;
+    })
+    .catch(err => {
+        console.log('Error altering deleted status in cotas:', err);
+        return err;
+    });
+}
+async function alterParentDeletedInCasos(email, deleted) {
+    let db = admin.firestore();
+    
+    return db.collection('casos').where("deleted", "==", false).get().then(snapshot => {
+        arr = [];
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['autor'] && data['autor']['id'] === email) {
+                data['autor']['deleted'] = deleted;
+                c = c + 1;
+            }
+            if (data['membros'] && deleted) {
+                let i = 0;
+                while (i < data['membros'].length) {
+                    if (data['membros'][i]['id'] === email) {
+                        data['membros'].splice(i, 1);
+                        c = c + 1;
+                    } else {
+                        ++i;
+                    }
+                }
+            }
+            if (data['observacoes']) {
+                for (i = 0; i < data['observacoes'].length; i++) {
+                    if (data['observacoes'][i]['user']['id'] === email){
+                        data['observacoes'][i]['user']['deleted'] = deleted;
+                        c = c + 1;
+                    }
+                }
+            }
+            if (c !== 0) {
+                let v = db.collection('casos').doc(doc.id).update(data);
+                arr.push(v);
+            }
+        });
+        return arr;
+    })
+    .catch(err => {
+        console.log('Error altering deleted status in casos:', err);
+        return err;
+    });
+}
 /**
  * Função que altera o estado de Validated de um parent para true
  * Leva como argumento o email do parent
@@ -1162,13 +1273,14 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
                 document = doc.data();
                 document["Email"] = new_email;
                 console.log('Successfully fetched database parent data:', document);
-                db.collection('parents').doc(email).delete()
+                return db.collection('parents').doc(email).delete()
                 .then(() => {
                     db.collection('parents').doc(new_email).set(document)
                     .then(() => {
                         console.log("Document successfully written!");
                         alterEmailInCasos(email, new_email);
                         alterEmailInCotas(email, new_email);
+                        alterEmailInCargoTransitions(email, new_email);
                         response.send(document);
                         return;
                     })
@@ -1182,7 +1294,7 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
                     console.log('Error deleting user first email:', error);
                     return response.status(405).send({"error" : err});
                 });
-            return;
+                //return;
             }
         }).catch(err => {
             console.log('Error getting user first email:', error);
@@ -1202,24 +1314,28 @@ exports.alterParentEmail = functions.https.onRequest((request, response) => {
 async function alterEmailInCasos(oldEmail, newEmail) {
     let db = admin.firestore();
     
-    db.collection('casos').get().then(snapshot => {
+    db.collection('casos').where('deleted', '==', false).get().then(snapshot => {
         snapshot.forEach((doc) => {
             let c = 0;
             let data = doc.data();
-            if (data['autor']['id'] === oldEmail) {
+            if (data['autor'] && data['autor']['id'] === oldEmail) {
                 data['autor']['id'] = newEmail;
                 c = c + 1;
             }
-            for (i = 0; i < data['membros'].length; i++) {
-                if (data['membros'][i]['id'] === oldEmail){
-                    data['membros'][i]['id'] === newEmail;
-                    c = c + 1;
+            if (data['membros']) {
+                for (i = 0; i < data['membros'].length; i++) {
+                    if (data['membros'][i]['id'] === oldEmail){
+                        data['membros'][i]['id'] = newEmail;
+                        c = c + 1;
+                    }
                 }
-            }
-            for (i = 0; i < data['observacoes'].length; i++) {
-                if (data['observacoes'][i]['user']['id'] === oldEmail){
-                    data['observacoes'][i]['user']['id'] === newEmail;
-                    c = c + 1;
+            } 
+            if (data['observacoes']) {
+                for (i = 0; i < data['observacoes'].length; i++) {
+                    if (data['observacoes'][i]['user']['id'] === oldEmail){
+                        data['observacoes'][i]['user']['id'] = newEmail;
+                        c = c + 1;
+                    }
                 }
             }
             if (c !== 0) {
@@ -1229,7 +1345,7 @@ async function alterEmailInCasos(oldEmail, newEmail) {
         return;
     })
     .catch(err => {
-        console.log('Error altering email in casos:', error);
+        console.log('Error altering email in casos:', err);
         return err;
     });
 }
@@ -1239,26 +1355,48 @@ async function alterEmailInCasos(oldEmail, newEmail) {
 async function alterEmailInCotas(oldEmail, newEmail) {
     let db = admin.firestore();
     
-    db.collection('quotas').get().then(snapshot => {
+    db.collection('cotas').where('deleted', '==', false).get().then(snapshot => {
         snapshot.forEach((doc) => {
             let c = 0;
             let data = doc.data();
-            if (data['pagante'] && data['pagante']['id'] === oldEmail) {
-                data['pagante']['id'] = newEmail;
+            if (data['Pagante'] && data['Pagante']['Id'] === oldEmail) {
+                data['Pagante']['Id'] = newEmail;
                 c = c + 1;
             }
-            if (data['recetor'] && data['recetor']['id'] === oldEmail) {
-                data['recetor']['id'] = newEmail;
+            if (data['Recetor'] && data['Recetor']['Id'] === oldEmail) {
+                data['Recetor']['Id'] = newEmail;
                 c = c + 1;
             }
             if (c !== 0) {
-                db.collection('casos').doc(doc.id).update(data);
+                db.collection('cotas').doc(doc.id).update(data);
             }
         });
         return;
     })
     .catch(err => {
-        console.log('Error altering email in cotas:', error);
+        console.log('Error altering email in cotas:', err);
+        return err;
+    });
+}
+async function alterEmailInCargoTransitions(oldEmail, newEmail) {
+    let db = admin.firestore();
+    
+    db.collection('cargoTransition').where('deleted', '==', false).get().then(snapshot => {
+        snapshot.forEach((doc) => {
+            let c = 0;
+            let data = doc.data();
+            if (data['email'] && data['email'] === oldEmail) {
+                data['email'] = newEmail;
+                c = c + 1;
+            }
+            if (c !== 0) {
+                db.collection('cargoTransition').doc(doc.id).update(data);
+            }
+        });
+        return;
+    })
+    .catch(err => {
+        console.log('Error altering email in cargo Transitions:', err);
         return err;
     });
 }
@@ -1278,7 +1416,7 @@ exports.getUserCargos = functions.https.onRequest((request, response) => {
             cargos.push(doc.id);
         });
         res['cargos'] = cargos;
-        return db.collection('parents').get().then(docs => {
+        return db.collection('parents').where('deleted', '==', false).get().then(docs => {
             let users = [];
             docs.forEach((doc) => {
                 let user = {'id':doc.id, 'Cargo':doc.get("Cargo")};
@@ -1358,7 +1496,7 @@ exports.executeCargoTransition = functions.https.onRequest((request, response) =
 exports.getCargoTransitions = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let a = [];
-    db.collection('cargoTransition').get().then((snapshot) => {
+    db.collection('cargoTransition').where('deleted', '==', true).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
             data['id'] = doc.id;
@@ -1394,10 +1532,10 @@ exports.addCota = functions.https.onRequest((request, response) => {
     let confirmado_emissor = (request.query.confirmado_emissor === "true");
     let notas = request.query.notas;
 
-    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":notas};
+    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id, "deleted":false},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":notas, "deleted":false};
 
     if (recetor_id){
-        cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
+        cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id, "deleted":false};
     }
     else {
         cota["Recetor"] = null;
@@ -1427,13 +1565,13 @@ exports.updateCota = functions.https.onRequest((request, response) => {
     let confirmado_emissor = (request.query.confirmado_emissor === "true");
     let notas = request.query.notas;
 
-    let docRef = db.collection('quotas').doc(id);
+    let docRef = db.collection('cotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
             let cota = doc.data();
             if (recetor_id){
-                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
+                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id, "deleted":false};
             }
             cota["Confirmado_Pagante"] = confirmado_emissor;
             cota["Confirmado_Recetor"] = confirmado_recetor;
@@ -1507,8 +1645,8 @@ exports.confirmarRecetorCota = functions.https.onRequest((request, response) => 
     //Estes próximos dois atributos só serão necessários se o pedido for para colocar a confirmação a true.
     let recetor_id = request.query.recetor_id;
     let recetor_nome = request.query.recetor_nome;
-
-    let docRef = db.collection('quotas').doc(id);
+   
+    let docRef = db.collection('cotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
@@ -1517,7 +1655,7 @@ exports.confirmarRecetorCota = functions.https.onRequest((request, response) => 
                 cota["Recetor"] = null;
             }
             else if (confirmar && !cota["Pago"]){
-                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
+                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id, "deleted":false};
             }
             cota["Confirmado_Recetor"] = confirmar;
             if (confirmar && cota["Confirmado_Pagante"]){
@@ -1556,14 +1694,14 @@ exports.pagoCota = functions.https.onRequest((request, response) => {
     //De forma a recolher quem verificou o pagamento diretamente
     let recetor_id = request.query.recetor_id;
     let recetor_nome = request.query.recetor_nome;
-
-    let docRef = db.collection('quotas').doc(id);
+   
+    let docRef = db.collection('cotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
             let cota = doc.data();
             if (pago && !cota["Pago"]){
-                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id};
+                cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id, "deleted":false};
             }
             else if (!pago && !cota["Confirmado_Recetor"]){
                 cota["Recetor"] = null;
@@ -1574,9 +1712,9 @@ exports.pagoCota = functions.https.onRequest((request, response) => {
             else {
                 cota["Pago"] = pago;
                 response.send(cota);
-                return (t.update(docRef,{"Pago":cota["Pago"],"Recetor":cota["Recetor"]}));
+                return (t.update(docRef,{"Pago":cota["Pago"],"Recetor":cota["Recetor"]}));   
             }
-
+            
         });
     })
     .then(result => {
@@ -1595,7 +1733,7 @@ exports.getCotas = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let cota_table = [];
 
-    db.collection('quotas').get().then((snapshot) => {
+    db.collection('cotas').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
             data["id"] = doc.id; 
@@ -1624,7 +1762,7 @@ exports.getCotasByAno = functions.https.onRequest((request, response) => {
     let ano_letivo = request.query.ano;
     let cota_table = [];
 
-    db.collection('quotas').where('Ano_Letivo','==',ano_letivo).get().then((snapshot) => {
+    db.collection('cotas').where('Ano_Letivo','==',ano_letivo).where('deleted', '==', false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
             data["id"] = doc.id; 
@@ -1656,8 +1794,8 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
     let ano_letivo = request.query.ano;
     let valor = parseFloat(request.query.valor);
 
-    let docRefsParents = db.collection('parents').get();
-    let docRefsCotas = db.collection('quotas').where('Ano_Letivo','==',ano_letivo).get();
+    let docRefsParents = db.collection('parents').where('deleted', '==', false).get();
+    let docRefsCotas = db.collection('cotas').where('Ano_Letivo','==',ano_letivo).where("deleted", "==", false).get();
 
     Promise.all([docRefsParents, docRefsCotas]).then((query_snapshots) => {
         let parent_ids = [];
@@ -1672,9 +1810,9 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
             let id = doc.id;
             let nome = data["Nome"];
             if (!cota_ids.includes(id)){
-                cota = {"Pagante":{"Nome":nome, "Id":id}, "Recetor":null, "Confirmado_Pagante":false, "Confirmado_Recetor":false,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo}
+                cota = {"Pagante":{"Nome":nome, "Id":id, "deleted":false}, "Recetor":null, "Confirmado_Pagante":false, "Confirmado_Recetor":false,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "deleted":false}
                 cotas_adicionadas.push(cota);
-                db.collection('quotas').add(cota)
+                db.collection('cotas').add(cota)
                 .catch(err => {
                     console.log("Error -> ,", err);
                     return response.status(405).send({"error" : err});
@@ -1692,13 +1830,12 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
  * Esta função serve apenas para devolver um atributo "Pago" de um caso de forma a confirmar se esta já foi pago ou não.
  * Leva como argumentos: o id (uuid/numero de membro do utilizador relacionado á cota), ano(letivo da cota)
  * Retorna um JSON com um atributo (Pago) com um valor true ou false
- */
-exports.checkPagamento = functions.https.onRequest((request, response) => {
+ */exports.checkPagamento = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let parent_id = request.query.id;
     let ano_letivo = request.query.ano;
 
-    let docRefsCotas = db.collection('quotas').where('Ano_Letivo','==',ano_letivo).get()
+    let docRefsCotas = db.collection('cotas').where('Ano_Letivo','==',ano_letivo).where('deleted', '==', false).get()
     .then(snapshot => {
         let c = null;
         snapshot.forEach((doc) => {
@@ -2056,7 +2193,7 @@ async function sendEmail(email, subject, message) {
 async function createCargoTransition(nome, email, data, cargo) {
     let db = admin.firestore();
 
-    let document = {'nome':nome, 'email':email, 'data':data, 'cargo':cargo, 'aceite':false}
+    let document = {'nome':nome, 'email':email, 'data':data, 'cargo':cargo, 'aceite':false, 'deleted':false}
     db.collection('cargoTransition').add(document).then(ref => {
         console.log("Added document");
         return document
