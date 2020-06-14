@@ -180,7 +180,8 @@ export const deleteAccountExplanation = {
     "abandonar definitivamente a associação.\n" +
     "Depois da eliminação de conta não vai poder recuperar as suas informações, bem como mensagens ou outros conteúdos " +
     "que partilhou na plataforma. Se desejar descarregar uma cópia das suas informações pode usar a função de exportar " +
-    "dados antes de apagar a sua conta.",
+    "dados antes de apagar a sua conta. Além disso, não será possível registar-se novamente com o mesmo email desta conta " +
+    "depois de eliminada.",
 };
 
 export const exportCasosOnProcess = {
