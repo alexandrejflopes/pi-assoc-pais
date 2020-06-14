@@ -971,7 +971,7 @@ async function alterNomeFotoInCasos(email, nome, foto) {
 async function alterNomeInCotas(email, nome) {
     let db = admin.firestore();
     
-    return db.collection('cotas').where("deleted", "==", false).get().then(snapshot => {
+    return db.collection('quotas').where("deleted", "==", false).get().then(snapshot => {
         arr = [];
         snapshot.forEach((doc) => {
             let c = 0;
@@ -985,7 +985,7 @@ async function alterNomeInCotas(email, nome) {
                 c = c + 1;
             }
             if (c !== 0) {
-                let v = db.collection('cotas').doc(doc.id).update(data);
+                let v = db.collection('quotas').doc(doc.id).update(data);
                 arr.push(v);
             }
         });
@@ -1110,7 +1110,7 @@ exports.deleteAccount = functions.https.onRequest((request, response) => {
 async function alterParentDeletedStatusInCotas(email, deleted) {
     let db = admin.firestore();
     
-    return db.collection('cotas').where("deleted", "==", false).get().then(snapshot => {
+    return db.collection('quotas').where("deleted", "==", false).get().then(snapshot => {
         arr = [];
         snapshot.forEach((doc) => {
             let c = 0;
@@ -1124,7 +1124,7 @@ async function alterParentDeletedStatusInCotas(email, deleted) {
                 c = c + 1;
             }
             if (c !== 0) {
-                let v = db.collection('cotas').doc(doc.id).update(data);
+                let v = db.collection('quotas').doc(doc.id).update(data);
                 arr.push(v);
             }
         });
@@ -1355,7 +1355,7 @@ async function alterEmailInCasos(oldEmail, newEmail) {
 async function alterEmailInCotas(oldEmail, newEmail) {
     let db = admin.firestore();
     
-    db.collection('cotas').where('deleted', '==', false).get().then(snapshot => {
+    db.collection('quotas').where('deleted', '==', false).get().then(snapshot => {
         snapshot.forEach((doc) => {
             let c = 0;
             let data = doc.data();
@@ -1368,7 +1368,7 @@ async function alterEmailInCotas(oldEmail, newEmail) {
                 c = c + 1;
             }
             if (c !== 0) {
-                db.collection('cotas').doc(doc.id).update(data);
+                db.collection('quotas').doc(doc.id).update(data);
             }
         });
         return;
@@ -1531,8 +1531,9 @@ exports.addCota = functions.https.onRequest((request, response) => {
     let confirmado_recetor = (request.query.confirmado_recetor === "true");
     let confirmado_emissor = (request.query.confirmado_emissor === "true");
     let notas = request.query.notas;
+    let data = request.query.data;
 
-    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id, "deleted":false},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":notas, "deleted":false};
+    let cota = {"Pagante":{"Nome":user_nome,"Id":user_id, "deleted":false},"Confirmado_Pagante":confirmado_emissor, "Confirmado_Recetor":confirmado_recetor,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "Notas":notas, "Data":data, "deleted":false};
 
     if (recetor_id){
         cota["Recetor"] = {"Nome":recetor_nome,"Id":recetor_id, "deleted":false};
@@ -1541,7 +1542,7 @@ exports.addCota = functions.https.onRequest((request, response) => {
         cota["Recetor"] = null;
     }
 
-    db.collection('cotas').add(cota).then(ref => {
+    db.collection('quotas').add(cota).then(ref => {
         console.log("Added cota");
         return response.send(cota);
     })
@@ -1565,7 +1566,7 @@ exports.updateCota = functions.https.onRequest((request, response) => {
     let confirmado_emissor = (request.query.confirmado_emissor === "true");
     let notas = request.query.notas;
 
-    let docRef = db.collection('cotas').doc(id);
+    let docRef = db.collection('quotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
@@ -1646,7 +1647,7 @@ exports.confirmarRecetorCota = functions.https.onRequest((request, response) => 
     let recetor_id = request.query.recetor_id;
     let recetor_nome = request.query.recetor_nome;
    
-    let docRef = db.collection('cotas').doc(id);
+    let docRef = db.collection('quotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
@@ -1695,7 +1696,7 @@ exports.pagoCota = functions.https.onRequest((request, response) => {
     let recetor_id = request.query.recetor_id;
     let recetor_nome = request.query.recetor_nome;
    
-    let docRef = db.collection('cotas').doc(id);
+    let docRef = db.collection('quotas').doc(id);
 
     let transaction = db.runTransaction(t => {
         return t.get(docRef).then(doc => {
@@ -1733,7 +1734,7 @@ exports.getCotas = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let cota_table = [];
 
-    db.collection('cotas').where("deleted", "==", false).get().then((snapshot) => {
+    db.collection('quotas').where("deleted", "==", false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
             data["id"] = doc.id; 
@@ -1762,7 +1763,7 @@ exports.getCotasByAno = functions.https.onRequest((request, response) => {
     let ano_letivo = request.query.ano;
     let cota_table = [];
 
-    db.collection('cotas').where('Ano_Letivo','==',ano_letivo).where('deleted', '==', false).get().then((snapshot) => {
+    db.collection('quotas').where('Ano_Letivo','==',ano_letivo).where('deleted', '==', false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
             data["id"] = doc.id; 
@@ -1795,7 +1796,7 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
     let valor = parseFloat(request.query.valor);
 
     let docRefsParents = db.collection('parents').where('deleted', '==', false).get();
-    let docRefsCotas = db.collection('cotas').where('Ano_Letivo','==',ano_letivo).where("deleted", "==", false).get();
+    let docRefsCotas = db.collection('quotas').where('Ano_Letivo','==',ano_letivo).where("deleted", "==", false).get();
 
     Promise.all([docRefsParents, docRefsCotas]).then((query_snapshots) => {
         let parent_ids = [];
@@ -1812,7 +1813,7 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
             if (!cota_ids.includes(id)){
                 cota = {"Pagante":{"Nome":nome, "Id":id, "deleted":false}, "Recetor":null, "Confirmado_Pagante":false, "Confirmado_Recetor":false,"Pago":false, "Valor":valor, "Ano_Letivo":ano_letivo, "deleted":false}
                 cotas_adicionadas.push(cota);
-                db.collection('cotas').add(cota)
+                db.collection('quotas').add(cota)
                 .catch(err => {
                     console.log("Error -> ,", err);
                     return response.status(405).send({"error" : err});
@@ -1835,7 +1836,7 @@ exports.addCotasAllUsers = functions.https.onRequest((request, response) => {
     let parent_id = request.query.id;
     let ano_letivo = request.query.ano;
 
-    let docRefsCotas = db.collection('cotas').where('Ano_Letivo','==',ano_letivo).where('deleted', '==', false).get()
+    let docRefsCotas = db.collection('quotas').where('Ano_Letivo','==',ano_letivo).where('deleted', '==', false).get()
     .then(snapshot => {
         let c = null;
         snapshot.forEach((doc) => {
