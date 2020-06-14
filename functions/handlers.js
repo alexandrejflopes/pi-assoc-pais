@@ -1544,6 +1544,7 @@ exports.addCota = functions.https.onRequest((request, response) => {
 
     db.collection('quotas').add(cota).then(ref => {
         console.log("Added cota");
+        cota["id"] = ref.id;
         return response.send(cota);
     })
     .catch(err => {
