@@ -219,7 +219,7 @@ const parentsParameters = {
   },
   FEES: {
     pt_PT: "Cotas",
-  }
+  },
 };
 
 const studentsParameters = {
@@ -259,6 +259,10 @@ export const cleanButton = {
 
 export const closeButton = {
   pt_PT: "Fechar",
+};
+
+export const cancelButton = {
+  pt_PT: "Cancelar",
 };
 
 export const saveButton = {

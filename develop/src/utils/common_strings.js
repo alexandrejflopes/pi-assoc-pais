@@ -113,3 +113,7 @@ export const success_geral = {
 export const error_geral = {
   pt_PT: "Ocorreu um erro. Por favor, tente novamente.",
 };
+
+export const arquivado_title = {
+  pt_PT: "Arquivado",
+};

@@ -165,7 +165,6 @@ export const exportAssocDataExplanation = {
     "Quando a cópia estiver concluída, vai ser descarregada automaticamente num ficheiro ZIP para o disco do seu dispositivo.",
 };
 
-
 export const exportAssocCasosExplanation = {
   pt_PT:
     "Pode descarregar uma cópia de todos os casos criados pelos utilizadores da plataforma, incluindo comentários, " +
@@ -355,7 +354,11 @@ export const cargosNothingToUpdateWarning = {
 };
 
 export const erroUpdateCargos = {
-  pt_PT: "Erro ao fazer o update. Por favor, tente novamente.",
+  pt_PT: "Erro ao fazer a atualização. Por favor, tente novamente.",
+};
+
+export const addQuotaError = {
+  pt_PT: "Erro na gravação. Por favor, tente novamente.",
 };
 
 // ------- CONFIRMATIONS / PROMPTS

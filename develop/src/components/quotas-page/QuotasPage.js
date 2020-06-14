@@ -11,8 +11,12 @@ import {
 } from "shards-react";
 import { toast, Bounce } from "react-toastify";
 import { Link, Redirect } from "react-router-dom";
-import { commitChangesQuotasMessage } from "../../utils/messages_strings";
-import { languageCode } from "../../utils/general_utils";
+import {
+  commitChangesQuotasMessage,
+  sucessoGeral,
+} from "../../utils/messages_strings";
+import { languageCode, showToast, toastTypes } from "../../utils/general_utils";
+import { saveChanges, error_geral } from "../../utils/common_strings";
 
 import {
   firestore,
@@ -58,6 +62,7 @@ class Quotas_Page extends Component {
     this.commit = this.commit.bind(this);
     this.componentDidMount = this.componentDidMount.bind(this);
     this.componentWillUnmount = this.componentWillUnmount.bind(this);
+    this.getSortOrder = this.getSortOrder.bind(this);
     this.getQuotas();
   }
 
@@ -117,8 +122,8 @@ class Quotas_Page extends Component {
       var nota = notas[i];
 
       if (
-        json["Confirmado Pagante"] != emissor ||
-        json["Confirmado Recetor"] != recetor ||
+        json["Confirmado_Pagante"] != emissor ||
+        json["Confirmado_Recetor"] != recetor ||
         json["Notas"] != nota
       ) {
         var jsonValues = {};
@@ -140,26 +145,32 @@ class Quotas_Page extends Component {
     }
   }
 
-  commit() {
+  async commit() {
     const { items, checkBoxPagante, checkBoxRecetor, notas } = this.state;
+    const project_id = firebaseConfig.projectId;
     const this_ = this;
 
     var arrayToChange = [];
     for (var i = 0; i < items.length; i++) {
       var json = items[i];
+
       var emissor = checkBoxPagante[i];
       var recetor = checkBoxRecetor[i];
       var nota = notas[i];
 
       if (
-        json["Confirmado Pagante"] != emissor ||
-        json["Confirmado Recetor"] != recetor ||
+        json["Confirmado_Pagante"] != emissor ||
+        json["Confirmado_Recetor"] != recetor ||
         json["Notas"] != nota
       ) {
         var jsonValues = {};
+
         jsonValues.id = json.id;
-        jsonValues.emissor = emissor;
-        jsonValues.recetor = recetor;
+        jsonValues.confirmado_emissor = emissor;
+        jsonValues.emissor_id = json.Pagante.Id;
+        jsonValues.confirmado_recetor = recetor;
+        jsonValues.recetor_nome = json.Recetor.Nome;
+        jsonValues.recetor_id = json.Recetor.Id;
         jsonValues.nota = nota;
         arrayToChange.push(jsonValues);
       }
@@ -180,84 +191,97 @@ class Quotas_Page extends Component {
     for (var x = 0; x < arrayToChange.length; x++) {
       var jsonToChange = arrayToChange[x];
 
-      const ref = firestore.collection("quotas").doc(jsonToChange.id);
+      let uri =
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/updateCota?" +
+        "id=" +
+        jsonToChange.id +
+        "&recetor_id=" +
+        encodeURIComponent(jsonToChange.recetor_id) +
+        "&recetor_nome=" +
+        encodeURIComponent(jsonToChange.recetor_nome) +
+        "&confirmado_recetor=" +
+        encodeURIComponent(jsonToChange.confirmado_recetor) +
+        "&confirmado_emissor=" +
+        encodeURIComponent(jsonToChange.confirmado_emissor) +
+        "&notas=" +
+        encodeURIComponent(jsonToChange.nota);
 
-      return ref
-        .update({
-          "Confirmado Pagante": jsonToChange.emissor,
-          "Confirmado Recetor": jsonToChange.recetor,
-          Notas: jsonToChange.nota,
-        })
-        .then(function () {
-          var message = "Sucesso!";
-          toast.configure();
-          toast(message, {
-            transition: Bounce,
-            closeButton: true,
-            autoClose: 2000,
-            position: "top-right",
-            type: "success",
+      const request = () => {
+        return fetch(uri)
+          .then((resp) => resp.json()) // Transform the data into json
+          .then(function (data) {
+            showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
+          })
+          .catch(function (error) {
+            showToast(error_geral[languageCode], 5000, toastTypes.ERROR);
           });
-          this_.getQuotas();
-        })
-        .catch(function (error) {
-          // The document probably doesn't exist.
-          //console.error("Falha de gravação de alguma alteração, tente novamente!");
-          var message =
-            "Falha de gravação de alguma alteração, tente novamente!";
-          toast.configure();
-          toast(message, {
-            transition: Bounce,
-            closeButton: true,
-            autoClose: 2000,
-            position: "top-right",
-            type: "error",
-          });
-        });
+      };
+
+      await request();
+      this_.getQuotas();
     }
+  }
+
+  //Comparer Function
+  getSortOrder(prop) {
+    return function (a, b) {
+      if (a[prop] > b[prop]) {
+        return -1;
+      } else if (a[prop] < b[prop]) {
+        return 1;
+      }
+      return 0;
+    };
   }
 
   getQuotas() {
     var this_ = this;
+    const project_id = firebaseConfig.projectId;
 
-    const quotasDocs = firestore.collection("quotas");
-    quotasDocs
-      .get()
-      .then((snapshot) => {
-        if (snapshot.empty) {
-          console.log("No matching documents.");
-          return;
-        }
+    let uri =
+      "https://us-central1-" + project_id + ".cloudfunctions.net/api/getCotas";
+    const request = async () => {
+      let resposta;
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          if (data === "" || data == null) {
+            //Nothing to do
+          } else {
+            var arrayOfDocs = data; // []
+            arrayOfDocs.sort(this_.getSortOrder("Ano Letivo"));
 
-        var arrayOfDocs = [];
-        var arrayOfPaganteValues = [];
-        var arrayOfRecetorValues = [];
-        var arrayNotas = [];
-        snapshot.forEach((doc) => {
-          //console.log(doc.id, "=>", doc.data());
-          var json = doc.data();
-          json.id = doc.id;
-          arrayOfDocs.push(json);
-          arrayOfPaganteValues.push(doc.data()["Confirmado Pagante"]);
-          arrayOfRecetorValues.push(doc.data()["Confirmado Recetor"]);
-          var nota = "";
-          if (doc.data()["Notas"] != undefined && doc.data()["Notas"] != null) {
-            nota = doc.data()["Notas"];
+            var arrayOfPaganteValues = [];
+            var arrayOfRecetorValues = [];
+            var arrayNotas = [];
+            for (let i in arrayOfDocs) {
+              let json = arrayOfDocs[i];
+              arrayOfPaganteValues.push(json["Confirmado_Pagante"]);
+              arrayOfRecetorValues.push(json["Confirmado_Recetor"]);
+              var nota = "";
+              if (json["Notas"] != undefined && json["Notas"] != null) {
+                nota = json["Notas"];
+              }
+              arrayNotas.push(nota);
+            }
+
+            // Save data to state
+            this_.setState({
+              items: arrayOfDocs,
+              checkBoxPagante: arrayOfPaganteValues,
+              checkBoxRecetor: arrayOfRecetorValues,
+              notas: arrayNotas,
+            });
           }
-          arrayNotas.push(nota);
+        })
+        .catch(function (error) {
+          //console.log(error);
         });
-
-        // Save data to state
-        this_.setState({
-          items: arrayOfDocs,
-          checkBoxPagante: arrayOfPaganteValues,
-          checkBoxRecetor: arrayOfRecetorValues,
-          notas: arrayNotas,
-        });
-      })
-      .catch((err) => {
-        console.log("Error getting documents", err);
-      });
+      return resposta;
+    };
+    request();
   }
 
   renderTableData() {
@@ -265,17 +289,17 @@ class Quotas_Page extends Component {
     var id = 0;
     return this.state.items.map((item, index) => {
       const { Data, Pagante, Recetor, Valor, Notas } = item; //destructuring
-      var Ano = item["Ano Letivo"];
-      var confirmadoRecetor = item["Confirmado Recetor"];
-      var confirmadoPagante = item["Confirmado Pagante"];
+      var Ano = item["Ano_Letivo"];
+      var confirmadoRecetor = item["Confirmado_Recetor"];
+      var confirmadoPagante = item["Confirmado_Pagante"];
 
       const x = id;
       id++;
       return (
         <tr key={id}>
           <td>{Data}</td>
-          <td>{Recetor}</td>
-          <td>{Pagante}</td>
+          <td>{Recetor.Nome}</td>
+          <td>{Pagante.Nome}</td>
           <td>{Valor}</td>
           <td>{Ano}</td>
           <td>
@@ -283,7 +307,7 @@ class Quotas_Page extends Component {
               type="checkbox"
               checked={this.state.checkBoxRecetor[x]}
               disabled={
-                this.state.nome != Recetor ? true : false //this.state.checkBoxRecetor[x]
+                this.state.email != Recetor.Id ? true : false //this.state.checkBoxRecetor[x]
               }
               onChange={this.handleChangeCheckBoxRecetor.bind(this, x)}
             />
@@ -293,7 +317,7 @@ class Quotas_Page extends Component {
               type="checkbox"
               checked={this.state.checkBoxPagante[x]}
               disabled={
-                this.state.nome != Pagante ? true : false //this.state.checkBoxPagante[x]
+                this.state.email != Pagante.Id ? true : false //this.state.checkBoxPagante[x]
               }
               onChange={this.handleChangeCheckBoxPagante.bind(this, x)}
             />
@@ -308,7 +332,7 @@ class Quotas_Page extends Component {
               name={"notas-" + x}
               onChange={this.handleChangeNotas}
               value={this.state.notas[x]}
-              disabled={this.state.nome == Pagante ? false : true}
+              disabled={this.state.email == Pagante.Id ? false : true}
             ></textarea>
           </td>
         </tr>
@@ -317,19 +341,12 @@ class Quotas_Page extends Component {
   }
 
   handleChangeCheckBoxRecetor(i) {
-    //console.log("função checkBox Recetor " + i);
-    //TODO: Confirmar que utilizador a fazer clique é o correto
-
     if (this.state.checkBoxRecetor[i] == false) {
-      if (window.confirm("Confirmar ação?")) {
-        //User confirmed action
-        var array = this.state.checkBoxRecetor;
-        array[i] = true;
+      //User confirmed action
+      var array = this.state.checkBoxRecetor;
+      array[i] = true;
 
-        this.setState({ checkBoxRecetor: array });
-      } else {
-        //User canceled, do nothing
-      }
+      this.setState({ checkBoxRecetor: array });
     } else {
       var array = this.state.checkBoxRecetor;
       array[i] = false;
@@ -339,17 +356,12 @@ class Quotas_Page extends Component {
   }
 
   handleChangeCheckBoxPagante(i) {
-    console.log("função checkBox Pagante " + i);
     if (this.state.checkBoxPagante[i] == false) {
-      if (window.confirm("Confirmar ação?")) {
-        //User confirmed action
-        var array = this.state.checkBoxPagante;
-        array[i] = true;
+      //User confirmed action
+      var array = this.state.checkBoxPagante;
+      array[i] = true;
 
-        this.setState({ checkBoxPagante: array });
-      } else {
-        //User canceled, do nothing
-      }
+      this.setState({ checkBoxPagante: array });
     } else {
       var array = this.state.checkBoxPagante;
       array[i] = false;
@@ -427,12 +439,17 @@ class Quotas_Page extends Component {
         </Row>
         <Col md={12} style={{ textAlign: "center" }}>
           {this.state.admin ? (
-            <Quotas_Modal getQuotas={this.getQuotas} />
+            <Quotas_Modal
+              getQuotas={this.getQuotas}
+              user_email={this.state.email}
+              user_nome={this.state.nome}
+            />
           ) : null}
 
           <Button
+            theme="success"
             style={{
-              background: "#34b4eb",
+              //background: "#34b4eb",
               color: "#fff",
               width: "200px",
               textAlign: "center",
@@ -440,7 +457,7 @@ class Quotas_Page extends Component {
             }}
             onClick={this.commit}
           >
-            <i /> Salvar alterações
+            <i /> {saveChanges[languageCode]}
           </Button>
         </Col>
         {this.state.redirect}

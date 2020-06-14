@@ -40,6 +40,7 @@ import {
   deleteAccountPrompt,
   deleteCasoPrompt,
   erase,
+  arquivado_title,
 } from "../utils/common_strings";
 import ConfirmationDialog from "../components/dialog/ConfirmationDialog";
 import {
@@ -416,6 +417,13 @@ class Casos extends React.Component {
               ? ListaCasosArquivados.map((post, idx) => (
                   <Col lg="4" key={idx}>
                     <Card small className="card-post mb-4">
+                      <CardHeader
+                        style={{
+                          "background-color": "#f5b342",
+                        }}
+                      >
+                        {arquivado_title[languageCode]}
+                      </CardHeader>
                       <CardBody>
                         <h5 className="card-title">{post.titulo}</h5>
                         <p

@@ -15,8 +15,21 @@ import {
   FormTextarea,
   FormCheckbox,
 } from "shards-react";
-import { firestore, firebase_auth, firebase } from "../../firebase-config";
-import { assocParameters, languageCode } from "../../utils/general_utils";
+import {
+  firestore,
+  firebase_auth,
+  firebase,
+  firebaseConfig,
+} from "../../firebase-config";
+import { addQuotaError, sucessoGeral } from "../../utils/messages_strings";
+import {
+  assocParameters,
+  languageCode,
+  showToast,
+  toastTypes,
+  saveButton,
+  cancelButton,
+} from "../../utils/general_utils";
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
 import { Multiselect } from "multiselect-react-dropdown";
@@ -48,6 +61,11 @@ class QuotasModal extends React.Component {
       options: [],
       recetor: "",
       emissor: "",
+      user_ids: [],
+      recetor_id: "",
+      emissor_id: "",
+      email: props.user_email,
+      nome: props.user_nome,
       valor: 5, //default
       anoLetivo: anoLetivoAtual,
       data: new Date(),
@@ -80,11 +98,19 @@ class QuotasModal extends React.Component {
   }
 
   onSelectEmissor(selectedList, selectedItem) {
-    this.setState({ emissor: selectedItem.name });
+    const { user_ids } = this.state;
+    this.setState({
+      emissor: selectedItem.name,
+      emissor_id: user_ids[selectedItem.id],
+    });
   }
 
   onSelectRecetor(selectedList, selectedItem) {
-    this.setState({ recetor: selectedItem.name });
+    const { user_ids } = this.state;
+    this.setState({
+      recetor: selectedItem.name,
+      recetor_id: user_ids[selectedItem.id],
+    });
   }
 
   handlechangeValor(e) {
@@ -102,10 +128,50 @@ class QuotasModal extends React.Component {
   }
 
   loadParents() {
-    const parentsCollection = firestore.collection("parents");
+    const this_ = this;
+    const project_id = firebaseConfig.projectId;
+    //const parentsCollection = firestore.collection("parents");
 
     var options = [];
+    var user_ids = [];
     var i = 0;
+
+    let uri =
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getParents";
+
+    const request = async () => {
+      let resposta;
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          console.log(data);
+          for (var x = 0; x < data.length; x++) {
+            var parent = data[x];
+            if (parent["Nome"] != null) {
+              if (
+                parent["Validated"] != null &&
+                parent["Validated"].toString() != "false"
+              ) {
+                var member = { id: i, name: parent["Nome"] };
+                options.push(member);
+                user_ids.push(parent.Email);
+                i++;
+              }
+            }
+          }
+
+          this_.setState({ options: options, user_ids: user_ids });
+        })
+        .catch(function (error) {
+          //
+        });
+      return resposta;
+    };
+    request();
+
+    /*
     parentsCollection.get().then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
@@ -116,12 +182,14 @@ class QuotasModal extends React.Component {
           ) {
             var member = { id: i, name: doc.data()["Nome"] };
             options.push(member);
+            user_ids.push(doc.id);
             i++;
           }
         }
       });
-      this.setState({ options: options });
+      this.setState({ options: options, user_ids: user_ids });
     });
+    */
   }
 
   showModal() {
@@ -135,6 +203,7 @@ class QuotasModal extends React.Component {
   saveCota() {
     const { recetor, emissor, valor, anoLetivo, data } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     var regex = /[0-9]{4}\/[0-9]{2}/;
 
@@ -179,52 +248,46 @@ class QuotasModal extends React.Component {
         type: "error",
       });
     } else {
-      var json = {};
-      json["Ano Letivo"] = anoLetivo;
-      json["Confirmado Pagante"] = false;
-      json["Confirmado Recetor"] = false;
-      json["Data"] = moment(data).format("DD/MM/YYYY").toString();
-      json["Pagante"] = emissor;
-      json["Recetor"] = recetor;
-      json["Valor"] = valor;
-      json["Notas"] = "";
-      const ref = firestore.collection("quotas").doc();
-      ref
-        .set(json)
-        .then(function () {
-          var message = "Successo!";
-          toast.configure();
-          toast(message, {
-            transition: Bounce,
-            closeButton: true,
-            autoClose: 2000,
-            position: "top-right",
-            type: "success",
-          });
+      let uri =
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/addCota?" +
+        "id=" +
+        encodeURIComponent(this_.state.emissor_id) +
+        "&nome=" +
+        encodeURIComponent(emissor) +
+        "&ano=" +
+        encodeURIComponent(anoLetivo) +
+        "&valor=" +
+        encodeURIComponent(valor) +
+        "&recetor_id=" +
+        encodeURIComponent(this_.state.recetor_id) +
+        "&recetor_nome=" +
+        encodeURIComponent(recetor) +
+        "&confirmado_recetor=" +
+        "false" +
+        "&confirmado_emissor=" +
+        "false" +
+        "&notas=" +
+        encodeURIComponent(" ") +
+        "&data=" +
+        encodeURIComponent(moment(data).format("DD/MM/YYYY").toString());
+      const request = async () => {
+        let resposta;
+        await fetch(uri)
+          .then((resp) => resp.json()) // Transform the data into json
+          .then(function (data) {
+            showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
 
-          this_.setState({
-            options: [],
-            recetor: "",
-            emissor: "",
-            valor: -1,
-            anoLetivo: "",
-            notas: "",
-            data: new Date(),
+            this_.props.getQuotas();
+            this_.closeModal();
+          })
+          .catch(function (error) {
+            showToast(addQuotaError[languageCode], 5000, toastTypes.ERROR);
           });
-          this_.props.getQuotas();
-          this_.closeModal();
-        })
-        .catch(function (error) {
-          var message = "Erro na gravação, tente novamente!";
-          toast.configure();
-          toast(message, {
-            transition: Bounce,
-            closeButton: true,
-            autoClose: 2000,
-            position: "top-right",
-            type: "error",
-          });
-        });
+        return resposta;
+      };
+      request();
     }
   }
 
@@ -256,6 +319,7 @@ class QuotasModal extends React.Component {
                     <FormGroup>
                       <label htmlFor="emissor">Emissor</label>
                       <Multiselect
+                        id="emissorSelect"
                         options={this.state.options} // Options to display in the dropdown
                         onSelect={this.onSelectEmissor} // Function will trigger on select event
                         displayValue="name" // Property name to display in the dropdown options
@@ -267,6 +331,7 @@ class QuotasModal extends React.Component {
                     <FormGroup>
                       <label htmlFor="recetor">Recetor</label>
                       <Multiselect
+                        id="recetorSelect"
                         options={this.state.options} // Options to display in the dropdown
                         onSelect={this.onSelectRecetor} // Function will trigger on select event
                         displayValue="name" // Property name to display in the dropdown options
@@ -289,7 +354,7 @@ class QuotasModal extends React.Component {
                         Ano Letivo (Exemplo formato: 2019/20)
                       </label>
                       <FormInput
-                        id="valor"
+                        id="anoLetivo"
                         type="text"
                         onChange={this.handlechangeAnoLetivo}
                         value={this.state.anoLetivo}
@@ -315,11 +380,11 @@ class QuotasModal extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant="secondary" onClick={this.closeModal}>
-              Fechar
+            <Button theme="danger" onClick={this.closeModal}>
+              {cancelButton[languageCode]}
             </Button>
-            <Button variant="primary" onClick={this.saveCota}>
-              Gravar
+            <Button theme="success" onClick={this.saveCota}>
+              {saveButton[languageCode]}
             </Button>
           </Modal.Footer>
         </Modal>
