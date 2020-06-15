@@ -1580,12 +1580,13 @@ exports.updateCota = functions.https.onRequest((request, response) => {
             cota["Confirmado_Pagante"] = confirmado_emissor;
             cota["Confirmado_Recetor"] = confirmado_recetor;
             cota["Notas"] = notas;
-            response.send(cota);
+            //response.send(cota);
             return (t.update(docRef,{"Confirmado_Pagante":confirmado_emissor,"Confirmado_Recetor":confirmado_recetor, "Recetor":cota["Recetor"], "Notas":notas}));
         });
     })
     .then(result => {
         console.log('Transaction success! -> ',result);
+        response.send({"UpdateCota" : "success"});
         return result;
     }).catch(err => {
         console.log('Transaction failure:', err);
