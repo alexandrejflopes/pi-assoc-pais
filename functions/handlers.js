@@ -1498,7 +1498,7 @@ exports.executeCargoTransition = functions.https.onRequest((request, response) =
 exports.getCargoTransitions = functions.https.onRequest((request, response) => {
     let db = admin.firestore();
     let a = [];
-    db.collection('cargoTransition').where('deleted', '==', true).get().then((snapshot) => {
+    db.collection('cargoTransition').where('deleted', '==', false).get().then((snapshot) => {
         snapshot.forEach((doc) => {
             let data = doc.data();
             data['id'] = doc.id;
@@ -2415,6 +2415,25 @@ exports.getAllNewParams = functions.https.onRequest((request, response) => {
     })
     .catch(err => {
         console.log('Query error:', err);
+        return response.status(405).send({"error" : err});
+    });
+});
+/**
+ * Retorna todos os documentos da coleção dos cargos.
+ */
+exports.getCargos = functions.https.onRequest((request, response) => {
+    let db = admin.firestore();
+    let a = [];
+    db.collection('cargos').get().then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let data = doc.data();
+            data["id"] = doc.id; 
+            a.push(data);
+        });
+        return response.send(a);
+    })
+    .catch((err) => {
+        console.log('Error getting documents', err);
         return response.status(405).send({"error" : err});
     });
 });
