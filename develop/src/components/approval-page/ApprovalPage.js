@@ -7,27 +7,15 @@ import {
   Card,
   CardBody,
   CardFooter,
-  Form,
   FormInput,
   FormGroup,
-  FormCheckbox,
   Button,
-  FormTextarea,
   FormFeedback,
 } from "shards-react";
-import { toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Label, Input, FormText } from "reactstrap";
-import { Link, Redirect } from "react-router-dom";
-import AssocLogoUpload from "../config-inicial/AssocLogoUpload";
-import MembersFileUpload from "../config-inicial/MembersFileUpload";
-import NewParamsFileUpload from "../config-inicial/NewParamsFileUpload";
-import { saveRegistToDB } from "../../firebase_scripts/installation";
-import StudentsFileUpload from "../config-inicial/StudentsFileUpload";
+import {  Redirect } from "react-router-dom";
 import {
   firestore,
-  firebase_auth,
-  firebase,
   firebaseConfig,
 } from "../../firebase-config";
 import ApprovalModal from "./ApprovalModal";
@@ -35,8 +23,9 @@ import {
   cleanButton,
   languageCode,
   assocParameters,
-  approvalPageLoading,
+  approvalPageLoading, parentsParameters,
 } from "../../utils/general_utils";
+import {deleteAccount} from "../../firebase_scripts/profile_functions";
 
 class Approval_Page extends Component {
   constructor(props) {
@@ -63,6 +52,7 @@ class Approval_Page extends Component {
     this.reload = this.reload.bind(this);
     this.addStudent = this.addStudent.bind(this);
     this.getParentsToApprove = this.getParentsToApprove.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
@@ -76,7 +66,7 @@ class Approval_Page extends Component {
   }
 
   componentDidMount() {
-    this._isMounted = true;
+    //this._isMounted = true;
 
     const assocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
     if (assocDoc != null) {
@@ -119,32 +109,44 @@ class Approval_Page extends Component {
   deletePassedRegisters() {
     const { resgistosPorAprovar, daysToDelete } = this.state;
     const this_ = this;
+    const project_id = firebaseConfig.projectId;
 
     if (resgistosPorAprovar != null) {
-      for (var i = 0; i < resgistosPorAprovar.length; i++) {
-        var json = resgistosPorAprovar[i];
+      for (let i = 0; i < resgistosPorAprovar.length; i++) {
+        let json = resgistosPorAprovar[i];
 
-        var data = json["Data inscricao"];
+        let data = json["Data inscricao"];
 
         if (data != null) {
-          var date = new Date(data._seconds * 1000);
-          var days = daysToDelete;
-          var compareDate = new Date(date.getTime() + days * 86400000);
-          var today = new Date();
+          let date = new Date(data._seconds * 1000);
+          let days = daysToDelete;
+          let compareDate = new Date(date.getTime() + days * 86400000);
+          let today = new Date();
 
           if (compareDate.getTime() < today.getTime()) {
-            //Delete register from db
-            firestore
-              .collection("parents")
-              .doc(json["Email"])
-              .delete()
-              .then(function () {
-                console.log("Document successfully deleted!");
-                this_.reload();
-              })
-              .catch(function (error) {
-                console.error("Error removing document: ", error);
-              });
+            deleteAccount(json[parentsParameters.EMAIL[languageCode]]).then(() => {
+              let uri =
+                "https://us-central1-" +
+                project_id +
+                ".cloudfunctions.net/api/sendRejectedEmail?" +
+                "email=" +
+                json[parentsParameters.EMAIL[languageCode]] +
+                "&" +
+                "nome=" +
+                json[parentsParameters.NAME[languageCode]];
+              const request = async () => {
+                let resposta;
+                await fetch(uri)
+                  .then((resp) => resp.json())
+                  .then(function (data) {
+                    resposta = data;
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+              };
+              return request();
+            });
           }
         }
       }

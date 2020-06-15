@@ -625,7 +625,12 @@ function deleteAccount(email) {
     await fetch(uri)
       .then((resp) => resp.json()) // Transform the data into blob / file
       .then(function (data) {
-        console.log("Parent removed successfully");
+        if(data.error==null){
+          console.log("Parent removed successfully");
+        }
+        else{
+          console.log(data.error);
+        }
         deletedParent = data;
       })
       .catch(function (error) {

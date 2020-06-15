@@ -171,25 +171,6 @@ class QuotasModal extends React.Component {
     };
     request();
 
-    /*
-    parentsCollection.get().then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        if (doc.data()["Nome"] != undefined && doc.data()["Nome"] != null) {
-          if (
-            doc.data()["Validated"] != undefined &&
-            doc.data()["Validated"] != null &&
-            doc.data()["Validated"].toString() != "false"
-          ) {
-            var member = { id: i, name: doc.data()["Nome"] };
-            options.push(member);
-            user_ids.push(doc.id);
-            i++;
-          }
-        }
-      });
-      this.setState({ options: options, user_ids: user_ids });
-    });
-    */
   }
 
   showModal() {

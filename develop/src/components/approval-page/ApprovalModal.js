@@ -24,6 +24,8 @@ import {
 } from "../../firebase-config";
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
+import {deleteAccount} from "../../firebase_scripts/profile_functions";
+import {languageCode, parentsParameters} from "../../utils/general_utils";
 
 class ApprovalModal extends React.Component {
   constructor(props) {
@@ -235,7 +237,6 @@ class ApprovalModal extends React.Component {
   approve() {
     const { dados } = this.state;
     const this_ = this;
-    // TODO: gerar numero de sócio aleatoriamente
     firestore
       .collection("parents")
       .doc(dados.Email)
@@ -267,6 +268,8 @@ class ApprovalModal extends React.Component {
             .then((resp) => resp.json()) // Transform the data into json
             .then(function (data) {
               resposta = data;
+              this_.closeModal();
+              this_.props.componentDidMount();
             })
             .catch(function (error) {
               console.log(error);
@@ -288,41 +291,32 @@ class ApprovalModal extends React.Component {
 
     const project_id = firebaseConfig.projectId;
 
-    firestore
-      .collection("parents")
-      .doc(dados.Email)
-      .delete()
-      .then(function () {
-        this_.closeModal();
-        this_.state.parentComponent.reload();
-        let uri =
-          "https://us-central1-" +
-          project_id +
-          ".cloudfunctions.net/api/sendRejectedEmail?" +
-          "email=" +
-          dados.Email +
-          "&" +
-          "nome=" +
-          dados.Nome;
-        const request = async () => {
-          let resposta;
-          await fetch(uri)
-            .then((resp) => resp.json()) // Transform the data into json
-            .then(function (data) {
-              resposta = data;
-            })
-            .catch(function (error) {
-              console.log(error);
-            });
+    console.log("dadosEmail -> " + dados.Email);
 
-          return resposta;
-        };
+    deleteAccount(dados.Email).then(() => {
+      let uri =
+        "https://us-central1-" +
+        project_id +
+        ".cloudfunctions.net/api/sendRejectedEmail?" +
+        "email=" +
+        dados.Email +
+        "&" +
+        "nome=" +
+        dados.Nome;
+      const request = async () => {
+        await fetch(uri)
+          .then(function (data) {
+            console.log(data);
+            this_.closeModal();
+            this_.props.componentDidMount();
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      };
+      return request();
+    });
 
-        return request();
-      })
-      .catch(function (error) {
-        alert("Error removing document: " + error);
-      });
   }
 
   showModal() {

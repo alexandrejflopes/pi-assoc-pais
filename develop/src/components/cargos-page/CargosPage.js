@@ -18,16 +18,23 @@ import {
   erroUpdateCargos,
   confirmAceitarCargo,
 } from "../../utils/messages_strings";
-import { languageCode, showToast, toastTypes } from "../../utils/general_utils";
+import {
+  cargoDocKey,
+  languageCode,
+  parentsParameters,
+  showToast,
+  toastTypes
+} from "../../utils/general_utils";
 
 import {
   firestore,
   firebase_auth,
   firebase,
-  firebaseConfig,
+  firebaseConfig, storageRef,
 } from "../../firebase-config";
 import PageTitle from "../common/PageTitle";
 import CargosModal from "./CargosModal";
+import {userLogOut} from "../../firebase_scripts/profile_functions";
 
 class Cargos_Page extends Component {
   constructor(props) {
@@ -44,6 +51,9 @@ class Cargos_Page extends Component {
       errors: {},
       nome: null,
       admin: null,
+      cargosCollection: {},
+      permissionChanged : false,
+      newCargo : ""
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -56,6 +66,21 @@ class Cargos_Page extends Component {
   componentDidMount() {
     const this_ = this;
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
+    // TODO: substituir pela cloud function
+    firestore.collection("cargos").get()
+      .then( function(snapshot) {
+        let cargosJSON = {};
+          snapshot.forEach(function(doc) {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+            cargosJSON[doc.data()[cargoDocKey]] = doc.data().admin;
+          });
+
+          this_.setState({cargosCollection : cargosJSON});
+      }
+      );
+
     if (currentUser != null) {
       this.setState({ email: currentUser.Email });
       this_.getTransitions();
@@ -92,31 +117,23 @@ class Cargos_Page extends Component {
 
     request();
 
-    /* 
-    //Get student parameters from database
-    const collection = firestore.collection("cargoTransition");
-    collection
-      .get()
-      .then((col) => {
-        var transitions = [];
-        if (col.docs && col.docs.length > 0) {
-          var docs = col.docs;
-          for (var i = 0; i < docs.length; i++) {
-            var dados = docs[i].data();
-            dados["idDoc"] = docs[i].id;
-            transitions.push(dados);
-          }
-          this_.setState({ transitions: transitions });
-        }
-      })
-      .catch((err) => {
-        alert(err);
-      });
-      */
   }
 
   openAceitarCargoDialog(e) {
+    console.log("cargosCollection");
+    console.log(this.state.cargosCollection);
     const id = e.target.id;
+    const newCargo = e.target.value;
+    this.setState({newCargo : newCargo});
+    const newCargoAdmin = this.state.cargosCollection[newCargo];
+    const currentUserAdmin = (JSON.parse(window.localStorage.getItem("userDoc")))[parentsParameters.ADMIN[languageCode]];
+
+    if(newCargoAdmin !== currentUserAdmin){
+      this.setState({permissionChanged : true});
+    }
+    else{
+      this.setState({permissionChanged : false});
+    }
 
     this.setState({ cargoIdAceitar: id });
     this.setState({ dialogOpen: true });
@@ -147,6 +164,15 @@ class Cargos_Page extends Component {
               this_.getTransitions()
             );
             showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
+            if(this_.state.permissionChanged){
+              userLogOut(); // logout if user permission changed in order to not having denied access
+            }
+            else{
+              let currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+              currentUser[parentsParameters.ROLE[languageCode]] = this_.state.newCargo;
+              window.localStorage.setItem("userDoc", JSON.stringify(currentUser));
+              this_.setState({newCargo : ""}); // reset newCargo variable
+            }
           })
           .catch(function (error) {
             showToast(erroUpdateCargos[languageCode], 5000, toastTypes.ERROR);
@@ -219,6 +245,7 @@ class Cargos_Page extends Component {
                                 <Button
                                   disabled={!(membro.email == this.state.email)}
                                   id={membro.id}
+                                  value={membro.cargo}
                                   onClick={this.openAceitarCargoDialog}
                                 >
                                   {" "}

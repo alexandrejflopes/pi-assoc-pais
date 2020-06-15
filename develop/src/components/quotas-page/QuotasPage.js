@@ -212,6 +212,8 @@ class Quotas_Page extends Component {
         return fetch(uri)
           .then((resp) => resp.json()) // Transform the data into json
           .then(function (data) {
+            console.log("data v");
+            console.log(data);
             showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
           })
           .catch(function (error) {
@@ -219,9 +221,12 @@ class Quotas_Page extends Component {
           });
       };
 
+      console.log("passo 1");
       await request();
-      this_.getQuotas();
     }
+
+    console.log("passo 2");
+    this_.getQuotas();
   }
 
   //Comparer Function

@@ -10,6 +10,12 @@ const loadingInfo = {
 
 // ------------------ STRINGS RELATED TO FORMS ------------------
 
+export const deleteAccountDisabledTipMessage = {
+  pt_PT:
+    "Se pertence a um órgão social, não poderá eliminar a sua conta. Isto acontece para prevenir que a plataforma fique sem " +
+    "administradores.",
+};
+
 export const daysToDeleteRegistTipMessage = {
   pt_PT:
     "Número de dias após o qual os pedidos de registo não aprovados e sem quota paga são eliminados automaticamente.",
@@ -364,7 +370,7 @@ export const addQuotaError = {
 // ------- CONFIRMATIONS / PROMPTS
 export const confirmAceitarCargo = {
   pt_PT:
-    "Tem a certeza que pretender aceitar o cargo?\n" +
+    "Tem a certeza que pretender aceitar o cargo? Após aceitar, se os seus privilégios mudarem, terá que efetuar o login novamente.\n" +
     "Esta ação não é revertível.",
 };
 

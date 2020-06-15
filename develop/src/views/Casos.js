@@ -124,7 +124,6 @@ class Casos extends React.Component {
     this.closeDeleteCasoDialog = this.closeDeleteCasoDialog.bind(this);
     this.openDeleteCasoDialog = this.openDeleteCasoDialog.bind(this);
     this.deleteSelectedCaso = this.deleteSelectedCaso.bind(this);
-    this.componentDidMount = this.componentDidMount.bind(this);
   }
 
   componentDidMount() {

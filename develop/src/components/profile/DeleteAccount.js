@@ -7,7 +7,7 @@ import {
   Form,
   ListGroup,
   ListGroupItem,
-  Row
+  Row, Tooltip
 } from "shards-react";
 import {
   languageCode, parentsParameters, showToast, studentsParameters, toastTypes
@@ -18,6 +18,8 @@ import {
 import {
   confirmDeleteAccount,
   confirmLogoutAfterDelete,
+  daysToDeleteRegistTipMessage,
+  deleteAccountDisabledTipMessage,
   deleteAccountExplanation,
   deleteAccountGenericErrorMsg,
   deleteAccountSuccess
@@ -51,6 +53,7 @@ class DeleteAccount extends React.Component {
       parent : parent,
       dialogOpen : false,
       deleteAccountDialogOpen : false,
+      deleteDisabledToggle: false,
     };
 
     this.deleteUserAccount = this.deleteUserAccount.bind(this);
@@ -62,6 +65,7 @@ class DeleteAccount extends React.Component {
     this.openDialog = this.openDialog.bind(this);
     this.closeSuccessDialog = this.closeSuccessDialog.bind(this);
     this.openSuccessDialog = this.openSuccessDialog.bind(this);
+    this.toggle = this.toggle.bind(this);
 
   }
 
@@ -76,6 +80,12 @@ class DeleteAccount extends React.Component {
   }
 
   /*********************************** HANDLERS ***********************************/
+
+  toggle(pos) {
+    const newState = {};
+    newState[pos] = !this.state[pos];
+    this.setState({ ...this.state, ...newState });
+  }
 
   deleteUserAccount(confirmation){
     console.log("result dialog: " + confirmation);
@@ -195,7 +205,27 @@ class DeleteAccount extends React.Component {
                     </Col>
                   </Row>
                   <hr />
-                  <Button theme="danger" onClick={this.openDialog}><span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>delete</span> {erase[languageCode]}</Button>
+                  <Row style={{marginLeft: "5px"}}>
+                    <Button
+                      theme="danger"
+                      onClick={this.openDialog}
+                      disabled={this.state.parent[parentsParameters.ADMIN[languageCode]]}>
+                      <span className="material-icons md-24" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>delete</span>
+                      {erase[languageCode]}
+                    </Button>
+                    {this.state.parent[parentsParameters.ADMIN[languageCode]] ?
+                      <div style={{marginLeft: "20px", marginTop: "5px"}}> <span id="deleteDisabledTooltip" className="material-icons" style={{fontSize:"130 %"}}>info</span> </div> : null}
+                    {this.state.parent[parentsParameters.ADMIN[languageCode]] ?
+                      <Tooltip
+                        open={this.state.deleteDisabledToggle}
+                        target="#deleteDisabledTooltip"
+                        toggle={() => this.toggle("deleteDisabledToggle")}
+                        style={{fontSize:"120%"}}
+                      >
+                        {deleteAccountDisabledTipMessage[languageCode]}
+                      </Tooltip> : null}
+                  </Row>
+
                 </Form>
               </Col>
             </Row>
