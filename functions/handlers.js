@@ -1078,12 +1078,14 @@ exports.deleteAccount = functions.https.onRequest((request, response) => {
         else {
             //console.log('Document data:', doc.data());
             let data = doc.data();
-            data["id"] = doc.id;
-            db.collection('parents').doc(id).update({"deleted":true}).then((parent)=>{
+            data["deleted"] = true;
+            db.collection('parents').doc(id).delete().then((parent)=>{
+                db.collection('parents').doc('deleted_'+id).set(data);
                 return admin.auth().getUserByEmail(id).then((userRecord) => {
                     return admin.auth().deleteUser(userRecord.uid).then(() => {
                         alterParentDeletedStatusInCotas(id, true)
                         alterParentDeletedInCasos(id, true)
+                        data["id"] = doc.id;
                         return response.send(data);
                     })
                     .catch(err => {
