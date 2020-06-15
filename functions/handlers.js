@@ -1038,7 +1038,7 @@ exports.deleteParent = functions.https.onRequest((request, response) => {
             //console.log('Document data:', doc.data());
             let data = doc.data();
             data["id"] = doc.id;
-            db.collection('parents').doc(id).update({"deleted":false}).then((parent)=>{
+            db.collection('parents').doc(id).update({"deleted":true}).then((parent)=>{
                 return response.send(data);
             }).catch(err => {
                 console.log("Failed to delete -> ", err);
