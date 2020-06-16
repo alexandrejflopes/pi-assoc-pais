@@ -12,11 +12,11 @@ import {
 import { toast, Bounce } from "react-toastify";
 import { Link, Redirect } from "react-router-dom";
 import {
-  commitChangesQuotasMessage,
+  commitChangesQuotasMessage, semQuotas,
   sucessoGeral,
 } from "../../utils/messages_strings";
 import { languageCode, showToast, toastTypes } from "../../utils/general_utils";
-import { saveChanges, error_geral } from "../../utils/common_strings";
+import {saveChanges, error_geral, loading} from "../../utils/common_strings";
 
 import {
   firestore,
@@ -26,6 +26,7 @@ import {
 } from "../../firebase-config";
 import PageTitle from "../common/PageTitle";
 import Quotas_Modal from "./QuotasModal";
+import {Table} from "react-bootstrap";
 
 class Quotas_Page extends Component {
   constructor(props) {
@@ -36,7 +37,7 @@ class Quotas_Page extends Component {
     this.state = {
       blocking: false,
       errors: {},
-      items: [], // Array of Json Objects
+      items: null, // Array of Json Objects
       checkBoxPagante: [],
       checkBoxRecetor: [],
       notas: [],
@@ -395,50 +396,49 @@ class Quotas_Page extends Component {
               <CardHeader className="border-bottom">
                 <h6 className="m-0">Validação de Pagamentos</h6>
               </CardHeader>
-              <CardBody className="p-0 pb-3">
-                <table
-                  className="table table-striped"
-                  style={{
-                    display: "block",
-                    overflow: "auto",
-                    whitespace: "nowrap",
-                  }}
-                >
-                  <thead className="bg-light">
-                    <tr>
+              {this.state.items==null? <CardBody>{loading[languageCode]}</CardBody> :
+                <CardBody className="p-0 pb-3">
+                  <Table
+                    className="table mb-0"
+                    responsive
+                    striped
+                  >
+                    {this.state.items.length===0 ? <div style={{margin: "20px"}}>{semQuotas[languageCode]}</div> :
+                      <thead className="bg-light">
+                      <tr>
                       <th scope="col" className="border-0">
-                        Data
+                      Data
                       </th>
                       <th scope="col" className="border-0">
-                        Recetor
+                      Recetor
                       </th>
                       <th scope="col" className="border-0">
-                        Emissor
+                      Emissor
                       </th>
                       <th scope="col" className="border-0">
-                        Valor
+                      Valor
                       </th>
                       <th scope="col" className="border-0">
-                        Ano letivo
+                      Ano letivo
                       </th>
                       <th scope="col" className="border-0">
-                        Confirmado pelo recetor
+                      Confirmado pelo recetor
                       </th>
                       <th scope="col" className="border-0">
-                        Confirmado pelo Emissor
+                      Confirmado pelo Emissor
                       </th>
                       <th
-                        scope="col"
-                        style={{ resize: "none", width: "100px" }}
-                        className="border-0"
+                      scope="col"
+                      style={{ resize: "none", width: "100px" }}
+                      className="border-0"
                       >
-                        Notas/Descrição do Emissor<div> </div>
+                      Notas/Descrição do Emissor<div> </div>
                       </th>
-                    </tr>
-                  </thead>
-                  <tbody>{this.renderTableData()}</tbody>
-                </table>
-              </CardBody>
+                      </tr>
+                      </thead>}
+                    <tbody>{this.renderTableData()}</tbody>
+                  </Table>
+                </CardBody>}
             </Card>
           </Col>
         </Row>

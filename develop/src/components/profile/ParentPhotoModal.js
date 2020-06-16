@@ -25,6 +25,7 @@ import {
   parentUpdatePhotoError, parentUpdatePhotoSuccess,
 } from "../../utils/messages_strings";
 import {firebase_auth, storage, storageRef} from "../../firebase-config";
+import UserActions, {f} from "../layout/MainNavbar/NavbarNav/UserActions";
 
 class ParentPhotoModal extends React.Component {
   constructor(props) {
@@ -101,6 +102,7 @@ class ParentPhotoModal extends React.Component {
                       myComponentDidMount(true);
                       setNewPhotoOnState(downloadURL);
                       // TODO: update navbar instantaneously
+                      f();
                       showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
                     })
                     .catch((error) => {

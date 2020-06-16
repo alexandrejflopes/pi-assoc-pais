@@ -145,6 +145,7 @@ class EducandosModal extends React.Component {
                             console.log("updatedParent recebido depois do update educando -> " + upParentString);
                             // update user data in localstorage
                             window.localStorage.setItem("userDoc", upParentString);
+                            this_.setState({educando: updatedEducando});
                             this_.closeModalAfterUpdate();
                             this_.props.componentDidMount(true);
                             showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);
@@ -191,6 +192,7 @@ class EducandosModal extends React.Component {
                         console.log("updatedParent recebido depois do update educando -> " + upParentString);
                         // update user data in localstorage
                         window.localStorage.setItem("userDoc", upParentString);
+                        this_.setState({educando: updatedEducando});
                         this_.closeModalAfterUpdate();
                         this_.props.componentDidMount(true);
                         showToast(childUpdateSucess[languageCode], 5000, toastTypes.SUCCESS);

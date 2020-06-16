@@ -2,6 +2,11 @@
  * file to save common strings that are repeated along the app
  * */
 
+export const loading = {
+  pt_PT: "A carregar...",
+};
+
+
 export const erase = {
   pt_PT: "Apagar",
 };

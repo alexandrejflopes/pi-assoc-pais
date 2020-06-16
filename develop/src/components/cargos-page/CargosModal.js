@@ -14,7 +14,7 @@ import {
   FormInput,
   FormFeedback,
   FormTextarea,
-  FormCheckbox,
+  FormCheckbox, FormSelect,
 } from "shards-react";
 import {
   languageCode,
@@ -39,7 +39,7 @@ import {
   sucessoGeral,
   cargosGetError,
   cargosNothingToUpdateWarning,
-  cargosUpdateError,
+  cargosUpdateError, erroCargosRepetidos, loadingInfo, erroCargosAdminEmFalta,
 } from "../../utils/messages_strings";
 import {
   firestore,
@@ -49,6 +49,7 @@ import {
 } from "../../firebase-config";
 import { toast, Bounce } from "react-toastify";
 import { saveCaseToDB } from "../../firebase_scripts/installation";
+import {loading} from "../../utils/common_strings";
 
 class CargosModal extends React.Component {
   constructor(props) {
@@ -78,9 +79,9 @@ class CargosModal extends React.Component {
   }
 
   componentDidMount() {
-    var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    let currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
     if (currentUser != null) {
-      var admin_ = currentUser.Admin;
+      let admin_ = currentUser.Admin;
       this.setState({ admin: admin_ });
     } else {
       //Redirect to login
@@ -140,25 +141,29 @@ class CargosModal extends React.Component {
       project_id +
       ".cloudfunctions.net/api/getUserCargos";
 
+    showToast(
+      loading[languageCode],
+      2000,
+      toastTypes.INFO
+    );
+
     const request = async () => {
       await fetch(uri)
         .then((resp) => resp.json()) // Transform the data into json
         .then(function (data) {
-          var cargosList = [];
-          var currentCargosList = {};
-          var cargos = data.cargos;
-          var users = data.users;
+          let cargosList = [];
+          let currentCargosList = {};
+          let cargos = data.cargos;
+          let users = data.users;
 
           cargosList.push(cargosSemMudanca[languageCode]);
-          for (var i = 0; i < cargos.length; i++) {
+          for (let i = 0; i < cargos.length; i++) {
             cargosList.push(cargos[i]);
           }
-          for (var x = 0; x < users.length; x++) {
-            var json = users[x];
+          for (let x = 0; x < users.length; x++) {
+            let json = users[x];
             currentCargosList[json.id] = json.Cargo;
           }
-
-          showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
 
           this_.setState({
             listaCargos: cargosList,
@@ -197,7 +202,7 @@ class CargosModal extends React.Component {
     var tamanho = Object.keys(changes).length;
     var keys = Object.keys(changes);
 
-    if (tamanho == 0) {
+    if (tamanho === 0) {
       showToast(
         cargosNothingToUpdateWarning[languageCode],
         5000,
@@ -211,8 +216,8 @@ class CargosModal extends React.Component {
 
       for (var i = 0; i < tamanho; i++) {
         if (
-          changes[keys[i]] != cargosSemMudanca[languageCode] &&
-          changes[keys[i]] != cargosAtuais[membersComplete[keys[i]].id]
+          changes[keys[i]] !== cargosSemMudanca[languageCode] &&
+          changes[keys[i]] !== cargosAtuais[membersComplete[keys[i]].id]
         ) {
           mudanca = true;
           listaMembros.push({
@@ -225,31 +230,94 @@ class CargosModal extends React.Component {
       }
 
       if (mudanca) {
-        let uri =
-          "https://us-central1-" +
-          project_id +
-          ".cloudfunctions.net/api/sendCargoChangeEmail?" +
-          "membros=" +
-          encodeURIComponent(JSON.stringify(listaMembros));
 
-        const request = async () => {
-          await fetch(uri)
-            .then(function (data) {
-              showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
+        /*
+        * FLUXO:
+        *   - buscar o userAndCurrentCargos
+        *   - modificar (cópia) as linhas correspondentes à lista de membros
+        *   - percorrer a cópia e ver se há cargos admin repetidos
+        *       - se sim, mensagem a informar e impedir a operação
+        * */
 
-              this_.props.getTransitions();
-              this_.closeModal();
-            })
-            .catch(function (error) {
-              showToast(
-                cargosUpdateError[languageCode],
-                5000,
-                toastTypes.ERROR
-              );
-            });
-        };
+        console.log("cargosCollection v");
+        console.log(this.props.cargosCollection);
 
-        request();
+        let usersAndNewCargos = {...this_.state.cargosAtuais};
+
+        // update local copy to reflect new roles
+        for(let i in listaMembros){
+          let membroJson = listaMembros[i];
+          const id = membroJson.id;
+          usersAndNewCargos[id] = membroJson.cargo;
+        }
+
+        console.log("usersAndNewCargos v");
+        console.log(usersAndNewCargos);
+
+        let cargosAnalyzed = [];
+        let cargosRepetidos = false;
+        let numCorretoCargosAdmin = true;
+
+        for(let k in usersAndNewCargos){
+          const cargo = usersAndNewCargos[k];
+          // if it's admin role
+          if(this.props.cargosCollection[cargo]){
+            if(cargosAnalyzed.includes(cargo)){
+              cargosRepetidos = true;
+              break;
+            }
+            cargosAnalyzed.push(cargo);
+          }
+        }
+
+        //cargosAnalyzed should contain every admin role once and only once
+        if(cargosAnalyzed.length!==this_.props.numberAdminRoles){
+          numCorretoCargosAdmin = false;
+        }
+
+
+        console.log("cargosAnalyzed -> " + cargosAnalyzed.toString());
+
+        if(cargosRepetidos){
+          showToast(
+            erroCargosRepetidos[languageCode],
+            5000,
+            toastTypes.WARNING
+          );
+        }else if(!numCorretoCargosAdmin){
+          showToast(
+            erroCargosAdminEmFalta[languageCode],
+            5000,
+            toastTypes.WARNING
+          );
+        }else{
+          let uri =
+            "https://us-central1-" +
+            project_id +
+            ".cloudfunctions.net/api/sendCargoChangeEmail?" +
+            "membros=" +
+            encodeURIComponent(JSON.stringify(listaMembros));
+
+          const request = async () => {
+            await fetch(uri)
+              .then(function (data) {
+                showToast(sucessoGeral[languageCode], 5000, toastTypes.SUCCESS);
+
+                this_.props.getTransitions();
+                this_.closeModal();
+              })
+              .catch(function (error) {
+                showToast(
+                  cargosUpdateError[languageCode],
+                  5000,
+                  toastTypes.ERROR
+                );
+              });
+          };
+          request();
+        }
+
+
       } else {
         showToast(
           cargosNothingToUpdateWarning[languageCode],
@@ -322,7 +390,7 @@ class CargosModal extends React.Component {
                               : "-"}
                           </td>
                           <td>
-                            <select
+                            <FormSelect
                               name="cargos"
                               id={idx}
                               onChange={this.change}
@@ -330,7 +398,7 @@ class CargosModal extends React.Component {
                               {this.state.listaCargos.map((cargo, index) => (
                                 <option value={cargo}>{cargo}</option>
                               ))}
-                            </select>
+                            </FormSelect >
                           </td>
                         </tr>
                       ))}

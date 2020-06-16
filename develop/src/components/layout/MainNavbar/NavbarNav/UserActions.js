@@ -26,7 +26,27 @@ import {
 } from "../../../../firebase_scripts/profile_functions";
 import { firebase_auth } from "../../../../firebase-config";
 
+
+export function f() {
+  console.log("UPDATE NAVBAR");
+  // check the local storage to see if it's still the same user
+  let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
+  // if no information about the user in the LS, then do nothing
+  if(localUser==null){
+    console.log("localUser null");
+    return;
+  }
+
+  const displayName = localUser[parentsParameters.NAME[languageCode]];
+  const photoURL = localUser[parentsParameters.PHOTO[languageCode]];
+  const isAdmin = localUser[parentsParameters.ADMIN[languageCode]];
+  console.log("photoURL barra -> " + photoURL);
+  UserActions.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
+}
+
 export default class UserActions extends React.Component {
+
   constructor(props) {
     super(props);
 
@@ -38,9 +58,7 @@ export default class UserActions extends React.Component {
     };
 
     this.toggleUserActions = this.toggleUserActions.bind(this);
-    this.updateNavBarUserPhotoAndName = this.updateNavBarUserPhotoAndName.bind(
-      this
-    );
+    this.updateNavBarUserPhotoAndName = this.updateNavBarUserPhotoAndName.bind(this);
     //this.updateNavBarUserPhotoAndNameV2 = this.updateNavBarUserPhotoAndNameV2.bind(this);
   }
 
@@ -64,7 +82,7 @@ export default class UserActions extends React.Component {
 
   updateNavBarUserPhotoAndNameV2() {
     let currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
-    console.log("local User barra: " + currentUser);
+    //console.log("local User barra: " + currentUser);
     if (currentUser != null) {
       const displayName = currentUser[parentsParameters.NAME[languageCode]];
       const photoURL = currentUser[parentsParameters.PHOTO[languageCode]];
@@ -74,7 +92,26 @@ export default class UserActions extends React.Component {
     }
   }
 
+  updateNavBar(){
+    console.log("UPDATE NAVBAR");
+    // check the local storage to see if it's still the same user
+    let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+
+    // if no information about the user in the LS, then do nothing
+    if(localUser==null){
+      console.log("localUser null");
+      return;
+    }
+
+    const displayName = localUser[parentsParameters.NAME[languageCode]];
+    const photoURL = localUser[parentsParameters.PHOTO[languageCode]];
+    const isAdmin = localUser[parentsParameters.ADMIN[languageCode]];
+    console.log("photoURL barra -> " + photoURL);
+    UserActions.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
+  }
+
   updateNavBarUserPhotoAndName() {
+    console.log("ENTREI NO UPDATE COM CONTEXT");
     // check the local storage to see if it's still the same user
     let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
     let firebaseUser = firebase_auth.currentUser;
@@ -108,6 +145,30 @@ export default class UserActions extends React.Component {
         const isAdmin = localUser[parentsParameters.ADMIN[languageCode]];
         this.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
       }
+    }
+    else if(localUser!=null) {
+      //console.log("aproveitar o storage");
+      const displayName = localUser[parentsParameters.NAME[languageCode]];
+      const photoURL = localUser[parentsParameters.PHOTO[languageCode]];
+      const isAdmin = localUser[parentsParameters.ADMIN[languageCode]];
+      this.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
+    }
+    else if(firebaseUser!=null) {
+      // if this code runs, then there's no user in local storage, so we have to fetch it from Firestore
+      fetchUserDoc(firebaseUser.email)
+        .then((result) => {
+          //console.log("Result userDoc: " + JSON.stringify(result));
+          if (result.error == null) {
+            // no error
+            const displayName = result[parentsParameters.NAME[languageCode]];
+            const photoURL = result[parentsParameters.PHOTO[languageCode]];
+            const isAdmin = result[parentsParameters.ADMIN[languageCode]];
+            this.setState({ userName: displayName, userPhoto: photoURL, isAdmin : isAdmin });
+          }
+        })
+        .catch((error) => {
+          console.log("error no fetch da barra: " + JSON.stringify(error));
+        });
     }
   }
 
@@ -152,4 +213,5 @@ export default class UserActions extends React.Component {
       </NavItem>
     );
   }
+
 }

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import React, { Component } from "react";
 import {
   Container,
   Row,
@@ -7,16 +7,14 @@ import {
   Card,
   CardHeader,
   CardBody,
-  FormInput,
 } from "shards-react";
 import ConfirmationDialog from "../../components/dialog/ConfirmationDialog";
-import { toast, Bounce } from "react-toastify";
-import { Link, Redirect } from "react-router-dom";
-import { aceitarCargoPrompt } from "../../utils/common_strings";
+import { Redirect } from "react-router-dom";
+import {aceitarCargoPrompt, loading} from "../../utils/common_strings";
 import {
   sucessoGeral,
   erroUpdateCargos,
-  confirmAceitarCargo,
+  confirmAceitarCargo, semTransicoesDeCargos,
 } from "../../utils/messages_strings";
 import {
   cargoDocKey,
@@ -27,14 +25,11 @@ import {
 } from "../../utils/general_utils";
 
 import {
-  firestore,
-  firebase_auth,
-  firebase,
-  firebaseConfig, storageRef,
+  firebaseConfig
 } from "../../firebase-config";
-import PageTitle from "../common/PageTitle";
 import CargosModal from "./CargosModal";
 import {userLogOut} from "../../firebase_scripts/profile_functions";
+import {Table} from "react-bootstrap";
 
 class Cargos_Page extends Component {
   constructor(props) {
@@ -42,7 +37,7 @@ class Cargos_Page extends Component {
 
     this.state = {
       redirect: null,
-      transitions: [],
+      transitions: null, // array
       email: "",
       cargoIdAceitar: "",
       dialogOpen: false,
@@ -53,7 +48,8 @@ class Cargos_Page extends Component {
       admin: null,
       cargosCollection: {},
       permissionChanged : false,
-      newCargo : ""
+      newCargo : "",
+      numAdminRoles : -1
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -79,29 +75,21 @@ class Cargos_Page extends Component {
         .then((resp) => resp.json()) // Transform the data into json
         .then(function (data) {
           let cargosJSON = {};
+          let numberAdminRoles = 0;
           for(let i in data){
             cargosJSON[data[i][cargoDocKey]] = data[i].admin;
+            if(data[i].admin){
+              numberAdminRoles+=1;
+            }
           }
-          this_.setState({cargosCollection : cargosJSON});
+          console.log("cargosJSON -> " + JSON.stringify(cargosJSON));
+          this_.setState({cargosCollection : cargosJSON, numberAdminRoles:numberAdminRoles});
         })
         .catch(function (error) {});
     };
 
     request();
 
-    /*// TODO: substituir pela cloud function
-    firestore.collection("cargos").get()
-      .then( function(snapshot) {
-        let cargosJSON = {};
-          snapshot.forEach(function(doc) {
-            // doc.data() is never undefined for query doc snapshots
-            console.log(doc.id, " => ", doc.data());
-            cargosJSON[doc.data()[cargoDocKey]] = doc.data().admin;
-          });
-
-          this_.setState({cargosCollection : cargosJSON});
-      }
-      );*/
 
     //---------------------------------------------------------
 
@@ -211,7 +199,7 @@ class Cargos_Page extends Component {
     return (
       <div>
         <Row style={{ margin: "10px" }}>
-          <CargosModal getTransitions={this.getTransitions} />
+          <CargosModal getTransitions={this.getTransitions} cargosCollection={this.state.cargosCollection} numberAdminRoles={this.state.numberAdminRoles} />
         </Row>
         <Row>
           <Container fluid className="main-content-container px-4">
@@ -222,16 +210,15 @@ class Cargos_Page extends Component {
                   <CardHeader className="border-bottom">
                     <h6 className="m-0">Transições de Cargos</h6>
                   </CardHeader>
-                  <CardBody>
-                    <table
-                      className="table table-striped"
-                      style={{
-                        display: "block",
-                        overflow: "auto",
-                        whitespace: "nowrap",
-                      }}
+                  {this.state.transitions==null ? <CardBody>{loading[languageCode]}</CardBody> :
+                    <CardBody className="p-0 pb-3">
+                    <Table
+                    className="table mb-0"
+                    responsive
+                    striped
                     >
-                      <thead className="bg-light">
+                      {this.state.transitions.length === 0 ? semTransicoesDeCargos[languageCode] :
+                        <thead className="bg-light">
                         <tr>
                           <th scope="col" className="border-0">
                             Nome
@@ -252,36 +239,36 @@ class Cargos_Page extends Component {
                             Aceitar
                           </th>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {this.state.transitions.map((membro, idx) => (
-                          <tr>
-                            <td> {membro.nome ? membro.nome : "-"}</td>
-                            <td> {membro.email ? membro.email : "-"}</td>
-                            <td> {membro.cargo ? membro.cargo : "-"}</td>
-                            <td> {membro.aceite == true ? "Sim" : "Não"}</td>
-                            <td> {membro.data ? membro.data : "-"}</td>
-                            <td>
+                        </thead>}
+                    <tbody>
+                    {this.state.transitions.map((membro, idx) => (
+                      <tr>
+                        <td> {membro.nome ? membro.nome : "-"}</td>
+                        <td> {membro.email ? membro.email : "-"}</td>
+                        <td> {membro.cargo ? membro.cargo : "-"}</td>
+                        <td> {membro.aceite == true ? "Sim" : "Não"}</td>
+                        <td> {membro.data ? membro.data : "-"}</td>
+                        <td>
+                          {" "}
+                          {membro.aceite == true ? (
+                            <Button disabled={true}> Aceitar </Button>
+                          ) : (
+                            <Button
+                              disabled={!(membro.email == this.state.email)}
+                              id={membro.id}
+                              value={membro.cargo}
+                              onClick={this.openAceitarCargoDialog}
+                            >
                               {" "}
-                              {membro.aceite == true ? (
-                                <Button disabled={true}> Aceitar </Button>
-                              ) : (
-                                <Button
-                                  disabled={!(membro.email == this.state.email)}
-                                  id={membro.id}
-                                  value={membro.cargo}
-                                  onClick={this.openAceitarCargoDialog}
-                                >
-                                  {" "}
-                                  Aceitar{" "}
-                                </Button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CardBody>
+                              Aceitar{" "}
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    </tbody>
+                    </Table>
+                    </CardBody>}
                 </Card>
               </Col>
             </Row>

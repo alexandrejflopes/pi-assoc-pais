@@ -156,6 +156,14 @@ export const emailUsageCheckError = {
 
 // ------- INFOS
 
+export const semQuotas = {
+  pt_PT: "Não existem quotas registadas.",
+};
+
+export const semTransicoesDeCargos = {
+  pt_PT: "Não existem transições de cargos registadas.",
+};
+
 export const exportProfileExplanation = {
   pt_PT:
     "Pode descarregar uma cópia das suas informações detidas pela plataforma em qualquer altura. \n" +
@@ -363,9 +371,19 @@ export const erroUpdateCargos = {
   pt_PT: "Erro ao fazer a atualização. Por favor, tente novamente.",
 };
 
+export const erroCargosRepetidos = {
+  pt_PT: "Existem cargos de administrador repetidos. Por favor, verifique novamente.",
+};
+
+
+export const erroCargosAdminEmFalta = {
+  pt_PT: "Existem cargos de administrador não atribuídos. Por favor, verifique novamente.",
+};
+
 export const addQuotaError = {
   pt_PT: "Erro na gravação. Por favor, tente novamente.",
 };
+
 
 // ------- CONFIRMATIONS / PROMPTS
 export const confirmAceitarCargo = {

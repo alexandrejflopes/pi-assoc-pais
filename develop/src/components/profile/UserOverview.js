@@ -9,13 +9,11 @@ import {
   Progress, CardBody, Row, Col, CardFooter
 } from "shards-react";
 
-import ListGroupReact from "react-bootstrap/ListGroup";
 import {
   defaultAvatar,
   languageCode,
   parentsParameters, studentsParameters
 } from "../../utils/general_utils";
-import {cancel, saveChanges, updateProfile} from "../../utils/common_strings";
 import {profileMyChildren} from "../../utils/page_titles_strings";
 import EducandosModal from "./EducandosModal";
 import NewEducandoModal from "./NewEducandoModal";
@@ -39,20 +37,6 @@ class UserOverview extends React.Component {
       parent : parent,
       newParamsTypes : newParamsTypes,
       editingPhoto : false
-      /*educandosTeste : [
-        {
-          id: 0,
-          name: "João Gomes",
-          photo: defaultAvatar,
-          schoolYear: "6"
-        },
-        {
-          id: 1,
-          name: "Laura Gomes",
-          photo: defaultAvatar,
-          schoolYear: "8"
-        }
-      ]*/
     };
 
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -93,8 +77,8 @@ class UserOverview extends React.Component {
   }
 
   render() {
-    const { educandosTeste } = this.state;
-    const userEducandos = this.state.parent[parentsParameters.CHILDREN[languageCode]];
+    const { parent } = this.state;
+    const userEducandos = parent[parentsParameters.CHILDREN[languageCode]];
 
     //console.log("userEducandos: " + JSON.stringify(userEducandos));
 
@@ -150,21 +134,6 @@ class UserOverview extends React.Component {
               {userEducandos.length === 0 ? <Col/> :
                 userEducandos.map((student,idx) => (
                   <EducandosModal key={student[studentsParameters.NAME[languageCode]]} educando={userEducandos[idx]} indice={idx} newParamsTypes={this.state.newParamsTypes} componentDidMount={this.componentDidMount}/>
-                  /*<Col sm="12" lg="6" md="12">
-                    <ListGroupReact flush style={{ textAlign: "center" }}>
-                      <ListGroupReact.Item id={idx} className="p-3" action onClick={()=>{}} style={{border:"1px solid", borderColor: "#DFE2E4"}}>
-                        <div className="mb-3 mx-auto">
-                          <img
-                            className="rounded-circle"
-                            src={defaultAvatar}
-                            alt={student[studentsParameters.NAME[languageCode]]}
-                            width="50"
-                          />
-                        </div>
-                        <h6 className="mb-0">{student[studentsParameters.NAME[languageCode]]}</h6>
-                      </ListGroupReact.Item>
-                    </ListGroupReact>
-                  </Col>*/
                 ))
               }
             </Row>

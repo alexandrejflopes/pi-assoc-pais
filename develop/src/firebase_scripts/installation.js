@@ -840,8 +840,8 @@ function parentsRolesAreValid(rolesArray, parentsDocList){
  * send email to parent to notify it was imported to platform
  */
 async function sendImportEmailToParent(nome, email) {
-  // TODO: remove this hardcoded email
-  const tempEmail = "alexandrejflopes@ua.pt";
+
+  //const tempEmail = "alexandrejflopes@ua.pt";
 
   const project_id = firebaseConfig.projectId;
   let uri =
@@ -849,12 +849,12 @@ async function sendImportEmailToParent(nome, email) {
     project_id +
     ".cloudfunctions.net/api/sendUserImportEmail?" +
     "email=" +
-    tempEmail +
+    email +
     "&" +
     "nome=" +
     nome;
 
-  window.localStorage.setItem("emailForSignIn", tempEmail);
+  window.localStorage.setItem("emailForSignIn", email);
 
   const request = async () => {
     await fetch(uri)
