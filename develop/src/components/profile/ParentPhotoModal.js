@@ -1,6 +1,7 @@
 /* eslint jsx-a11y/anchor-is-valid: 0 */
 
 import React from "react";
+import ReactDOM from 'react-dom';
 import Modal from "react-bootstrap/Modal";
 import {
   Button,
@@ -102,7 +103,6 @@ class ParentPhotoModal extends React.Component {
                       myComponentDidMount(true);
                       setNewPhotoOnState(downloadURL);
                       // TODO: update navbar instantaneously
-                      f();
                       showToast(parentUpdatePhotoSuccess[languageCode], 5000, toastTypes.SUCCESS);
                     })
                     .catch((error) => {

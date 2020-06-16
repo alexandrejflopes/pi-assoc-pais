@@ -77,10 +77,10 @@ class Profile extends React.Component {
 
 
     else{
-      console.log("DID MOUNT!");
+      //console.log("DID MOUNT!");
       const currentUser = firebase_auth.currentUser;
       const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
-      console.log("localuser -> " + JSON.stringify(localUser));
+      //console.log("localuser -> " + JSON.stringify(localUser));
 
       if(currentUser!=null){
         if(localUser!=null){
@@ -92,7 +92,7 @@ class Profile extends React.Component {
                 console.log("1. Result userDoc: " + JSON.stringify(result));
                 if (result.error == null) {
                   // no error
-                  console.log("atualizar state com user doc recebido");
+                  //console.log("atualizar state com user doc recebido");
                   this_.setState({ userDoc: result });
                   window.localStorage.setItem("userDoc", JSON.stringify(result));
                   UserActions.componentDidMount();
@@ -105,26 +105,26 @@ class Profile extends React.Component {
               });
           }
           else {
-            console.log("atualizar state com localUser");
+            //console.log("atualizar state com localUser");
             this_.saveNewParams();
             this_.setState({ userDoc: localUser });
           }
         }
         else {
-          console.log("não há user no LS, buscar novo");
+          //console.log("não há user no LS, buscar novo");
           const userPromise = fetchUserDoc(this_.state.userEmail);
 
           userPromise
             .then((result) => {
-              console.log("2. Result userDoc: " + JSON.stringify(result));
+              //console.log("2. Result userDoc: " + JSON.stringify(result));
               if (result.error == null) {
 
                 // TODO: check
                 let parent = result;
                 const currentUserPhoto = currentUser.photoURL;
                 const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
-                console.log("currentUserPhotoUrl -> " + currentUserPhoto);
-                console.log("resultUserPhoto -> " + resultUserPhoto);
+                //console.log("currentUserPhotoUrl -> " + currentUserPhoto);
+                //console.log("resultUserPhoto -> " + resultUserPhoto);
 
                 if(currentUserPhoto!=null){
                   if(currentUserPhoto!==resultUserPhoto){
@@ -144,8 +144,8 @@ class Profile extends React.Component {
                 // ----------------------------------------------------------------------
 
                 // no error
-                console.log("atualizar state com user doc recebido");
-                console.log("parent com foto do provider -> " + JSON.stringify(parent));
+                //console.log("atualizar state com user doc recebido");
+                //console.log("parent com foto do provider -> " + JSON.stringify(parent));
                 this_.setState({ userDoc: parent });
 
                 window.localStorage.setItem("userDoc", JSON.stringify(parent));
