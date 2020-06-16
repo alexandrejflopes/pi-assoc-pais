@@ -419,6 +419,7 @@ class Casos extends React.Component {
                       <CardHeader
                         style={{
                           "background-color": "#f5b342",
+                          "color" : "#3D5170"
                         }}
                       >
                         {arquivado_title[languageCode]}

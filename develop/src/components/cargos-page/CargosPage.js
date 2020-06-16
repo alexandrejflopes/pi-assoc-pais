@@ -67,7 +67,29 @@ class Cargos_Page extends Component {
     const this_ = this;
     var currentUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
-    // TODO: substituir pela cloud function
+    const project_id = firebaseConfig.projectId;
+
+    let uri =
+      "https://us-central1-" +
+      project_id +
+      ".cloudfunctions.net/api/getCargos";
+
+    const request = async () => {
+      await fetch(uri)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(function (data) {
+          let cargosJSON = {};
+          for(let i in data){
+            cargosJSON[data[i][cargoDocKey]] = data[i].admin;
+          }
+          this_.setState({cargosCollection : cargosJSON});
+        })
+        .catch(function (error) {});
+    };
+
+    request();
+
+    /*// TODO: substituir pela cloud function
     firestore.collection("cargos").get()
       .then( function(snapshot) {
         let cargosJSON = {};
@@ -79,7 +101,9 @@ class Cargos_Page extends Component {
 
           this_.setState({cargosCollection : cargosJSON});
       }
-      );
+      );*/
+
+    //---------------------------------------------------------
 
     if (currentUser != null) {
       this.setState({ email: currentUser.Email });
