@@ -68,6 +68,7 @@ const {
   getParentsNewParams,
   getEducandosNewParams,
   getAllNewParams,
+  getCargos,
   exportCasoPdf,
   exportCasosPDF,
   updateDadosAssociacao
@@ -134,22 +135,10 @@ app.get('/exportSingleParentPDF',exportSingleParentPDF);
 app.get('/getParentsNewParams',getParentsNewParams);
 app.get('/getEducandosNewParams',getEducandosNewParams);
 app.get('/getAllNewParams',getAllNewParams);
+app.get('/getCargos',getCargos);
 app.get('/exportCasoPdf',exportCasoPdf);
 app.get('/exportCasosPDF',exportCasosPDF);
 app.get('/updateDadosAssociacao',updateDadosAssociacao);
 
 // URL de base para os requests: https://us-central1-associacao-pais.cloudfunctions.net/api
 exports.api = functions.https.onRequest(app);
-
-
-exports.dbLogger = functions.firestore
-  .document('{collection}/{id}')
-  .onWrite(async (change, context) => {
-    const {collection, id} = context.params;
-    if (collection !== 'firestore_log') {
-      const event = context.eventType;
-      const data = change.after.data();
-      const created_at = Date.now();
-      admin.firestore().collection('firestore_log').add({collection, id, event, data, created_at});
-    }
-  });
