@@ -92,6 +92,8 @@ class UserInfo extends React.Component {
   componentDidMount() {
     this._isMounted = true;
 
+    console.log("atualizar info");
+
   }
 
   componentWillUnmount() {
@@ -200,6 +202,7 @@ class UserInfo extends React.Component {
 
   savePreviousParentData() {
     const parent = {...this.state.parent};
+    console.log("parent inicialmente na info -> " + JSON.stringify(parent));
     this.setState({ oldParent: parent });
     //console.log("parent saved: " + JSON.stringify(parent));
   };
@@ -219,7 +222,12 @@ class UserInfo extends React.Component {
   }
 
   editForm(){
-    this.savePreviousParentData();
+    const this_ = this;
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    // get the latest changes to parent from local storage
+    if(localUser!=null){
+      this_.setState({parent : localUser}, () => this_.savePreviousParentData());
+    }
     this.setState({editing : true});
     this.enableEditableInputs();
   }
@@ -313,23 +321,6 @@ class UserInfo extends React.Component {
                         disabled={this.state.disabled ? "disabled" : ""}
                       />
                     </Col>
-                    {/* Email */}
-                    {/*<Col md="6" className="form-group">
-                      <label htmlFor="parentEmail">{parentsParameters.EMAIL[languageCode]}</label>
-                      <FormInput
-                        required
-                        type="email"
-                        id="parentEmail"
-                        name={parentsParameters.EMAIL[languageCode]}
-                        placeholder={parentsParameters.EMAIL[languageCode]}
-                        value={
-                          this.state.parent[parentsParameters.EMAIL[languageCode]]
-                        }
-                        onChange={this.handleChangeParam}
-                        invalid={this.state.feedbacks[parentsParameters.EMAIL[languageCode]]}
-                        disabled={this.state.disabled ? "disabled" : ""}
-                      />
-                    </Col>*/}
                   </Row>
                   <Row form>
                     {/* Phone */}

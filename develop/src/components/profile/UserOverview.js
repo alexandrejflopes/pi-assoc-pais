@@ -42,18 +42,32 @@ class UserOverview extends React.Component {
     this.componentDidMount = this.componentDidMount.bind(this);
     this.cancelEditingPhoto = this.cancelEditingPhoto.bind(this);
     this.editPhoto = this.editPhoto.bind(this);
+    this.updateFromLocalStorage = this.updateFromLocalStorage.bind(this);
   }
 
   /*********************************** LIFECYCLE ***********************************/
   componentDidMount(updating) {
     //this._isMounted = true;
+
+    const this_ = this;
+    // polling latest changes from local storage
+    setInterval(this_.updateFromLocalStorage, 2000);
+
     if(updating){
+      console.log("atualizar overview");
       const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
       if(localUser!=null){
-        this.setState({parent : localUser});
+        this_.setState({parent : localUser});
       }
+      this_.props.componentDidMount(true);
     }
+  }
 
+  updateFromLocalStorage(){
+    const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
+    if(localUser!=null){
+      this.setState({parent : localUser});
+    }
   }
 
   componentWillUnmount() {

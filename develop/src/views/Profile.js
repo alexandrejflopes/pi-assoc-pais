@@ -63,16 +63,18 @@ class Profile extends React.Component {
     //this._isMounted = true;
 
     if(updating){
+      console.log("atualizar Profile.js");
       const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
       if(localUser!=null){
-        this_.setState({userDoc : localUser});
+        this_.setState({userDoc : localUser}, () => this_.render());
       }
 
       const localAssocDoc = JSON.parse(window.localStorage.getItem("assocDoc"));
       if(localAssocDoc!=null){
         this_.setState({assocDoc: localAssocDoc});
       }
+
     }
 
 
@@ -89,7 +91,7 @@ class Profile extends React.Component {
 
             userPromise
               .then((result) => {
-                console.log("1. Result userDoc: " + JSON.stringify(result));
+                //console.log("1. Result userDoc: " + JSON.stringify(result));
                 if (result.error == null) {
                   // no error
                   //console.log("atualizar state com user doc recebido");
@@ -100,7 +102,7 @@ class Profile extends React.Component {
                 }
               })
               .catch((error) => {
-                console.log("1. error userDoc: " + JSON.stringify(error));
+                console.log("error userDoc: " + JSON.stringify(error));
                 this_.componentDidMount();
               });
           }
@@ -123,8 +125,6 @@ class Profile extends React.Component {
                 let parent = result;
                 const currentUserPhoto = currentUser.photoURL;
                 const resultUserPhoto = parent[parentsParameters.PHOTO[languageCode]];
-                //console.log("currentUserPhotoUrl -> " + currentUserPhoto);
-                //console.log("resultUserPhoto -> " + resultUserPhoto);
 
                 if(currentUserPhoto!=null){
                   if(currentUserPhoto!==resultUserPhoto){
@@ -132,11 +132,11 @@ class Profile extends React.Component {
                     const photoField = {[parentsParameters.PHOTO[languageCode]] : currentUserPhoto};
                     updateParent(currentUser.email, photoField)
                       .then(() => {
-                        console.log("updated parent with provider photo in DB")
+                        //console.log("updated parent with provider photo in DB")
                       })
                       .catch((error) => {
                         if(Object.keys(error).length!==0){
-                          console.log("update error: " + JSON.stringify(error));
+                          //console.log("update error: " + JSON.stringify(error));
                         }
                       });
                   }
@@ -154,7 +154,7 @@ class Profile extends React.Component {
               }
             })
             .catch((error) => {
-              console.log("2. error userDoc: " + JSON.stringify(error));
+              //console.log("2. error userDoc: " + JSON.stringify(error));
               this_.componentDidMount();
             });
         }
@@ -184,7 +184,7 @@ class Profile extends React.Component {
       promise
         .then(doc => {
           if (!doc.exists) {
-            console.log('No assotiation document found!');
+            //console.log('No assotiation document found!');
           }
           else {
             const data = doc.data();
@@ -201,11 +201,11 @@ class Profile extends React.Component {
   }
 
   saveNewParams() {
-    console.log("entrei nos newParamsTypes");
+    //console.log("entrei nos newParamsTypes");
     const newParamsInputTypes = JSON.parse(window.localStorage.getItem("newParamsInputTypes"));
-    console.log("newParamsTypes no LS: " + JSON.stringify(newParamsInputTypes));
+    //console.log("newParamsTypes no LS: " + JSON.stringify(newParamsInputTypes));
     if (newParamsInputTypes != null) {
-      console.log("recebi newParamsTypes: " + JSON.stringify(newParamsInputTypes));
+      //console.log("recebi newParamsTypes: " + JSON.stringify(newParamsInputTypes));
       this.setState({ newParamsInputTypes: newParamsInputTypes });
     }
     else {
@@ -213,18 +213,18 @@ class Profile extends React.Component {
 
       paramsPromise
         .then((result) => {
-          console.log("Result paramsDoc: " + JSON.stringify(result));
+          //console.log("Result paramsDoc: " + JSON.stringify(result));
           if (result.error == null) {
             // no error
             const newParamsInputTypes = mapParamsToInputType(result);
             this.setState({ newParamsInputTypes: newParamsInputTypes });
 
-            console.log("newParamsTypes do LocalStorage: " + JSON.stringify(newParamsInputTypes));
+            //console.log("newParamsTypes do LocalStorage: " + JSON.stringify(newParamsInputTypes));
             window.localStorage.setItem("newParamsInputTypes", JSON.stringify(newParamsInputTypes));
           }
         })
         .catch((error) => {
-          console.log("error paramsDoc: " + JSON.stringify(error));
+          //console.log("error paramsDoc: " + JSON.stringify(error));
         });
     }
   }
@@ -275,6 +275,7 @@ class Profile extends React.Component {
               <UserOverview
                 user={this.state.userDoc}
                 newParamsTypes={this.state.newParamsInputTypes}
+                componentDidMount={this.componentDidMount}
               />
             </Col>
             <Col lg="8">

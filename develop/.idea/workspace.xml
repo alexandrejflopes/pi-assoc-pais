@@ -2,48 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a0f14373-4386-4975-a61f-66443a63ca90" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/node-which" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/node-which" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/node-which.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/node-which.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/pbjs" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/pbjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/pbjs.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/pbjs.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/pbts" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/pbts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/pbts.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/pbts.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/prebuild-install" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/prebuild-install" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/prebuild-install.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/prebuild-install.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/rc" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/rc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/rc.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/rc.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/react-scripts" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/react-scripts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/react-scripts.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/react-scripts.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/regjsparser" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/regjsparser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/regjsparser.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/regjsparser.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/rimraf" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/rimraf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/rimraf.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/rimraf.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sane" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sane" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sane.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sane.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/semver" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/semver" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/semver.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/semver.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sha.js" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sha.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sha.js.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sha.js.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sshpk-conv" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sshpk-conv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sshpk-conv.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sshpk-conv.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sshpk-sign" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sshpk-sign" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sshpk-sign.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sshpk-sign.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sshpk-verify" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sshpk-verify" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/sshpk-verify.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/sshpk-verify.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/svgo" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/svgo" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/svgo.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/svgo.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/terser" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/terser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/terser.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/terser.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/uuid" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/uuid" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/uuid.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/uuid.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/webpack" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/webpack" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/webpack-dev-server" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/webpack-dev-server" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/webpack-dev-server.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/webpack-dev-server.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/node_modules/.bin/webpack.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/node_modules/.bin/webpack.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/layout/MainNavbar/MainNavbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/MainNavbar/MainNavbar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/Notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/Notifications.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/UserActions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/UserActions.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/profile/ParentPhotoModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/ParentPhotoModal.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/profile/UserInfo.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/UserInfo.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/profile/UserOverview.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/UserOverview.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/views/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/Profile.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -79,6 +43,7 @@
       <updated>1592297562224</updated>
       <workItem from="1592297563495" duration="11602000" />
       <workItem from="1592323889267" duration="1892000" />
+      <workItem from="1592341077948" duration="3800000" />
     </task>
     <servers />
   </component>
@@ -86,10 +51,10 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="656" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1592323943362">
+    <state x="656" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1592341077606">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="656" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1592323943362" />
+    <state x="656" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1592341077606" />
     <state x="623" y="225" key="search.everywhere.popup" timestamp="1592301773894">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

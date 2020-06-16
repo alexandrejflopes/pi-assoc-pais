@@ -50,7 +50,7 @@ export default class UserActions extends React.Component {
     this._isMounted = true;
 
     this.updateNavBarUserPhotoAndName();
-    setInterval(this.updateNavBar,10000);
+    setInterval(this.updateNavBar,50000);
   }
 
   componentWillUnmount() {
@@ -81,13 +81,12 @@ export default class UserActions extends React.Component {
   }
 
   updateNavBarUserPhotoAndName() {
-    console.log("ENTREI NO UPDATE COM CONTEXT");
     // check the local storage to see if it's still the same user
     let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
     let firebaseUser = firebase_auth.currentUser;
 
-    console.log("localUser barra: " + JSON.stringify(localUser));
-    console.log("currentUser: barra" + JSON.stringify(firebaseUser));
+    //console.log("localUser barra: " + JSON.stringify(localUser));
+    //console.log("currentUser: barra" + JSON.stringify(firebaseUser));
 
     if (localUser != null && firebaseUser != null) {
       const localEmail = localUser[parentsParameters.EMAIL[languageCode]];
@@ -106,7 +105,7 @@ export default class UserActions extends React.Component {
             }
           })
           .catch((error) => {
-            console.log("error no fetch da barra: " + JSON.stringify(error));
+            //console.log("error no fetch da barra: " + JSON.stringify(error));
           });
       } else {
         //console.log("aproveitar o storage");
@@ -137,7 +136,7 @@ export default class UserActions extends React.Component {
           }
         })
         .catch((error) => {
-          console.log("error no fetch da barra: " + JSON.stringify(error));
+          //console.log("error no fetch da barra: " + JSON.stringify(error));
         });
     }
   }

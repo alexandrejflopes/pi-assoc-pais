@@ -32,7 +32,8 @@ export default class Notifications extends React.Component {
             </Badge>
           </div>
         </NavLink>
-        <Collapse
+        {/* TODO: commented notification items*/}
+        {/*<Collapse
           open={this.state.visible}
           className="dropdown-menu dropdown-menu-small"
         >
@@ -69,7 +70,7 @@ export default class Notifications extends React.Component {
           <DropdownItem className="notification__all text-center">
             View all Notifications
           </DropdownItem>
-        </Collapse>
+        </Collapse>*/}
       </NavItem>
     );
   }
