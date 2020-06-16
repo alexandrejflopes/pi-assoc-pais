@@ -1744,12 +1744,7 @@ exports.getCotas = functions.https.onRequest((request, response) => {
             data["id"] = doc.id; 
             cota_table.push(data);
         });
-        if (cota_table.length === 0){
-            return response.status(204).send('');
-        }
-        else {
-            return response.send(cota_table);
-        }   
+        return response.send(cota_table);   
     })
     .catch((err) => {
         console.log('Error getting documents', err);
