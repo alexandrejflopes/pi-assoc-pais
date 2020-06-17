@@ -116,7 +116,7 @@ class UserInfo extends React.Component {
       updateParent(firebase_auth.currentUser.email, this.state.parent)
         .then((updatedParent) => {
           const upParentString = JSON.stringify(updatedParent);
-          console.log("updatedParent recebido depois do update info -> " + upParentString);
+          //console.log("updatedParent recebido depois do update info -> " + upParentString);
           // update user data in localstorage
           window.localStorage.setItem("userDoc", upParentString);
           this_.lockFormAfterSubmit();
@@ -202,7 +202,6 @@ class UserInfo extends React.Component {
 
   savePreviousParentData() {
     const parent = {...this.state.parent};
-    console.log("parent inicialmente na info -> " + JSON.stringify(parent));
     this.setState({ oldParent: parent });
     //console.log("parent saved: " + JSON.stringify(parent));
   };
@@ -224,7 +223,7 @@ class UserInfo extends React.Component {
   editForm(){
     const this_ = this;
     const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
-    // get the latest changes to parent from local storage
+    // get the latest changes to parent from local storage and only then proceed
     if(localUser!=null){
       this_.setState({parent : localUser}, () => this_.savePreviousParentData());
     }

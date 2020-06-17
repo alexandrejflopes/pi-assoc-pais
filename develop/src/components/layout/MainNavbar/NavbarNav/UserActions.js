@@ -50,6 +50,7 @@ export default class UserActions extends React.Component {
     this._isMounted = true;
 
     this.updateNavBarUserPhotoAndName();
+    // to poll localstorage or DB for changes in user info
     setInterval(this.updateNavBar,50000);
   }
 
@@ -64,16 +65,13 @@ export default class UserActions extends React.Component {
   }
 
   updateNavBar(){
-    console.log("UPDATE NAVBAR");
     // check the local storage to see if it's still the same user
     let localUser = JSON.parse(window.localStorage.getItem("userDoc"));
 
     // if no information about the user in the LS, then do nothing
     if(localUser==null){
-      console.log("localUser null");
       return;
     }
-
     const displayName = localUser[parentsParameters.NAME[languageCode]];
     const photoURL = localUser[parentsParameters.PHOTO[languageCode]];
     const isAdmin = localUser[parentsParameters.ADMIN[languageCode]];

@@ -9,41 +9,34 @@ import {
   FormFeedback,
   FormGroup,
   FormInput,
-  FormTextarea,
   ListGroup,
   ListGroupItem,
   Row,
 } from "shards-react";
 import ListGroupReact from "react-bootstrap/ListGroup";
 import {
-  defaultAvatar,
   languageCode, newParametersEntities, parentsParameters, showToast,
   studentsParameters, toastTypes,
 } from "../../utils/general_utils";
 import {
-  changesCommitSuccess, childAddedError,
-  childAddedSuccess, childAddPhotoError, childDeleteError,
-  childDeleteSuccess, childUpdateError, childUpdateSucess, confirmDeleteAccount,
-  confirmDeleteChild, confirmLogoutAfterDelete, deleteAccountSuccess,
-  fillRequiredFieldMessage, parentUpdatePhotoError, parentUpdatePhotoSuccess,
+  childAddPhotoError, childDeleteError,
+  childDeleteSuccess, childUpdateError, childUpdateSucess,
+  confirmDeleteChild,
+  fillRequiredFieldMessage, parentUpdatePhotoError,
   provideRequiredFieldsMessage,
   sameChildNameError
 } from "../../utils/messages_strings";
 import {
-  cancel, deleteAccountPrompt, deleteChild, deleteChildPrompt,
+  cancel, deleteChild, deleteChildPrompt,
   saveChanges,
   updateInfo,
 } from "../../utils/common_strings";
 import {
-  addEducandoToParent,
-  deleteEducandoFromParent,
+  deleteEducandoFromParent, filterDeletedEducandosArray,
   updateEducando,
-  updateParent,
-  uploadChildPhoto,
-  uploadProfilePhoto
+  uploadChildPhoto
 } from "../../firebase_scripts/profile_functions";
 import {firebase_auth, storage} from "../../firebase-config";
-import AknowledgementDialog from "../dialog/AknowledgementDialog";
 import ConfirmationDialog from "../dialog/ConfirmationDialog";
 
 class EducandosModal extends React.Component {
@@ -241,7 +234,7 @@ class EducandosModal extends React.Component {
     const initialName = this.state.oldEducando[studentsParameters.NAME[languageCode]];
     const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
     const nameDesignation = studentsParameters.NAME[languageCode];
-    const educandos = localUser[parentsParameters.CHILDREN[languageCode]];
+    const educandos = filterDeletedEducandosArray(localUser[parentsParameters.CHILDREN[languageCode]]);
 
     const names = [];
     for (let i in educandos){

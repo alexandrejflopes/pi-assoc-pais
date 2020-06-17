@@ -13,7 +13,28 @@ import {
   studentsParameters,
 } from "../utils/general_utils";
 
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
+
+// TODO: manter esta verficacao ate a cloud function já fazer isto
+function filterDeletedEducandosFromParentJson(parentJson){
+  let doc = parentJson;
+  if(doc["Educandos"]!=null){
+    // ignore deleted children, if any
+    let educandos = doc["Educandos"];
+    doc["Educandos"] = educandos.filter(json => json["deleted"] === false);
+  }
+  return doc;
+}
+
+export function filterDeletedEducandosArray(educandosArray){
+  // ignore deleted children, if any
+  if(educandosArray.length>0){
+    return educandosArray.filter(json => json["deleted"] === false);
+  }
+  else {
+    return [];
+  }
+}
 
 async function fetchUserDoc(email) {
   console.log("profile email to fetch: " + email);
@@ -34,6 +55,7 @@ async function fetchUserDoc(email) {
       .then((resp) => resp.json()) // Transform the data into json
       .then(function (data) {
         console.log("user recebido -> ", JSON.stringify(data));
+        //userDoc = filterDeletedEducandosFromParentJson(data);
         userDoc = data;
       })
       .catch(function (error) {
@@ -185,6 +207,7 @@ function updateEducando(parentEmail, educandoDoc, oldName) {
           "parentUpdated no request update child -> ",
           JSON.stringify(data)
         );
+        //updatedParent = filterDeletedEducandosFromParentJson(data);
         updatedParent = data;
       })
       .catch(function (error) {
@@ -217,6 +240,7 @@ function updateParent(parentEmail, parentDoc) {
           "parentUpdated no request update info -> ",
           JSON.stringify(data)
         );
+        //updatedParent = filterDeletedEducandosFromParentJson(data);
         updatedParent = data;
       })
       .catch(function (error) {
@@ -280,6 +304,7 @@ function addEducandoToParent(parentEmail, newChild, photo) {
           "parentUpdated no request add child -> ",
           JSON.stringify(data)
         );
+        //updatedParent = filterDeletedEducandosFromParentJson(data);
         updatedParent = data;
       })
       .catch(function (error) {
@@ -291,35 +316,6 @@ function addEducandoToParent(parentEmail, newChild, photo) {
 
   return request();
 
-  /*
-  let parentRef = firestore.collection('parents').doc(parentEmail);
-  const childrenDesignation = parentsParameters.CHILDREN[languageCode];
-
-  return parentRef.get()
-    .then((doc) => {
-      if (!doc.exists) {
-        console.log('No such document for parent <' + parentEmail + '> !');
-      }
-      else {
-        let parent = doc.data();
-
-        let children = parent[childrenDesignation];
-        console.log("children array -> " + JSON.stringify(children));
-        children.push(childJson);
-        console.log("children novo -> " + JSON.stringify(childJson));
-        parent[childrenDesignation] = children;
-        console.log("parent final -> " + JSON.stringify(parent));
-
-        return parent;
-      }
-    })
-    .then((parent) => {
-      return parentRef.update({[childrenDesignation] : parent[childrenDesignation]})
-        .then(() => {return parent});
-    })
-    .catch((err) => {
-      console.log('Error getting parent <' + parentEmail + '> : ' + err);
-    });*/
 }
 
 function deleteEducandoFromParent(parentEmail, childName) {
@@ -341,6 +337,7 @@ function deleteEducandoFromParent(parentEmail, childName) {
       .then((resp) => resp.json()) // Transform the data into json
       .then(function (data) {
         //console.log("parentUpdated no request delete child -> ", JSON.stringify(data));
+        //updatedParent = filterDeletedEducandosFromParentJson(data);
         updatedParent = data;
       })
       .catch(function (error) {
@@ -352,43 +349,6 @@ function deleteEducandoFromParent(parentEmail, childName) {
 
   return request();
 
-  /*let parentRef = firestore.collection('parents').doc(parentEmail);
-  const childrenDesignation = parentsParameters.CHILDREN[languageCode];
-
-  return parentRef.get()
-    .then((doc) => {
-      if (!doc.exists) {
-        console.log('No such document for parent <' + parentEmail + '> !');
-      }
-      else {
-        let parent = doc.data();
-
-        let children = parent[childrenDesignation];
-
-        for(let i in children){
-          const currentName = children[i][studentsParameters.NAME[languageCode]];
-          console.log("currentName -> " + currentName);
-          if(currentName===childName){
-            console.log("SPLICE!");
-            children.splice(i,1);
-            break;
-          }
-        }
-
-        console.log("children array novo -> " + JSON.stringify(children));
-        parent[childrenDesignation] = children;
-        console.log("parent final -> " + JSON.stringify(parent));
-
-        return parent;
-      }
-    })
-    .then((parent) => {
-      return parentRef.update({[childrenDesignation] : parent[childrenDesignation]})
-        .then(() => {return parent});
-    })
-    .catch((err) => {
-      console.log('Error getting parent <' + parentEmail + '> : ' + err);
-    });*/
 }
 
 /*
@@ -452,6 +412,7 @@ function updateParentEmail(currentEmail, newEmail) {
           "parentUpdated no request update email -> ",
           JSON.stringify(data)
         );
+        //updatedParent = filterDeletedEducandosFromParentJson(data);
         updatedParent = data;
       })
       .catch(function (error) {
@@ -631,6 +592,7 @@ function deleteAccount(email) {
         else{
           console.log(data.error);
         }
+        //deletedParent = filterDeletedEducandosFromParentJson(data);
         deletedParent = data;
       })
       .catch(function (error) {

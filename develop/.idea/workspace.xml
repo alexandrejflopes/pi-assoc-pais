@@ -3,12 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="a0f14373-4386-4975-a61f-66443a63ca90" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/layout/MainNavbar/MainNavbar.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/MainNavbar/MainNavbar.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/Notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/Notifications.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/UserActions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/layout/MainNavbar/NavbarNav/UserActions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/profile/EducandosModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/EducandosModal.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/profile/NewEducandoModal.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/NewEducandoModal.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/profile/UserInfo.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/UserInfo.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/profile/UserOverview.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/profile/UserOverview.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/views/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/views/Profile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/firebase_scripts/profile_functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/firebase_scripts/profile_functions.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +44,7 @@
       <workItem from="1592297563495" duration="11602000" />
       <workItem from="1592323889267" duration="1892000" />
       <workItem from="1592341077948" duration="3800000" />
+      <workItem from="1592410278626" duration="4022000" />
     </task>
     <servers />
   </component>
@@ -51,10 +52,10 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="656" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1592341077606">
+    <state x="656" y="344" key="com.intellij.ide.util.TipDialog" timestamp="1592410282256">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="656" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1592341077606" />
+    <state x="656" y="344" key="com.intellij.ide.util.TipDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1592410282256" />
     <state x="623" y="225" key="search.everywhere.popup" timestamp="1592301773894">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

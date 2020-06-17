@@ -19,15 +19,16 @@ import {
 import {
   childAddedError,
   childAddedSuccess, childAddPhotoError,
-  fillRequiredFieldMessage, parentUpdatePhotoError, parentUpdatePhotoSuccess,
+  fillRequiredFieldMessage,
   provideRequiredFieldsMessage, sameChildNameError
 } from "../../utils/messages_strings";
 import {newChild, submitChild} from "../../utils/page_titles_strings";
 import {
-  addEducandoToParent, updateParent, uploadChildPhoto,
-  uploadProfilePhoto
+  addEducandoToParent,
+  filterDeletedEducandosArray,
+  uploadChildPhoto,
 } from "../../firebase_scripts/profile_functions";
-import {firebase_auth, storage} from "../../firebase-config";
+import {firebase_auth} from "../../firebase-config";
 
 
 
@@ -124,7 +125,7 @@ class NewEducandoModal extends React.Component{
                     }
                     else{
                       const upParentString = JSON.stringify(updatedParent);
-                      console.log("updatedParent recebido depois do update -> " + upParentString);
+                      //console.log("updatedParent recebido depois do update -> " + upParentString);
                       // update user data in localstorage
                       window.localStorage.setItem("userDoc", upParentString);
                       this_.closeModal();
@@ -150,7 +151,7 @@ class NewEducandoModal extends React.Component{
               }
               else{
                 const upParentString = JSON.stringify(updatedParent);
-                console.log("updatedParent recebido depois do update -> " + upParentString);
+                //console.log("updatedParent recebido depois do update -> " + upParentString);
                 // update user data in localstorage
                 window.localStorage.setItem("userDoc", upParentString);
                 this_.closeModal();
@@ -169,7 +170,7 @@ class NewEducandoModal extends React.Component{
     const nameToAdd = this.state.educando[studentsParameters.NAME[languageCode]];
     const localUser = JSON.parse(window.localStorage.getItem("userDoc"));
     const nameDesignation = studentsParameters.NAME[languageCode];
-    const educandos = localUser[parentsParameters.CHILDREN[languageCode]];
+    const educandos = filterDeletedEducandosArray(localUser[parentsParameters.CHILDREN[languageCode]]);
 
     const names = [];
     for (let i in educandos){
@@ -225,26 +226,18 @@ class NewEducandoModal extends React.Component{
 
   resetFeedbacks(){
     let changedFeedbacks = {...this.state.feedbacks};
-    //console.log("------------ RESET ------------");
     for(let field in changedFeedbacks){
-      //console.log("entrei com " + field);
-      //console.log("passar de  " + changedFeedbacks[field] + " a false");
       changedFeedbacks[field] = false;
     }
-
-    //console.log("changedFeedbacks resetados: " + JSON.stringify(changedFeedbacks));
     this.state.feedbacks = changedFeedbacks;
-    //console.log("feedbacks depois do reset: " + JSON.stringify(this.state.feedbacks));
     this.forceUpdate();
   }
 
   handleChangeParam(e) {
     let educando = this.state.educando;
     let paramName = e.target.name;
-    //console.log("paramName to change: " + paramName);
     // update the param with the new value
     educando[paramName] = e.target.value;
-    //console.log("educando with new values: " + JSON.stringify(educando));
     this.setState({ educando: educando });
   }
 
@@ -261,8 +254,6 @@ class NewEducandoModal extends React.Component{
 
   resetState(){
     this.setState(this.initial);
-    console.log("state inicial antes do reset -> " + JSON.stringify(this.initial));
-    console.log("state depois do reset -> " + JSON.stringify(this.state));
   }
 
 
@@ -280,9 +271,6 @@ class NewEducandoModal extends React.Component{
 
   renderExtra() {
     let extraInputs = [];
-
-    //console.log("newParamsTypesN -> " + JSON.stringify(this.state.newParamsTypesN));
-
     const childParamsTypes = this.state.newParamsTypesN[newParametersEntities.student[languageCode]];
 
     if(childParamsTypes!=null) { // is null when there are no child parameters
@@ -334,7 +322,6 @@ class NewEducandoModal extends React.Component{
   }
 
   render() {
-    //console.log("state a render -> " + JSON.stringify(this.state));
     return (
       <>
         <Button size="sm" className="float-right" onClick={this.showModal}><span className="material-icons" style={{fontSize:"150%", textAlign: "center", verticalAlign:"middle"}}>person_add</span></Button>

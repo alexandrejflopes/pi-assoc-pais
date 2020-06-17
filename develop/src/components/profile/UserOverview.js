@@ -18,6 +18,7 @@ import {profileMyChildren} from "../../utils/page_titles_strings";
 import EducandosModal from "./EducandosModal";
 import NewEducandoModal from "./NewEducandoModal";
 import ParentPhotoModal from "./ParentPhotoModal";
+import {filterDeletedEducandosArray} from "../../firebase_scripts/profile_functions";
 
 class UserOverview extends React.Component {
 
@@ -92,7 +93,7 @@ class UserOverview extends React.Component {
 
   render() {
     const { parent } = this.state;
-    const userEducandos = parent[parentsParameters.CHILDREN[languageCode]];
+    const userEducandos = filterDeletedEducandosArray(parent[parentsParameters.CHILDREN[languageCode]]);
 
     //console.log("userEducandos: " + JSON.stringify(userEducandos));
 
