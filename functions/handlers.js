@@ -707,9 +707,9 @@ exports.getParent = functions.https.onRequest((request, response) =>{
     let db = admin.firestore();
     let id = request.query.id;
     db.collection('parents').doc(id).get().then(doc => {
-        if (!doc.exists) {
-            console.log('No such document!');
-            return response.status(404).send({"error":"No such document"});
+        if (!doc.exists || doc.get('deleted')) {
+            console.log('No such parent!');
+            return response.status(404).send({"error":"No such parent"});
         }
         else {
             //console.log('Document data:', doc.data());
