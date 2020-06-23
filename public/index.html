@@ -50,6 +50,7 @@
           <button id="demo-sign-in-button" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i> Sign in with Google</button>
           <input type="text" id="emailtosend" name="fname"> <button id="demo-sign-in-button2" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i> Sign in with Link</button>
           <button id="demo-sign-in-buttonFb2" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Facebook Login</button>
+
           <button id="demo-sign-in-buttonTw2" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Twitter Login</button>
         </div>
       </div>
@@ -66,6 +67,10 @@
           <button id="demo-delete-button" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect">Delete account</button>
           <button id="demo-sign-in-buttonFb" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Facebook Link</button>
           <button id="demo-sign-in-buttonFb3" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Facebook Unlink</button>
+          <button id="subscribe" hidden class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect" ><i class="material-icons">account_circle</i>Subscribe</button>
+          <button id="unsubscribe" hidden class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect" ><i class="material-icons">account_circle</i>Unsubscribe</button>
+          <input type="text" id="notification-message" placeholder="Message..." maxlength="40"></input>
+          <button  id="send-notification" class="mdl-color-text--grey-700 mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect">Send</button>
         </div>
       </div>
     </div>
@@ -73,12 +78,33 @@
 </div>
 
 <!-- Firebase -->
-<script defer src="/__/firebase/5.9.1/firebase-app.js"></script>
-<script defer src="/__/firebase/5.9.1/firebase-auth.js"></script>
-<script defer src="/__/firebase/5.9.1/firebase-database.js"></script>
+<script defer src="/__/firebase/7.14.2/firebase-app.js"></script>
+<script defer src="/__/firebase/7.14.2/firebase-auth.js"></script>
+<script defer src="/__/firebase/7.14.2/firebase-database.js"></script>
+<script defer src="/__/firebase/7.14.2/firebase-messaging.js"></script>
 <!-- initialize the SDK after all desired features are loaded -->
 <script defer src="/__/firebase/init.js"></script>
 
 <script src="main.js"></script>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyBZZuX-ZI3BA6SGzqxaabi1dbjS-u1LW-I",
+    authDomain: "testproject-269510.firebaseapp.com",
+    databaseURL: "https://testproject-269510.firebaseio.com",
+    projectId: "testproject-269510",
+    storageBucket: "testproject-269510.appspot.com",
+    messagingSenderId: "729098257817",
+    appId: "1:729098257817:web:b952a5fd40302f2fa03f08"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
 </body>
 </html>

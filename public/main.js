@@ -17,7 +17,47 @@
 
 // Initializes the Demo.
 function Demo() {
+
   document.addEventListener('DOMContentLoaded', function() {
+
+    this.messaging = firebase.messaging();
+    this.database = firebase.database();
+    this.auth = firebase.auth();
+
+    this.messaging.onTokenRefresh(this.handleTokenRefresh);
+
+    // [END get_messaging_object]
+    // [START set_public_vapid_key]
+    // Add the public key generated from the console here.
+    this.messaging.usePublicVapidKey('BHOh6e5x9waWwIMIKztDOsqUtm29cb8T-JpFMCynp7aeV4aVJYjlt5OPpcrFAleTC7urX72QsXpJsfR-JpUbYvM');
+    // [END set_public_vapid_key]
+
+    // IDs of divs that display Instance ID token UI or request permission UI.
+    const tokenDivId = 'token_div';
+    const permissionDivId = 'permission_div';
+
+    /*// [START refresh_token]
+    // Callback fired if Instance ID token is updated.
+    this.messaging.onTokenRefresh(() => {
+      this.messaging.getToken().then((refreshedToken) => {
+        console.log('Token refreshed.');
+        // Indicate that the new Instance ID token has not yet been sent to the
+        // app server.
+        setTokenSentToServer(false);
+        // Send Instance ID token to app server.
+        sendTokenToServer(refreshedToken);
+        // [START_EXCLUDE]
+        // Display new Instance ID token and clear UI of all previous messages.
+        resetUI();
+        // [END_EXCLUDE]
+      }).catch((err) => {
+        console.log('Unable to retrieve refreshed token ', err);
+        showToken('Unable to retrieve refreshed token ', err);
+      });
+    });
+    // [END refresh_token]*/
+
+
     // Shortcuts to DOM Elements.
     this.signInButton = document.getElementById('demo-sign-in-button');
     this.signInButton2 = document.getElementById('demo-sign-in-button2');
@@ -32,6 +72,10 @@ function Demo() {
     this.profilePic = document.getElementById('demo-profile-pic');
     this.signedOutCard = document.getElementById('demo-signed-out-card');
     this.signedInCard = document.getElementById('demo-signed-in-card');
+    this.subscribeButton = document.getElementById('subscribe');
+    this.unsubscribeButton = document.getElementById('unsubscribe');
+    this.sendNotificationForm = document.getElementById('send-notification');
+
 
     // Bind events.
     this.signInButton.addEventListener('click', this.signIn.bind(this));
@@ -42,6 +86,12 @@ function Demo() {
     this.signInButtonFb3.addEventListener('click', this.signInFb3.bind(this));
     this.signOutButton.addEventListener('click', this.signOut.bind(this));
     this.deleteButton.addEventListener('click', this.deleteAccount.bind(this));
+    this.subscribeButton.addEventListener('click', this.subscribeToNotifications.bind(this));
+    this.unsubscribeButton.addEventListener('click', this.unsubscribeToNotifications.bind(this));
+    this.sendNotificationForm.addEventListener('click', this.sendNotification.bind(this));
+
+
+
     firebase.auth().onAuthStateChanged(this.onAuthStateChanged.bind(this));
     if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
     var email = window.localStorage.getItem('emailForSignIn');
@@ -68,13 +118,14 @@ function Demo() {
 
 // Triggered on Firebase auth state change.
 Demo.prototype.onAuthStateChanged = function(user) {
-
   if (user) {
     this.nameContainer.innerText = user.displayName;
     this.uidContainer.innerText = user.uid;
     this.profilePic.src = user.photoURL;
     this.signedOutCard.style.display = 'none';
     this.signedInCard.style.display = 'block';
+    this.checkSubscription();
+
   } else {
     this.signedOutCard.style.display = 'block';
     this.signedInCard.style.display = 'none';
@@ -83,6 +134,7 @@ Demo.prototype.onAuthStateChanged = function(user) {
 
 // Google login
 Demo.prototype.signIn = function() {
+
   firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
 };
 
@@ -141,6 +193,7 @@ Demo.prototype.signIn2 = function() {
   .catch(function(error) {
     // Some error occurred, you can inspect the code: error.code
   });
+  document.getElementById('emailtosend').value="";
 };
 
 Demo.prototype.signIn3 = function() {
@@ -161,7 +214,7 @@ Demo.prototype.signIn3 = function() {
   }
   else {
     window.alert('Link inválido');
-  };
+  }
 };
 
 // Signs-out of Firebase.
@@ -181,5 +234,67 @@ Demo.prototype.deleteAccount = function() {
   });
 };
 
+Demo.prototype.subscribeToNotifications = function() {
+  this.messaging.requestPermission()
+      .then(() => this.handleTokenRefresh()
+      .then(() => this.checkSubscription())
+      );
+
+};
+
+Demo.prototype.handleTokenRefresh = function() {
+  return this.messaging.getToken()
+    .then((token) => {
+      this.database.ref('/tokens').push({
+        token: token,
+        uid: this.auth.currentUser.uid
+      });
+    });
+};
+
+Demo.prototype.unsubscribeToNotifications = function() {
+  this.messaging.getToken()
+      .then((token) => this.messaging.deleteToken(token))
+      .then(() => this.database.ref('/tokens').orderByChild('uid').equalTo(this.auth.currentUser.uid)
+      .once('value'))
+      .then((snapshot) => {
+        const key = Object.keys(snapshot.val())[0];
+        return this.database.ref('/tokens').child(key).remove();
+      })
+      .then(() => this.checkSubscription())
+};
+
+Demo.prototype.checkSubscription = function() {
+  this.database.ref('/tokens').orderByChild('uid').equalTo(this.auth.currentUser.uid).once('value')
+      .then((snapshot) => {
+        if (snapshot.val() ){
+          this.subscribeButton.setAttribute("hidden", "true")
+          this.unsubscribeButton.removeAttribute("hidden")
+        }
+        else{
+          this.subscribeButton.removeAttribute("hidden")
+          this.unsubscribeButton.setAttribute("hidden", "true")
+        }
+      })
+};
+
+Demo.prototype.sendNotification = function() {
+  //e.preventDefault();
+  this.notificationMessage = document.getElementById('notification-message').value;
+  this.database.ref('/notifications').push({
+    user: this.auth.currentUser.displayName,
+    message: this.notificationMessage,
+    userProfileImg: this.auth.currentUser.photoURL
+  }).then(() => {
+    document.getElementById('notification-message').value="";
+  })
+  .catch(() => {
+    console.log("error sending notification :(")
+  });
+
+};
+
 // Load the demo.
 window.demo = new Demo();
+
+
