@@ -18,7 +18,7 @@
 const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');
-admin.initializeApp();
+admin.initializeApp(functions.config().firebase);
 // Configure the email transport using the default SMTP transport and a GMail account.
 // For Gmail, enable these:
 // 1. https://www.google.com/settings/security/lesssecureapps
@@ -150,7 +150,71 @@ exports.sendPositionEmail = functions.https.onRequest((request, response) => {
     });
 });
 
-/**
+exports.sendNotifications = functions.database.ref('/notifications/{notificationId}').onWrite((change,context) => {
+
+    if (change.before.exists() || !change.after.exists() ) {
+        return 0;
+    }
+
+    const NOTIFICATION_SNAPSHOT = change.after;
+    const payload = {
+        notification: {
+            title: `New Message from ${NOTIFICATION_SNAPSHOT.val().user}`,
+            body: NOTIFICATION_SNAPSHOT.val().message,
+            icon: NOTIFICATION_SNAPSHOT.val().userProfileImg,
+            //click_action: `https://${functions.config().firebase.authDomain}`
+            click_action: 'https://testproject-269510.firebaseapp.com/'
+        }
+    };
+
+    // Clean invalid tokens
+    function cleanInvalidTokens(tokensWithKey, results) {
+
+        const invalidTokens = [];
+
+        results.forEach((result, i) => {
+            if ( !result.error ) return 0;
+
+            console.error('Failure sending notification to', tokensWithKey[i].token, result.error);
+
+            switch(result.error.code) {
+                case "messaging/invalid-registration-token":
+                case "messaging/registration-token-not-registered":
+                    invalidTokens.push( admin.database().ref('/tokens').child(tokensWithKey[i].key).remove() );
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        return Promise.all(invalidTokens);
+    }
+
+    return admin.database().ref('/tokens').once('value').then((data) => {
+
+        if ( !data.val() ) return 0;
+
+        const snapshot = data.val();
+        const tokensWithKey = [];
+        const tokens = [];
+
+        for (let key in snapshot) {
+            tokens.push( snapshot[key].token );
+            tokensWithKey.push({
+                token: snapshot[key].token,
+                key: key
+            });
+        }
+
+        return admin.messaging().sendToDevice(tokens, payload)
+            .then((response) => cleanInvalidTokens(tokensWithKey, response.results))
+            .then(() => admin.database().ref('/notifications').child(NOTIFICATION_SNAPSHOT.key).remove())
+    });
+});
+
+
+
+    /**
  * Função auxiliar utilizada para enviar emails
  */
 async function sendEmail(email, subject, message) {
