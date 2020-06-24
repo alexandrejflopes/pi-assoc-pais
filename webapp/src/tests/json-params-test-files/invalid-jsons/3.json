@@ -1,0 +1,10 @@
+{
+	"EdE" : 
+		{ 
+			"um parametro" : "texto"
+		},
+	"alundeo" : 
+		{ 
+			"Grau" : "inteiro", "Regime" : "texto", "Modalidade" : "texto", "Pólo" : "texto"
+		}
+}

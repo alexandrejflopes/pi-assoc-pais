@@ -1,0 +1,6 @@
+{
+	"aluno" : 
+		{ 
+			"Grau" : "inteiro", "Regime" : "texto", "Modalidade" : "texto", "Pólo" : "texto"
+		}
+}

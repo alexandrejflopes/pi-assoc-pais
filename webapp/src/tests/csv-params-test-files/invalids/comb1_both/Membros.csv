@@ -1,0 +1,7 @@
+﻿Número de Sócio;Cargo;Quotas pagas;Nome;NIF;Cartão Cidadão;Email;Telemóvel;Profissão;Morada;Código Postal;Localidade;Admin
+54353;Presidente do Conselho Executivo;true;Diogo Gomes;894274893;CC1;dgomes@pi-assoc-pais.com;6895655;Professor;Rua do Colegio;0000-000;Aveiro;true
+98978;Vice-Presidente;false;Vera Teixeira;895758866;CC2;vera@pi-assoc-pais.com;6895655;Investigadora;Avenida do Sol;5555-555;Espinho;true
+33244;Tesoureira;true;Luísa Santos;937498483;CC3;luisa.santos@pi-assoc-pais.com;3975489;Professor;Rua do Colegio;4444-444;Estarreja;true
+65362;Vogal;true;Olivério Baptista;894274893;CC4;oliverio@pi-assoc-pais.com;97545409;GNR;Avenida do Sol;1234-321;Estarreja;true
+92839;Associado;false;Mário Silva;937498483;CC5;mario.silva@pi-assoc-pais.com;765243;Professor;Avenida do Sol;7777-888;Espinho;false
+12764;Associada;true;Joana Marçal;895758866;CC6;joana_marcal@pi-assoc-pais.com;6895655;Gestora;Rua do Colegio;4555-535;Aveiro;false

@@ -1,0 +1,9 @@
+{
+	"Presidente" : 
+		{ 
+			"admin" : "true"
+		},
+		{ 
+			"admin3" : "false"
+		}
+}
