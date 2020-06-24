@@ -20,7 +20,7 @@ Francisco Fontinha (76490)
 - **feature/xx**: inclui o material relativo ao desenvolvimento da funcionalidade xx; o objetivo é separar as funcionalidades em desenvolvimento por branches, fazendo o seu merge posteriormente
 
 
-## Links úteis
+## Ver mais
 - **Website**: https://alexandrejflopes.github.io/pi-assoc-pais/
 - **Trello**: https://trello.com/b/mBgK41g9/assoc-pais
 - **Vídeo promocional**: https://www.youtube.com/watch?v=bipmQ-HEFT8
