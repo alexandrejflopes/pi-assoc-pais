@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "112da4f69524ff8e5b788767159c96ed",
+    "revision": "0d022b7e02b8329049db7fcddba562bd",
     "url": "/pi-assoc-pais/index.html"
   },
   {
-    "revision": "51e5c30bc5b199fe0f5c",
-    "url": "/pi-assoc-pais/static/js/2.ede01721.chunk.js"
+    "revision": "342db04c879fd380a5dc",
+    "url": "/pi-assoc-pais/static/js/2.35bcdf6b.chunk.js"
   },
   {
     "revision": "c64c486544348f10a6d6c716950bc223",
-    "url": "/pi-assoc-pais/static/js/2.ede01721.chunk.js.LICENSE.txt"
+    "url": "/pi-assoc-pais/static/js/2.35bcdf6b.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "052791a4c867a859c797",
-    "url": "/pi-assoc-pais/static/js/main.4fd72f1d.chunk.js"
+    "revision": "81bd0e8bd5dbfc346df5",
+    "url": "/pi-assoc-pais/static/js/main.1a0d5824.chunk.js"
   },
   {
     "revision": "03361f4ec0ce09680b1e",
@@ -38,6 +38,26 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "70f87bba34487dc1c0cb8916d800c63b",
     "url": "/pi-assoc-pais/static/media/logo_react.70f87bba.png"
+  },
+  {
+    "revision": "adbe928ab84d490dd104ee83291e757f",
+    "url": "/pi-assoc-pais/static/media/membro1.adbe928a.jpg"
+  },
+  {
+    "revision": "c473db6c7ce61f895ae1eedeaf4c9fff",
+    "url": "/pi-assoc-pais/static/media/membro2.c473db6c.jpg"
+  },
+  {
+    "revision": "4277215c63e26d46fa4db9e6234d5838",
+    "url": "/pi-assoc-pais/static/media/membro3.4277215c.jpg"
+  },
+  {
+    "revision": "5a462992fcd3a4e9b98e1f5cb47dab7b",
+    "url": "/pi-assoc-pais/static/media/membro4.5a462992.jpg"
+  },
+  {
+    "revision": "0a15305015fb47b70dfde36593811b47",
+    "url": "/pi-assoc-pais/static/media/orientador.0a153050.jpg"
   },
   {
     "revision": "34c8131748246a05247e791bcafc0b0c",
