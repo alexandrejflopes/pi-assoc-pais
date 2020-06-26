@@ -2,6 +2,14 @@ import React from 'react';
 
 // import team pictures
 import cc from '../../../assets/home/team/cc.png';
+import orientador from '../../../assets/home/team/orientador.jpg';
+import membro1 from '../../../assets/home/team/membro1.jpg';
+import membro2 from '../../../assets/home/team/membro2.jpg';
+import membro3 from '../../../assets/home/team/membro3.jpg';
+import membro4 from '../../../assets/home/team/membro4.jpg';
+
+
+
 
 function About() {
     return (
@@ -20,9 +28,9 @@ function About() {
                     </div>
                     <div className="col-md-4">
                         <div className="fh5co-person text-center to-animate">
-                            <figure><img src={cc} alt="Image" /></figure>
+                            <figure><img src={orientador} alt="Image" /></figure>
                             <h3>Diogo Gomes</h3>
-                            <span>Mentor do projeto</span>
+                            <span>Orientador do projeto</span>
                             <ul className="social social-circle">
 
                             </ul>
@@ -40,7 +48,7 @@ function About() {
                     <div className="row">
                         <div className="col-md-3">
                             <div className="fh5co-person text-center to-animate">
-                                <figure><img src={cc} alt="Image" /></figure>
+                                <figure><img src={membro1} alt="Image" /></figure>
                                 <h3>Alexandre Lopes</h3>
                                 <ul className="social social-circle">
 
@@ -49,7 +57,7 @@ function About() {
                         </div>
                         <div className="col-md-3">
                             <div className="fh5co-person text-center to-animate">
-                                <figure><img src={cc} alt="Image" /></figure>
+                                <figure><img src={membro4} alt="Image" /></figure>
                                 <h3>André Amarante</h3>
                                 <ul className="social social-circle">
 
@@ -58,7 +66,7 @@ function About() {
                         </div>
                         <div className="col-md-3">
                             <div className="fh5co-person text-center to-animate">
-                                <figure><img src={cc} alt="Image" /></figure>
+                                <figure><img src={membro3} alt="Image" /></figure>
                                 <h3>Edgar Morais</h3>
                                 <ul className="social social-circle">
 
@@ -67,7 +75,7 @@ function About() {
                         </div>
                         <div className="col-md-3">
                             <div className="fh5co-person text-center to-animate">
-                                <figure><img src={cc} alt="Image"/></figure>
+                                <figure><img src={membro2} alt="Image"/></figure>
                                 <h3>Francisco Fontinha</h3>
                                 <ul className="social social-circle">
 

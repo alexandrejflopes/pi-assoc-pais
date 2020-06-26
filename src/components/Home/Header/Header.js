@@ -15,9 +15,9 @@ function Header() {
                         <div id="navbar" class="navbar-collapse collapse">
                             <ul class="nav navbar-nav navbar-right">
                                 <li class="active"><a href="#" data-nav-section="home"><span>Home</span></a></li>
-                                <li><a href="#" data-nav-section="services"><span>Serviços</span></a></li>
-                                <li><a href="#" data-nav-section="about"><span>Sobre</span></a></li>
-                                <li><a href="#" data-nav-section="work"><span>Trabalho</span></a></li>
+                                <li><a href="#" data-nav-section="services"><span>Funcionalidades</span></a></li>
+                                <li><a href="#" data-nav-section="about"><span>Equipa</span></a></li>
+                                <li><a href="#" data-nav-section="work"><span>Repositório</span></a></li>
                             </ul>
                         </div>
                     </nav>

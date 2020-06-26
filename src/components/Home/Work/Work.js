@@ -11,7 +11,7 @@ function Work() {
                 <div class="container">
                     <div class="row">
                         <div class="col-md-12 section-heading text-center">
-                            <h2 class="to-animate">Trabalho</h2>
+                            <h2 class="to-animate">Repositório</h2>
                             <div class="row">
                                 <div class="col-md-8 col-md-offset-2 subtext to-animate">
                                     <h3></h3>
@@ -20,7 +20,7 @@ function Work() {
                         </div>
                     </div>
                     <div class="row row-bottom-padded-sm">
-                        <div class="col-md-2 col-sm-6 col-xxs-12">
+                        <div class="col-md-4 col-sm-6 col-xxs-12">
                         </div>
                         <div className="col-md-4 col-sm-6 col-xxs-12">
                             <a href="https://github.com/alexandrejflopes/pi-assoc-pais/"
@@ -29,16 +29,6 @@ function Work() {
                                 <div className="fh5co-text">
                                     <h2>Repositório do Projeto</h2>
                                     <span>Link do repositório Github</span>
-                                </div>
-                            </a>
-                        </div>
-                        <div className="col-md-4 col-sm-6 col-xxs-12">
-                            <a href="https://trello.com/b/mBgK41g9/assoc-pais"
-                               className="fh5co-project-item to-animate">
-                                <img src={work02} alt="Image" className="img-responsive"/>
-                                <div className="fh5co-text">
-                                    <h2>Trello</h2>
-                                    <span>Link do trello do projeto</span>
                                 </div>
                             </a>
                         </div>
