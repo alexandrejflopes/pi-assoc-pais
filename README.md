@@ -24,3 +24,4 @@ Francisco Fontinha (76490)
 - **Website**: https://alexandrejflopes.github.io/pi-assoc-pais/
 - **Trello**: https://trello.com/b/mBgK41g9/assoc-pais
 - **Vídeo promocional**: https://www.youtube.com/watch?v=bipmQ-HEFT8
+- **Demonstração em vídeo**: *(brevemente)*
